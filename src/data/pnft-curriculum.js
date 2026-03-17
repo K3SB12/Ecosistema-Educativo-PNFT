@@ -10,42 +10,18 @@ export const pnftCurriculum = {
             name: 'Apropiación Tecnológica y Digital',
             rdA: 'Identifica los dispositivos digitales considerando características funcionales, experimentando su utilidad y reconociendo la autoría, durante la accesibilidad, interacción y comunicación en la creación de recursos digitales.',
             conceptualKnowledge: [
-              {
-                id: 1,
-                name: 'Computadora',
-                achievementIndicator: 'Identificar qué es una computadora y algunas de sus características, a partir de experiencias prácticas de interacción con dispositivos digitales.'
-              },
-              {
-                id: 2,
-                name: 'Software',
-                achievementIndicator: 'Reconocer elementos visuales básicos de la interfaz de software (iconos, botones, ventanas), interactuando con ellos mediante el uso guiado de dispositivos digitales.'
-              },
-              {
-                id: 3,
-                name: 'Herramientas de creación de contenido multimedia',
-                achievementIndicator: 'Reconocer las herramientas de creación de contenido multimedia según su utilidad: editor gráfico, grabadora de audio y video, en la creación de recursos digitales.'
-              }
+              { id: 1, name: 'Computadora', achievementIndicator: 'Identificar qué es una computadora y algunas de sus características, a partir de experiencias prácticas de interacción con dispositivos digitales.' },
+              { id: 2, name: 'Software', achievementIndicator: 'Reconocer elementos visuales básicos de la interfaz de software (iconos, botones, ventanas), interactuando con ellos mediante el uso guiado de dispositivos digitales.' },
+              { id: 3, name: 'Herramientas de creación de contenido multimedia', achievementIndicator: 'Reconocer las herramientas de creación de contenido multimedia según su utilidad: editor gráfico, grabadora de audio y video, en la creación de recursos digitales.' }
             ]
           },
           {
             name: 'Programación y Algoritmos',
             rdA: 'Ordena secuencias integrando conceptos de programación como dato, evento, estado, ciclos, así como nociones de lateralidad y orientación espacial, en la solución de desafíos propuestos, utilizando la programación iconográfica por bloques.',
             conceptualKnowledge: [
-              {
-                id: 4,
-                name: 'Entornos de programación iconográfico',
-                achievementIndicator: 'Reconocer el entorno de programación iconográfico, interactuando con bloques de la interfaz, como desplazamiento, apariencia o sonido, mediante el uso guiado del docente.'
-              },
-              {
-                id: 5,
-                name: 'Lateralidad y orientación espacial',
-                achievementIndicator: 'Reconocer los conceptos de lateralidad y orientación espacial en la construcción de secuencias de acciones para la solución de retos de programación.'
-              },
-              {
-                id: 6,
-                name: 'Evento',
-                achievementIndicator: 'Reconocer que un evento desencadena una acción, identificando la relación de causa y efecto en juegos o actividades.'
-              }
+              { id: 4, name: 'Entornos de programación iconográfico', achievementIndicator: 'Reconocer el entorno de programación iconográfico, interactuando con bloques de la interfaz, como desplazamiento, apariencia o sonido, mediante el uso guiado del docente.' },
+              { id: 5, name: 'Lateralidad y orientación espacial', achievementIndicator: 'Reconocer los conceptos de lateralidad y orientación espacial en la construcción de secuencias de acciones para la solución de retos de programación.' },
+              { id: 6, name: 'Evento', achievementIndicator: 'Reconocer que un evento desencadena una acción, identificando la relación de causa y efecto en juegos o actividades.' }
             ]
           }
         ],
@@ -63,15 +39,9 @@ export const pnftCurriculum = {
           { id: 3, name: 'Tolerancia a la frustración', observable: 'Demuestra ante los desafíos, un comportamiento hacia la búsqueda de la autoconfianza, motivación, autocontrol, paciencia y persistencia.' }
         ]
       },
-      module2: {
-        // ... (estructura similar para módulo 2)
-        areas: []
-      }
-    },
-    'Óptimo': {
-      module1: { areas: [] },
       module2: { areas: [] }
-    }
+    },
+    'Óptimo': { module1: { areas: [] }, module2: { areas: [] } }
   },
   
   'I Ciclo': {
