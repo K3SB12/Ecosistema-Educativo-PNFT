@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Planeamiento - PNFT</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="main-content">
+        <h1>Planeamiento Didáctico</h1>
+        
+        <!-- SECCIÓN 1: DATOS ADMINISTRATIVOS -->
+        <div class="card">
+            <div class="card-title">1. Datos administrativos</div>
+            <div class="grid-2">
+                <div class="form-group">
+                    <label>Dirección Regional</label>
+                    <input type="text" id="region" placeholder="Ej: San José Central">
+                </div>
+                <div class="form-group">
+                    <label>Centro educativo</label>
+                    <input type="text" id="centro" placeholder="Ej: Liceo de Costa Rica">
+                </div>
+                <div class="form-group">
+                    <label>Código</label>
+                    <input type="text" id="codigo" placeholder="Ej: 12345">
+                </div>
+                <div class="form-group">
+                    <label>Nombre del docente</label>
+                    <input type="text" id="docente">
+                </div>
+                <div class="form-group">
+                    <label>Asignatura</label>
+                    <select id="asignatura">
+                        <option value="Formación Tecnológica">Formación Tecnológica</option>
+                        <option value="Informática Educativa">Informática Educativa</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Curso lectivo</label>
+                    <input type="number" id="curso" value="2026">
+                </div>
+                <div class="form-group">
+                    <label>Ciclo</label>
+                    <select id="ciclo">
+                        <option value="Preescolar">Preescolar</option>
+                        <option value="I Ciclo">I Ciclo</option>
+                        <option value="II Ciclo">II Ciclo</option>
+                        <option value="III Ciclo">III Ciclo</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Nivel</label>
+                    <select id="nivel">
+                        <!-- Se llenará vía JS según ciclo -->
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Módulo</label>
+                    <select id="modulo">
+                        <option value="1">Módulo 1</option>
+                        <option value="2">Módulo 2</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Lecciones planificadas</label>
+                    <input type="number" id="lecciones" value="40">
+                </div>
+                <div class="form-group">
+                    <label>Mes inicio</label>
+                    <input type="text" id="mesInicio" placeholder="Ej: Febrero">
+                </div>
+                <div class="form-group">
+                    <label>Mes final</label>
+                    <input type="text" id="mesFinal" placeholder="Ej: Marzo">
+                </div>
+                <div class="form-group">
+                    <label>Periodicidad</label>
+                    <select id="periodicidad">
+                        <option value="mes">Mes</option>
+                        <option value="bimestre">Bimestre</option>
+                        <option value="trimestre">Trimestre</option>
+                        <option value="semestre">Semestre</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- SECCIÓN 2: EJES TRANSVERSALES -->
+        <div class="card">
+            <div class="card-title">2. Ejes transversales</div>
+            <div class="flex-row">
+                <label><input type="checkbox" id="ejeCiudadania"> Ciudadanía y ética digital</label>
+                <label><input type="checkbox" id="ejePensamiento"> Pensamiento computacional para la resolución de problemas</label>
+                <label><input type="checkbox" id="ejeEmprendimiento"> Emprendimiento e Innovación</label>
+            </div>
+        </div>
+
+        <!-- SECCIÓN 3: METODOLOGÍA ACTIVA -->
+        <div class="card">
+            <div class="card-title">3. Metodología activa</div>
+            <div class="flex-row">
+                <label><input type="radio" name="metodologia" value="ABJ"> Aprendizaje Basado en Juegos (ABJ)</label>
+                <label><input type="radio" name="metodologia" value="ABR"> Aprendizaje Basado en Retos (ABR)</label>
+                <label><input type="radio" name="metodologia" value="Design Thinking"> Design Thinking</label>
+            </div>
+        </div>
+
+        <!-- SECCIÓN 4: ÁREAS DE CONOCIMIENTO + RdA (autoextraídas) -->
+        <div class="card">
+            <div class="card-title">4. Áreas de conocimiento y resultados de aprendizaje</div>
+            <div id="areasContainer">
+                <!-- Se llenará dinámicamente según nivel/módulo -->
+            </div>
+        </div>
+
+        <!-- SECCIÓN 5: SABERES (Conceptuales, Procedimentales, Actitudinales) -->
+        <div class="card">
+            <div class="card-title">5. Saberes</div>
+            <div id="saberesContainer">
+                <!-- Se llenará dinámicamente -->
+            </div>
+        </div>
+
+        <!-- SECCIÓN 6: TABLA DE 3 COLUMNAS (Indicadores, Estrategias, Evaluación) -->
+        <div class="card">
+            <div class="card-title">6. Tabla de planeamiento</div>
+            <table id="tablaPlaneamiento">
+                <thead>
+                    <tr>
+                        <th>Indicadores de logro</th>
+                        <th>Estrategias de mediación</th>
+                        <th>Indicador de evaluación (Acción + Contenido + Condición)</th>
+                    </tr>
+                </thead>
+                <tbody id="tablaBody">
+                    <!-- Filas generadas dinámicamente -->
+                </tbody>
+            </table>
+            <button class="secondary" onclick="agregarFila()">➕ Agregar fila</button>
+            <button onclick="generarPromptIA()">🤖 Generar estrategias con IA (copiar prompt)</button>
+        </div>
+
+        <!-- SECCIÓN 7: REFLEXIONES DOCENTES -->
+        <div class="card">
+            <div class="card-title">7. Reflexiones y observaciones</div>
+            <div class="form-group">
+                <label>¿Qué funcionó?</label>
+                <textarea id="refFunciono" rows="2"></textarea>
+            </div>
+            <div class="form-group">
+                <label>¿Qué no funcionó?</label>
+                <textarea id="refNoFunciono" rows="2"></textarea>
+            </div>
+            <div class="form-group">
+                <label>¿Qué puedo mejorar?</label>
+                <textarea id="refMejorar" rows="2"></textarea>
+            </div>
+            <div class="form-group">
+                <label>Observaciones / recomendaciones</label>
+                <textarea id="observaciones" rows="3"></textarea>
+            </div>
+        </div>
+
+        <!-- Botones de acción -->
+        <div style="margin-top:20px;">
+            <button onclick="guardarPlaneamiento()">💾 Guardar planeamiento</button>
+            <button class="secondary" onclick="exportarWord()">📄 Exportar Word (plantilla oficial)</button>
+            <button class="secondary" onclick="exportarPDF()">📑 Exportar PDF</button>
+            <button class="secondary" onclick="exportarExcel()">📊 Exportar Excel</button>
+        </div>
+    </div>
+
+    <script>
+        // Lógica específica para planning.html
+        (function() {
+            // Llenar niveles según ciclo seleccionado
+            const cicloSelect = document.getElementById('ciclo');
+            const nivelSelect = document.getElementById('nivel');
+            
+            function actualizarNiveles() {
+                const ciclo = cicloSelect.value;
+                const niveles = window.CURRICULO.niveles.filter(n => {
+                    if (ciclo === 'Preescolar') return n.id === 'preescolar';
+                    if (ciclo === 'I Ciclo') return ['primero','segundo','tercero'].includes(n.id);
+                    if (ciclo === 'II Ciclo') return ['cuarto','quinto','sexto'].includes(n.id);
+                    if (ciclo === 'III Ciclo') return ['setimo','octavo','noveno'].includes(n.id);
+                });
+                nivelSelect.innerHTML = niveles.map(n => `<option value="${n.id}">${n.nombre}</option>`).join('');
+                cargarIndicadores();
+            }
+            
+            cicloSelect.addEventListener('change', actualizarNiveles);
+            document.getElementById('modulo').addEventListener('change', cargarIndicadores);
+            nivelSelect.addEventListener('change', cargarIndicadores);
+            
+            // Cargar indicadores según nivel y módulo
+            window.cargarIndicadores = function() {
+                const nivel = nivelSelect.value;
+                const modulo = document.getElementById('modulo').value;
+                if (!nivel) return;
+                
+                // Obtener datos del currículo
+                const moduloData = window.CURRICULO[nivel]?.[modulo];
+                if (!moduloData) {
+                    document.getElementById('areasContainer').innerHTML = '<p>No hay indicadores para este nivel/módulo</p>';
+                    return;
+                }
+                
+                // Mostrar áreas y RdA
+                let htmlAreas = '';
+                let saberesConceptuales = [];
+                for (const [area, indicadores] of Object.entries(moduloData)) {
+                    htmlAreas += `<h3>${area}</h3><ul>`;
+                    indicadores.forEach(ind => {
+                        htmlAreas += `<li>${ind}</li>`;
+                        saberesConceptuales.push(ind);
+                    });
+                    htmlAreas += '</ul>';
+                }
+                document.getElementById('areasContainer').innerHTML = htmlAreas;
+                
+                // Saberes procedimentales y actitudinales (fijos)
+                const procedimentales = window.PRACTICAS || [
+                    'Reconoce patrones', 'Abstrae', 'Generaliza', 'Transfiere', 'Modulariza',
+                    'Formula algoritmos', 'Remezcla', 'Depura', 'Programa', 'Comunica',
+                    'Colabora', 'Piensa de forma creativa', 'Maneja las tecnologías de forma ética y segura'
+                ];
+                const actitudinales = window.ACTITUDES || [
+                    'Gusto por la precisión', 'Aprender del error', 'Flexibilidad para manejar problemas', 'Tolerancia a la frustración'
+                ];
+                
+                let saberesHtml = '<h3>Saberes conceptuales</h3>';
+                saberesHtml += '<div class="flex-row">' + saberesConceptuales.map(s => `<label><input type="checkbox" class="saber-conceptual"> ${s.substring(0,30)}...</label>`).join('') + '</div>';
+                
+                saberesHtml += '<h3>Saberes procedimentales</h3>';
+                saberesHtml += '<div class="flex-row">' + procedimentales.map(p => `<label><input type="checkbox" class="saber-procedimental"> ${p}</label>`).join('') + '</div>';
+                
+                saberesHtml += '<h3>Saberes actitudinales</h3>';
+                saberesHtml += '<div class="flex-row">' + actitudinales.map(a => `<label><input type="checkbox" class="saber-actitudinal"> ${a}</label>`).join('') + '</div>';
+                
+                document.getElementById('saberesContainer').innerHTML = saberesHtml;
+                
+                // Generar filas en la tabla (una por cada indicador conceptual)
+                const tbody = document.getElementById('tablaBody');
+                tbody.innerHTML = '';
+                saberesConceptuales.forEach(ind => {
+                    const row = tbody.insertRow();
+                    row.innerHTML = `
+                        <td><textarea class="indicador-logro" rows="2">${ind}</textarea></td>
+                        <td><textarea class="estrategia" rows="2" placeholder="Estrategia..."></textarea></td>
+                        <td><textarea class="indicador-eval" rows="2" placeholder="Acción + Contenido + Condición"></textarea></td>
+                    `;
+                });
+            };
+            
+            window.agregarFila = function() {
+                const tbody = document.getElementById('tablaBody');
+                const row = tbody.insertRow();
+                row.innerHTML = `
+                    <td><textarea class="indicador-logro" rows="2" placeholder="Indicador de logro"></textarea></td>
+                    <td><textarea class="estrategia" rows="2" placeholder="Estrategia..."></textarea></td>
+                    <td><textarea class="indicador-eval" rows="2" placeholder="Acción + Contenido + Condición"></textarea></td>
+                `;
+            };
+            
+            window.guardarPlaneamiento = async function() {
+                const planeamiento = {
+                    id: Date.now(),
+                    fecha: new Date().toISOString(),
+                    datosAdministrativos: {
+                        region: document.getElementById('region').value,
+                        centro: document.getElementById('centro').value,
+                        codigo: document.getElementById('codigo').value,
+                        docente: document.getElementById('docente').value,
+                        asignatura: document.getElementById('asignatura').value,
+                        curso: document.getElementById('curso').value,
+                        ciclo: cicloSelect.value,
+                        nivel: nivelSelect.value,
+                        modulo: document.getElementById('modulo').value,
+                        lecciones: document.getElementById('lecciones').value,
+                        mesInicio: document.getElementById('mesInicio').value,
+                        mesFinal: document.getElementById('mesFinal').value,
+                        periodicidad: document.getElementById('periodicidad').value
+                    },
+                    ejes: {
+                        ciudadania: document.getElementById('ejeCiudadania').checked,
+                        pensamiento: document.getElementById('ejePensamiento').checked,
+                        emprendimiento: document.getElementById('ejeEmprendimiento').checked
+                    },
+                    metodologia: document.querySelector('input[name="metodologia"]:checked')?.value || '',
+                    saberes: {
+                        conceptuales: Array.from(document.querySelectorAll('.saber-conceptual:checked')).map(c => c.value),
+                        procedimentales: Array.from(document.querySelectorAll('.saber-procedimental:checked')).map(c => c.value),
+                        actitudinales: Array.from(document.querySelectorAll('.saber-actitudinal:checked')).map(c => c.value)
+                    },
+                    tabla: [],
+                    reflexiones: {
+                        funciono: document.getElementById('refFunciono').value,
+                        noFunciono: document.getElementById('refNoFunciono').value,
+                        mejorar: document.getElementById('refMejorar').value,
+                        observaciones: document.getElementById('observaciones').value
+                    }
+                };
+                
+                // Recorrer filas de la tabla
+                const filas = document.querySelectorAll('#tablaBody tr');
+                filas.forEach(f => {
+                    planeamiento.tabla.push({
+                        indicadorLogro: f.querySelector('.indicador-logro')?.value || '',
+                        estrategia: f.querySelector('.estrategia')?.value || '',
+                        indicadorEval: f.querySelector('.indicador-eval')?.value || ''
+                    });
+                });
+                
+                await window.dbAPI.guardarPlaneamiento(planeamiento);
+                alert('✅ Planeamiento guardado');
+            };
+            
+            window.generarPromptIA = function() {
+                const nivel = nivelSelect.value;
+                const modulo = document.getElementById('modulo').value;
+                const metodologia = document.querySelector('input[name="metodologia"]:checked')?.value || 'No seleccionada';
+                const saberesConceptuales = Array.from(document.querySelectorAll('.saber-conceptual:checked')).map(c => c.value).join(', ');
+                const saberesProcedimentales = Array.from(document.querySelectorAll('.saber-procedimental:checked')).map(c => c.value).join(', ');
+                const saberesActitudinales = Array.from(document.querySelectorAll('.saber-actitudinal:checked')).map(c => c.value).join(', ');
+                
+                const prompt = window.generarPromptPNFT({
+                    nivel,
+                    modulo,
+                    metodologia,
+                    saberesConceptuales,
+                    saberesProcedimentales,
+                    saberesActitudinales
+                });
+                
+                navigator.clipboard.writeText(prompt).then(() => {
+                    alert('✅ Prompt copiado al portapapeles. Pégalo en ChatGPT, Copilot o Gemini.');
+                }).catch(() => {
+                    alert('No se pudo copiar. Selecciona el texto manualmente.');
+                });
+            };
+            
+            window.exportarWord = function() {
+                window.exportAPI?.exportarWord(/* datos del planeamiento */);
+            };
+            
+            window.exportarPDF = function() {
+                window.exportAPI?.exportarPDF();
+            };
+            
+            window.exportarExcel = function() {
+                window.exportAPI?.exportarExcel();
+            };
+            
+            // Inicializar cargando niveles
+            actualizarNiveles();
+        })();
+    </script>
+</body>
+</html>
