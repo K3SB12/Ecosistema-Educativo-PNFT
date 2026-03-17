@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Configuración - PNFT</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="main-content">
+        <h1>Configuración</h1>
+        
+        <div class="card">
+            <div class="card-title">Período lectivo</div>
+            <div class="grid-2">
+                <div class="form-group">
+                    <label>Año</label>
+                    <input type="number" id="configYear" value="2026">
+                </div>
+                <div class="form-group">
+                    <label>Períodos (separados por coma)</label>
+                    <input type="text" id="configPeriods" value="1,2">
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-title">Componentes de evaluación (%)</div>
+            <div class="grid-2">
+                <div class="form-group">
+                    <label>Trabajo Cotidiano</label>
+                    <input type="number" id="porcCotidiano" value="35">
+                </div>
+                <div class="form-group">
+                    <label>Tareas</label>
+                    <input type="number" id="porcTareas" value="10">
+                </div>
+                <div class="form-group">
+                    <label>Pruebas</label>
+                    <input type="number" id="porcPruebas" value="30">
+                </div>
+                <div class="form-group">
+                    <label>Proyecto</label>
+                    <input type="number" id="porcProyecto" value="15">
+                </div>
+                <div class="form-group">
+                    <label>Asistencia</label>
+                    <input type="number" id="porcAsistencia" value="10">
+                </div>
+            </div>
+            <button onclick="guardarConfiguracion()">💾 Guardar configuración</button>
+        </div>
+        
+        <div class="card">
+            <div class="card-title">Respaldo</div>
+            <button onclick="window.backupAPI?.exportarManual()">📤 Exportar backup manual (JSON)</button>
+            <button class="secondary" onclick="importarBackup()">📥 Importar backup</button>
+            <p style="margin-top:15px; color:#666;">Backups automáticos: diario (18:00) y semanal (viernes 17:00). Se almacenan localmente.</p>
+        </div>
+        
+        <div class="card">
+            <div class="card-title">Información del sistema</div>
+            <p><strong>Versión:</strong> 1.0.0</p>
+            <p><strong>Almacenamiento:</strong> IndexedDB local</p>
+            <p><strong>Último backup automático:</strong> <span id="ultimoBackup">Nunca</span></p>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            // Cargar configuración existente
+            async function cargarConfiguracion() {
+                const year = await window.dbAPI.obtenerConfiguracion('year') || 2026;
+                const periods = await window.dbAPI.obtenerConfiguracion('periods') || '1,2';
+                const cotidiano = await window.dbAPI.obtenerConfiguracion('porcentajeCotidiano') || 35;
+                const tareas = await window.dbAPI.obtenerConfiguracion('porcentajeTareas') || 10;
+                const pruebas = await window.dbAPI.obtenerConfiguracion('porcentajePruebas') || 30;
+                const proyecto = await window.dbAPI.obtenerConfiguracion('porcentajeProyecto') || 15;
+                const asistencia = await window.dbAPI.obtenerConfiguracion('porcentajeAsistencia') || 10;
+                
+                document.getElementById('configYear').value = year;
+                document.getElementById('configPeriods').value = periods;
+                document.getElementById('porcCotidiano').value = cotidiano;
+                document.getElementById('porcTareas').value = tareas;
+                document.getElementById('porcPruebas').value = pruebas;
+                document.getElementById('porcProyecto').value = proyecto;
+                document.getElementById('porcAsistencia').value = asistencia;
+            }
+            cargarConfiguracion();
+            
+            window.guardarConfiguracion = async function() {
+                await window.dbAPI.guardarConfiguracion('year', document.getElementById('configYear').value);
+                await window.dbAPI.guardarConfiguracion('periods', document.getElementById('configPeriods').value);
+                await window.dbAPI.guardarConfiguracion('porcentajeCotidiano', document.getElementById('porcCotidiano').value);
+                await window.dbAPI.guardarConfiguracion('porcentajeTareas', document.getElementById('porcTareas').value);
+                await window.dbAPI.guardarConfiguracion('porcentajePruebas', document.getElementById('porcPruebas').value);
+                await window.dbAPI.guardarConfiguracion('porcentajeProyecto', document.getElementById('porcProyecto').value);
+                await window.dbAPI.guardarConfiguracion('porcentajeAsistencia', document.getElementById('porcAsistencia').value);
+                alert('✅ Configuración guardada');
+            };
+            
+            window.importarBackup = function() {
+                const input = document.createElement('input');
+                input.type = 'file';
+                input.accept = '.json';
+                input.onchange = (e) => {
+                    const file = e.target.files[0];
+                    if (file) {
+                        window.backupAPI?.importar(file).catch(err => alert(err));
+                    }
+                };
+                input.click();
+            };
+            
+            // Mostrar último backup (simulado)
+            async function mostrarUltimoBackup() {
+                const backups = await window.dbAPI.obtenerTodos('backups');
+                const ultimo = backups.sort((a,b) => new Date(b.fecha) - new Date(a.fecha))[0];
+                if (ultimo) {
+                    document.getElementById('ultimoBackup').textContent = new Date(ultimo.fecha).toLocaleString();
+                }
+            }
+            mostrarUltimoBackup();
+        })();
+    </script>
+</body>
+</html>
