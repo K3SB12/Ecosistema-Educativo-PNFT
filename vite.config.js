@@ -3,7 +3,7 @@ import react from '@vitejs/plugin-react'
 
 export default defineConfig({
   plugins: [react()],
-  base: '/Ecosistema-Educativo-PNFT/', // Cambiado
+  base: '/Ecosistema-Educativo-PNFT/',
   server: {
     port: 3000,
     open: true
