@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PNFT Articulador 2026 - MEP Costa Rica</title>
+    <link rel="stylesheet" href="css/style.css">
+    <!-- Librerías para exportación (CDN) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/docxtemplater@3.46.0/build/docxtemplater.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/pizzip@3.1.4/dist/pizzip.js"></script>
+    <!-- Nuestros scripts -->
+    <script src="js/curriculum.js" defer></script>
+    <script src="js/database.js" defer></script>
+    <script src="js/export.js" defer></script>
+    <script src="js/backup.js" defer></script>
+    <script src="js/prompt.js" defer></script>
+    <script src="js/app.js" defer></script>
+</head>
+<body>
+    <div class="app">
+        <!-- Sidebar -->
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <img src="assets/logo-pnft.png" alt="PNFT" height="60">
+                <h2>PNFT Articulador 2026</h2>
+                <p>Ministerio de Educación Pública · Costa Rica</p>
+            </div>
+            <ul>
+                <li data-page="dashboard" class="active">📊 Dashboard</li>
+                <li data-page="planning">📝 Planeamiento</li>
+                <li data-page="evaluation">✅ Evaluación</li>
+                <li data-page="logbook">📓 Bitácora</li>
+                <li data-page="students">👥 Estudiantes</li>
+                <li data-page="settings">⚙️ Configuración</li>
+            </ul>
+        </nav>
+
+        <!-- Contenido principal -->
+        <main id="content">
+            <!-- Se carga dinámicamente según la página -->
+        </main>
+    </div>
+</body>
+</html>
