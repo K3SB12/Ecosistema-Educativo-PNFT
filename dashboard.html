@@ -1,0 +1,74 @@
+<div class="main-content">
+    <h1>Dashboard</h1>
+    
+    <div class="card">
+        <div class="card-title">Resumen general</div>
+        <div class="flex-row" id="resumen-cifras">
+            <span class="badge">📝 Planeamientos: <span id="total-plannings">0</span></span>
+            <span class="badge">✅ Evaluaciones: <span id="total-evaluations">0</span></span>
+            <span class="badge">📓 Bitácoras: <span id="total-logbook">0</span></span>
+            <span class="badge">👥 Estudiantes: <span id="total-students">0</span></span>
+            <span class="badge">🏫 Grupos: <span id="total-groups">0</span></span>
+        </div>
+    </div>
+
+    <div class="grid-2">
+        <div class="card">
+            <div class="card-title">Últimos planeamientos</div>
+            <table id="tabla-ultimos-plannings">
+                <thead>
+                    <tr>
+                        <th>Nivel</th>
+                        <th>Módulo</th>
+                        <th>Fecha</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+
+        <div class="card">
+            <div class="card-title">Acciones rápidas</div>
+            <button onclick="window.location.hash='planning'">➕ Nuevo planeamiento</button>
+            <button onclick="window.location.hash='evaluation'">📊 Registrar evaluación</button>
+            <button onclick="window.location.hash='logbook'">📝 Añadir bitácora</button>
+            <button onclick="window.location.hash='students'">👥 Gestionar estudiantes</button>
+            <button onclick="window.location.hash='settings'">⚙️ Configuración</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Función de inicialización para dashboard
+    window.init_dashboard = async function() {
+        try {
+            // Obtener datos de la base de datos
+            const plannings = await dbAPI.obtenerPlaneamientos();
+            const evaluations = await dbAPI.obtenerEvaluaciones();
+            const logbook = await dbAPI.obtenerBitacora();
+            const students = await dbAPI.obtenerEstudiantes();
+            const groups = await dbAPI.obtenerGrupos();
+
+            // Actualizar cifras
+            document.getElementById('total-plannings').textContent = plannings.length;
+            document.getElementById('total-evaluations').textContent = evaluations.length;
+            document.getElementById('total-logbook').textContent = logbook.length;
+            document.getElementById('total-students').textContent = students.length;
+            document.getElementById('total-groups').textContent = groups.length;
+
+            // Mostrar últimos 5 planeamientos
+            const tbody = document.querySelector('#tabla-ultimos-plannings tbody');
+            tbody.innerHTML = '';
+            const ultimos = plannings.slice(-5).reverse();
+            ultimos.forEach(p => {
+                const row = tbody.insertRow();
+                row.insertCell().textContent = p.nivel || '';
+                row.insertCell().textContent = `Módulo ${p.modulo || ''}`;
+                row.insertCell().textContent = p.fecha || '';
+            });
+
+        } catch (error) {
+            console.error('Error cargando dashboard:', error);
+        }
+    };
+</script>
