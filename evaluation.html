@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Evaluación - PNFT</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="main-content">
+        <h1>Evaluación</h1>
+        
+        <div class="card">
+            <div class="card-title">Seleccionar grupo y período</div>
+            <div class="grid-2">
+                <div class="form-group">
+                    <label>Grupo</label>
+                    <select id="grupoEval">
+                        <option value="">Cargando grupos...</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Período</label>
+                    <select id="periodoEval">
+                        <option value="1">Período 1</option>
+                        <option value="2">Período 2</option>
+                    </select>
+                </div>
+            </div>
+            <button onclick="cargarEstudiantesEval()">📋 Cargar estudiantes</button>
+        </div>
+        
+        <div id="evaluacionContainer" style="display:none;">
+            <!-- Se llenará con la tabla de calificaciones -->
+        </div>
+        
+        <!-- Sección Proyecto Design Thinking (III Ciclo) -->
+        <div class="card" id="proyectoContainer" style="display:none;">
+            <div class="card-title">Proyecto - Design Thinking (III Ciclo)</div>
+            <div class="grid-3">
+                <div>
+                    <h4>Etapa Inicial (30%)</h4>
+                    <p><strong>Empatizar:</strong> Describe el problema y registra necesidades.</p>
+                    <p><strong>Definir:</strong> Sintetiza hallazgos.</p>
+                    <p><strong>Idear:</strong> Selecciona la mejor idea.</p>
+                    <label>Nota etapa inicial (0-100):</label>
+                    <input type="number" id="notaInicial" min="0" max="100" step="0.01">
+                </div>
+                <div>
+                    <h4>Etapa Desarrollo (40%)</h4>
+                    <p><strong>Prototipar:</strong> Crea prototipo tangible.</p>
+                    <label>Nota etapa desarrollo (0-100):</label>
+                    <input type="number" id="notaDesarrollo" min="0" max="100" step="0.01">
+                </div>
+                <div>
+                    <h4>Etapa Final (30%)</h4>
+                    <p><strong>Probar/Evaluar:</strong> Recopila retroalimentación.</p>
+                    <label>Nota etapa final (0-100):</label>
+                    <input type="number" id="notaFinal" min="0" max="100" step="0.01">
+                </div>
+            </div>
+            <p><strong>Nota proyecto:</strong> <span id="notaProyectoCalculada">0.00</span></p>
+        </div>
+        
+        <div style="margin-top:20px;">
+            <button onclick="guardarEvaluacion()">💾 Guardar evaluaciones</button>
+            <button class="secondary" onclick="exportarExcelEvaluacion()">📊 Exportar Excel</button>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            const grupoSelect = document.getElementById('grupoEval');
+            
+            // Cargar grupos desde IndexedDB
+            async function cargarGrupos() {
+                const grupos = await window.dbAPI.obtenerGrupos();
+                grupoSelect.innerHTML = grupos.map(g => `<option value="${g.id}">${g.nombre} (${g.nivel})</option>`).join('');
+            }
+            cargarGrupos();
+            
+            window.cargarEstudiantesEval = async function() {
+                const grupoId = grupoSelect.value;
+                if (!grupoId) return alert('Selecciona un grupo');
+                
+                const estudiantes = await window.dbAPI.obtenerEstudiantes();
+                const estudiantesGrupo = estudiantes.filter(e => e.groupId == grupoId);
+                
+                if (estudiantesGrupo.length === 0) {
+                    alert('No hay estudiantes en este grupo');
+                    return;
+                }
+                
+                // Obtener configuración de porcentajes
+                const pCotidiano = await window.dbAPI.obtenerConfiguracion('porcentajeCotidiano') || 35;
+                const pTareas = await window.dbAPI.obtenerConfiguracion('porcentajeTareas') || 10;
+                const pPruebas = await window.dbAPI.obtenerConfiguracion('porcentajePruebas') || 30;
+                const pProyecto = await window.dbAPI.obtenerConfiguracion('porcentajeProyecto') || 15;
+                const pAsistencia = await window.dbAPI.obtenerConfiguracion('porcentajeAsistencia') || 10;
+                
+                let html = `
+                    <div class="card">
+                        <div class="card-title">Calificaciones del grupo</div>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Estudiante</th>
+                                    <th>Trabajo Cotidiano (${pCotidiano}%)</th>
+                                    <th>Tareas (${pTareas}%)</th>
+                                    <th>Pruebas (${pPruebas}%)</th>
+                                    <th>Proyecto (${pProyecto}%)</th>
+                                    <th>Asistencia (${pAsistencia}%)</th>
+                                    <th>Nota Final</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tablaCalificaciones">
+                `;
+                
+                estudiantesGrupo.forEach(e => {
+                    html += `
+                        <tr data-estudiante-id="${e.id}">
+                            <td>${e.nombre}</td>
+                            <td><input type="number" class="nota-cotidiano" min="0" max="100" step="0.01" value="0"></td>
+                            <td><input type="number" class="nota-tareas" min="0" max="100" step="0.01" value="0"></td>
+                            <td><input type="number" class="nota-pruebas" min="0" max="100" step="0.01" value="0"></td>
+                            <td><input type="number" class="nota-proyecto" min="0" max="100" step="0.01" value="0"></td>
+                            <td><input type="number" class="nota-asistencia" min="0" max="100" step="0.01" value="100"></td>
+                            <td class="nota-final">0.00</td>
+                        </tr>
+                    `;
+                });
+                
+                html += `
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+                
+                document.getElementById('evaluacionContainer').innerHTML = html;
+                document.getElementById('evaluacionContainer').style.display = 'block';
+                
+                // Mostrar proyecto solo si es III Ciclo (se puede determinar por el nivel del grupo)
+                const grupos = await window.dbAPI.obtenerGrupos();
+                const grupo = grupos.find(g => g.id == grupoId);
+                if (grupo && grupo.nivel && ['sétimo','octavo','noveno'].includes(grupo.nivel.toLowerCase())) {
+                    document.getElementById('proyectoContainer').style.display = 'block';
+                } else {
+                    document.getElementById('proyectoContainer').style.display = 'none';
+                }
+                
+                // Agregar listeners para calcular automáticamente
+                document.querySelectorAll('#tablaCalificaciones input').forEach(input => {
+                    input.addEventListener('input', calcularFila);
+                });
+            };
+            
+            function calcularFila(e) {
+                const row = e.target.closest('tr');
+                const cotidiano = parseFloat(row.querySelector('.nota-cotidiano')?.value) || 0;
+                const tareas = parseFloat(row.querySelector('.nota-tareas')?.value) || 0;
+                const pruebas = parseFloat(row.querySelector('.nota-pruebas')?.value) || 0;
+                const proyecto = parseFloat(row.querySelector('.nota-proyecto')?.value) || 0;
+                const asistencia = parseFloat(row.querySelector('.nota-asistencia')?.value) || 0;
+                
+                // Obtener porcentajes (se pueden obtener de configuración, aquí usamos valores fijos o dinámicos)
+                const pC = 0.35, pT = 0.10, pP = 0.30, pPy = 0.15, pA = 0.10; // Ejemplo MEP
+                
+                const final = (cotidiano * pC) + (tareas * pT) + (pruebas * pP) + (proyecto * pPy) + (asistencia * pA);
+                row.querySelector('.nota-final').textContent = final.toFixed(2);
+            }
+            
+            // Calcular nota proyecto (Design Thinking)
+            document.getElementById('notaInicial')?.addEventListener('input', calcularProyecto);
+            document.getElementById('notaDesarrollo')?.addEventListener('input', calcularProyecto);
+            document.getElementById('notaFinal')?.addEventListener('input', calcularProyecto);
+            
+            function calcularProyecto() {
+                const inicial = parseFloat(document.getElementById('notaInicial')?.value) || 0;
+                const desarrollo = parseFloat(document.getElementById('notaDesarrollo')?.value) || 0;
+                const final = parseFloat(document.getElementById('notaFinal')?.value) || 0;
+                const notaProyecto = (inicial * 0.3) + (desarrollo * 0.4) + (final * 0.3);
+                document.getElementById('notaProyectoCalculada').textContent = notaProyecto.toFixed(2);
+            }
+            
+            window.guardarEvaluacion = async function() {
+                const grupoId = grupoSelect.value;
+                const periodo = document.getElementById('periodoEval').value;
+                const filas = document.querySelectorAll('#tablaCalificaciones tr');
+                const calificaciones = [];
+                
+                filas.forEach(row => {
+                    const estudianteId = row.dataset.estudianteId;
+                    calificaciones.push({
+                        estudianteId,
+                        cotidiano: row.querySelector('.nota-cotidiano')?.value || 0,
+                        tareas: row.querySelector('.nota-tareas')?.value || 0,
+                        pruebas: row.querySelector('.nota-pruebas')?.value || 0,
+                        proyecto: row.querySelector('.nota-proyecto')?.value || 0,
+                        asistencia: row.querySelector('.nota-asistencia')?.value || 0,
+                        final: row.querySelector('.nota-final')?.textContent || 0
+                    });
+                });
+                
+                const evaluacion = {
+                    id: Date.now(),
+                    grupoId,
+                    periodo,
+                    fecha: new Date().toISOString(),
+                    calificaciones,
+                    proyecto: {
+                        inicial: document.getElementById('notaInicial')?.value || 0,
+                        desarrollo: document.getElementById('notaDesarrollo')?.value || 0,
+                        final: document.getElementById('notaFinal')?.value || 0
+                    }
+                };
+                
+                await window.dbAPI.guardarEvaluacion(evaluacion);
+                alert('✅ Evaluación guardada');
+            };
+            
+            window.exportarExcelEvaluacion = function() {
+                window.exportAPI?.exportarExcelEvaluacion();
+            };
+        })();
+    </script>
+</body>
+</html>
