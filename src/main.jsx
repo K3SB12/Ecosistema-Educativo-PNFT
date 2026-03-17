@@ -10,7 +10,7 @@ import './styles/index.css';
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <BrowserRouter basename="/pnft-articulador">
+    <BrowserRouter basename="/Ecosistema-Educativo-PNFT">
       <ThemeProvider theme={theme}>
         <CssBaseline />
         <App />
