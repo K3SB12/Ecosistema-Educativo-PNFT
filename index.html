@@ -3,9 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PNFT Articulador 2026 - Dashboard</title>
+    <title>PNFT Articulador 2026</title>
     <link rel="stylesheet" href="css/style.css">
     <link rel="icon" href="assets/logo-pnft.png">
+    <!-- Librerías para exportación -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
 </head>
 <body>
     <header>
@@ -13,65 +17,296 @@
         <h1>Programa Nacional de Formación Tecnológica</h1>
         <p>Ministerio de Educación Pública - Costa Rica 2026</p>
     </header>
+    
+    <!-- Navegador de pestañas -->
     <nav>
         <ul>
-            <li><a href="dashboard.html">Dashboard</a></li>
-            <li><a href="planning.html">Planeamiento</a></li>
-            <li><a href="evaluation.html">Evaluación</a></li>
-            <li><a href="logbook.html">Bitácora</a></li>
-            <li><a href="students.html">Estudiantes</a></li>
-            <li><a href="settings.html">Configuración</a></li>
+            <li><a href="#" data-section="dashboard">Dashboard</a></li>
+            <li><a href="#" data-section="planning">Planeamiento</a></li>
+            <li><a href="#" data-section="evaluation">Evaluación</a></li>
+            <li><a href="#" data-section="logbook">Bitácora</a></li>
+            <li><a href="#" data-section="students">Estudiantes</a></li>
+            <li><a href="#" data-section="settings">Configuración</a></li>
         </ul>
     </nav>
+
     <main>
-        <h2>Dashboard</h2>
-        <div class="cards">
-            <div class="card">
-                <h3>Planeamientos</h3>
-                <p id="totalPlannings">Cargando...</p>
-                <a href="planning.html" class="btn">Ir a Planeamiento</a>
+        <!-- SECCIÓN DASHBOARD -->
+        <section id="dashboard" class="section active">
+            <h2>Dashboard</h2>
+            <div class="cards">
+                <div class="card">
+                    <h3>Planeamientos</h3>
+                    <p id="totalPlannings">Cargando...</p>
+                </div>
+                <div class="card">
+                    <h3>Grupos</h3>
+                    <p id="totalGroups">Cargando...</p>
+                </div>
+                <div class="card">
+                    <h3>Estudiantes</h3>
+                    <p id="totalStudents">Cargando...</p>
+                </div>
+                <div class="card">
+                    <h3>Bitácoras recientes</h3>
+                    <ul id="recentLogs"></ul>
+                </div>
             </div>
-            <div class="card">
-                <h3>Grupos</h3>
-                <p id="totalGroups">Cargando...</p>
-                <a href="students.html" class="btn">Ver grupos</a>
-            </div>
-            <div class="card">
-                <h3>Estudiantes</h3>
-                <p id="totalStudents">Cargando...</p>
-                <a href="students.html" class="btn">Gestionar</a>
-            </div>
-            <div class="card">
-                <h3>Bitácoras recientes</h3>
-                <ul id="recentLogs"></ul>
-                <a href="logbook.html" class="btn">Ver todas</a>
-            </div>
-        </div>
+        </section>
+
+        <!-- SECCIÓN PLANEAMIENTO -->
+        <section id="planning" class="section">
+            <h2>Planeamiento Didáctico</h2>
+            <form id="planningForm">
+                <fieldset>
+                    <legend>Datos Administrativos</legend>
+                    <label>Dirección Regional:</label>
+                    <input type="text" id="direccionRegional" required>
+                    
+                    <label>Centro Educativo:</label>
+                    <input type="text" id="centroEducativo" required>
+                    
+                    <label>Código:</label>
+                    <input type="text" id="codigo" required>
+                    
+                    <label>Nombre del docente:</label>
+                    <input type="text" id="docente" required>
+                    
+                    <label>Asignatura:</label>
+                    <select id="asignatura">
+                        <option value="Formación Tecnológica">Formación Tecnológica</option>
+                        <option value="Informática Educativa">Informática Educativa</option>
+                    </select>
+                    
+                    <label>Curso lectivo:</label>
+                    <input type="number" id="cursoLectivo" value="2026" required>
+                    
+                    <label>Ciclo:</label>
+                    <select id="ciclo" required>
+                        <option value="">Seleccione</option>
+                        <option value="Preescolar">Preescolar</option>
+                        <option value="I Ciclo">I Ciclo</option>
+                        <option value="II Ciclo">II Ciclo</option>
+                        <option value="III Ciclo">III Ciclo</option>
+                    </select>
+                    
+                    <label>Nivel:</label>
+                    <select id="nivel" required>
+                        <option value="">Primero seleccione ciclo</option>
+                    </select>
+                    
+                    <label>Módulo:</label>
+                    <select id="modulo" required>
+                        <option value="">Primero seleccione nivel</option>
+                    </select>
+                    
+                    <label>Lecciones planificadas:</label>
+                    <input type="number" id="lecciones" min="1" value="1" required>
+                    
+                    <label>Mes inicio:</label>
+                    <input type="month" id="mesInicio" required>
+                    
+                    <label>Mes final:</label>
+                    <input type="month" id="mesFinal" required>
+                    
+                    <label>Periodicidad:</label>
+                    <select id="periodicidad">
+                        <option value="mes">Mes</option>
+                        <option value="bimestre">Bimestre</option>
+                        <option value="trimestre">Trimestre</option>
+                        <option value="semestre">Semestre</option>
+                    </select>
+                </fieldset>
+
+                <fieldset>
+                    <legend>Ejes Transversales PNFT</legend>
+                    <label>
+                        <input type="checkbox" id="ejeCiudadania" value="ciudadania">
+                        Ciudadanía y ética digital
+                    </label><br>
+                    <label>
+                        <input type="checkbox" id="ejePensamiento" value="pensamiento">
+                        Pensamiento computacional para la resolución de problemas
+                    </label><br>
+                    <label>
+                        <input type="checkbox" id="ejeEmprendimiento" value="emprendimiento">
+                        Emprendimiento e Innovación
+                    </label>
+                </fieldset>
+
+                <fieldset>
+                    <legend>Metodología Activa</legend>
+                    <label>
+                        <input type="radio" name="metodologia" value="ABJ" id="metABJ">
+                        Aprendizaje Basado en Juegos (ABJ)
+                    </label><br>
+                    <label>
+                        <input type="radio" name="metodologia" value="ABR" id="metABR">
+                        Aprendizaje Basado en Retos (ABR)
+                    </label><br>
+                    <label>
+                        <input type="radio" name="metodologia" value="DesignThinking" id="metDT">
+                        Design Thinking
+                    </label>
+                </fieldset>
+
+                <fieldset>
+                    <legend>Áreas de Conocimiento</legend>
+                    <div id="areasContainer"></div>
+                </fieldset>
+
+                <fieldset>
+                    <legend>Saberes Conceptuales</legend>
+                    <div id="saberesConceptualesContainer"></div>
+                </fieldset>
+
+                <fieldset>
+                    <legend>Prácticas del Pensador Computacional</legend>
+                    <div id="practicasContainer"></div>
+                </fieldset>
+
+                <fieldset>
+                    <legend>Actitudes del Pensador Computacional</legend>
+                    <div id="actitudesContainer"></div>
+                </fieldset>
+
+                <fieldset>
+                    <legend>Tabla de 3 columnas (Indicadores de logro, Estrategias, Evaluación)</legend>
+                    <div id="tabla3Columnas"></div>
+                    <button type="button" id="generarPromptBtn">Generar prompt para IA</button>
+                    <button type="button" id="copiarPromptBtn">Copiar prompt</button>
+                    <textarea id="promptGenerado" rows="4" placeholder="Aquí aparecerá el prompt generado..." readonly></textarea>
+                </fieldset>
+
+                <fieldset>
+                    <legend>Reflexiones docentes</legend>
+                    <label>¿Qué funcionó?</label>
+                    <textarea id="queFunciono"></textarea>
+                    <label>¿Qué no funcionó?</label>
+                    <textarea id="queNoFunciono"></textarea>
+                    <label>¿Qué puedo mejorar?</label>
+                    <textarea id="queMejorar"></textarea>
+                    <label>Aprendizajes pendientes o por retomar</label>
+                    <textarea id="aprendizajesPendientes"></textarea>
+                </fieldset>
+
+                <button type="submit">Guardar Planeamiento</button>
+                <button type="button" id="exportWordBtn">Exportar a Word</button>
+                <button type="button" id="exportPDFBtn">Exportar a PDF</button>
+            </form>
+            <hr>
+            <h3>Planeamientos guardados</h3>
+            <div id="listaPlaneamientos"></div>
+        </section>
+
+        <!-- SECCIÓN EVALUACIÓN (placeholder) -->
+        <section id="evaluation" class="section">
+            <h2>Evaluación</h2>
+            <p>Módulo en construcción. Aquí se gestionarán calificaciones por grupo y período.</p>
+        </section>
+
+        <!-- SECCIÓN BITÁCORA (placeholder) -->
+        <section id="logbook" class="section">
+            <h2>Bitácora</h2>
+            <p>Módulo en construcción. Aquí se llevará el registro diario de clases.</p>
+        </section>
+
+        <!-- SECCIÓN ESTUDIANTES (placeholder) -->
+        <section id="students" class="section">
+            <h2>Estudiantes y Grupos</h2>
+            <p>Módulo en construcción. Aquí se administrarán estudiantes y grupos.</p>
+        </section>
+
+        <!-- SECCIÓN CONFIGURACIÓN (placeholder) -->
+        <section id="settings" class="section">
+            <h2>Configuración</h2>
+            <p>Módulo en construcción. Aquí se configurarán períodos, porcentajes y backups.</p>
+            <button id="backupManualBtn">Realizar backup manual</button>
+            <input type="file" id="importBackupFile" accept=".json">
+            <button id="importBackupBtn">Importar backup</button>
+        </section>
     </main>
+
     <footer>
         <p>PNFT Articulador 2026 - Versión 1.0 - Ministerio de Educación Pública, Costa Rica</p>
     </footer>
-    <script type="module" src="js/app.js"></script>
-    <script type="module">
-        // Carga de datos para el dashboard
-        import { openDB, getAll } from './js/database.js';
 
-        (async () => {
+    <!-- Importación de módulos JavaScript -->
+    <script type="module">
+        // ============================================
+        // IMPORTACIONES
+        // ============================================
+        import { openDB, addItem, getAll, getByIndex } from './js/database.js';
+        import { CURRICULO, PRACTICAS_PENSADOR_COMPUTACIONAL, ACTITUDES_PENSADOR_COMPUTACIONAL, getNiveles, getModulo } from './js/curriculum.js';
+        import { generarPrompt } from './js/prompt.js';
+        import { exportarWord, exportarPDF, exportarExcel } from './js/export.js';
+        import { exportBackup, importBackup, iniciarBackupAutomatico } from './js/backup.js';
+
+        // ============================================
+        // NAVEGACIÓN ENTRE SECCIONES
+        // ============================================
+        document.querySelectorAll('nav a').forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const sectionId = link.dataset.section;
+                document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+                document.getElementById(sectionId).classList.add('active');
+            });
+        });
+
+        // ============================================
+        // VARIABLES GLOBALES
+        // ============================================
+        let currentModuloData = null;
+
+        // ============================================
+        // INICIALIZACIÓN
+        // ============================================
+        document.addEventListener('DOMContentLoaded', () => {
+            cargarNivelesPorCiclo();
+            cargarPracticasYActitudes();
+            cargarPlaneamientosGuardados();
+            cargarDashboard();
+
+            // Eventos
+            document.getElementById('ciclo').addEventListener('change', cargarNivelesPorCiclo);
+            document.getElementById('nivel').addEventListener('change', cargarModulos);
+            document.getElementById('modulo').addEventListener('change', cargarAreasYSaberes);
+            document.getElementById('generarPromptBtn').addEventListener('click', generarPromptHandler);
+            document.getElementById('copiarPromptBtn').addEventListener('click', copiarPrompt);
+            document.getElementById('planningForm').addEventListener('submit', guardarPlaneamiento);
+            document.getElementById('exportWordBtn').addEventListener('click', exportarWordHandler);
+            document.getElementById('exportPDFBtn').addEventListener('click', exportarPDFHandler);
+            
+            // Backups
+            document.getElementById('backupManualBtn')?.addEventListener('click', () => exportBackup());
+            document.getElementById('importBackupBtn')?.addEventListener('click', () => {
+                const fileInput = document.getElementById('importBackupFile');
+                if (fileInput.files.length > 0) {
+                    importBackup(fileInput.files[0]).then(msg => alert(msg)).catch(err => alert(err));
+                } else {
+                    alert('Seleccione un archivo primero');
+                }
+            });
+
+            // Iniciar backups automáticos
+            iniciarBackupAutomatico();
+        });
+
+        // ============================================
+        // FUNCIONES DEL DASHBOARD
+        // ============================================
+        async function cargarDashboard() {
             try {
-                const db = await openDB();
-                // Contar planeamientos
                 const plannings = await getAll('plannings');
                 document.getElementById('totalPlannings').innerText = plannings.length;
 
-                // Contar grupos
                 const groups = await getAll('groups');
                 document.getElementById('totalGroups').innerText = groups.length;
 
-                // Contar estudiantes
                 const students = await getAll('students');
                 document.getElementById('totalStudents').innerText = students.length;
 
-                // Últimas 3 bitácoras
                 const logs = await getAll('logbook');
                 logs.sort((a, b) => new Date(b.date) - new Date(a.date));
                 const recent = logs.slice(0, 3);
@@ -89,7 +324,267 @@
             } catch (error) {
                 console.error('Error cargando dashboard:', error);
             }
-        })();
+        }
+
+        // ============================================
+        // FUNCIONES DE PLANEAMIENTO
+        // ============================================
+        function cargarNivelesPorCiclo() {
+            const ciclo = document.getElementById('ciclo').value;
+            const nivelSelect = document.getElementById('nivel');
+            nivelSelect.innerHTML = '<option value="">Seleccione nivel</option>';
+            if (!ciclo) return;
+
+            const niveles = getNiveles().filter(n => n.ciclo === ciclo);
+            niveles.forEach(n => {
+                const option = document.createElement('option');
+                option.value = n.nivel;
+                option.textContent = n.nivel;
+                nivelSelect.appendChild(option);
+            });
+        }
+
+        function cargarModulos() {
+            const ciclo = document.getElementById('ciclo').value;
+            const nivel = document.getElementById('nivel').value;
+            const moduloSelect = document.getElementById('modulo');
+            moduloSelect.innerHTML = '<option value="">Seleccione módulo</option>';
+            if (!ciclo || !nivel) return;
+
+            [1, 2].forEach(mod => {
+                const option = document.createElement('option');
+                option.value = mod;
+                option.textContent = `Módulo ${mod}`;
+                moduloSelect.appendChild(option);
+            });
+        }
+
+        function cargarAreasYSaberes() {
+            const ciclo = document.getElementById('ciclo').value;
+            const nivel = document.getElementById('nivel').value;
+            const modulo = parseInt(document.getElementById('modulo').value);
+            if (!ciclo || !nivel || !modulo) return;
+
+            currentModuloData = getModulo(ciclo, nivel, modulo);
+            if (!currentModuloData) {
+                alert('No se encontraron datos para este módulo');
+                return;
+            }
+
+            // Mostrar áreas y RDA
+            const areasContainer = document.getElementById('areasContainer');
+            areasContainer.innerHTML = '';
+            currentModuloData.areas.forEach(area => {
+                const div = document.createElement('div');
+                div.innerHTML = `<strong>${area.areaId}</strong><br>`;
+                div.innerHTML += `<p><em>${area.rda}</em></p>`;
+                areasContainer.appendChild(div);
+            });
+
+            // Saberes conceptuales (checkboxes)
+            const saberesContainer = document.getElementById('saberesConceptualesContainer');
+            saberesContainer.innerHTML = '';
+            currentModuloData.areas.forEach(area => {
+                area.saberesConceptuales.forEach(saber => {
+                    const label = document.createElement('label');
+                    label.innerHTML = `<input type="checkbox" class="saberConceptual" data-area="${area.areaId}" data-concepto="${saber.concepto}" data-indicador="${saber.indicadorLogro}"> ${saber.concepto} - ${saber.indicadorLogro.substring(0, 50)}...`;
+                    saberesContainer.appendChild(label);
+                    saberesContainer.appendChild(document.createElement('br'));
+                });
+            });
+
+            // Actualizar tabla cuando se marcan/desmarcan saberes
+            document.querySelectorAll('.saberConceptual').forEach(cb => {
+                cb.addEventListener('change', actualizarTabla3Columnas);
+            });
+        }
+
+        function cargarPracticasYActitudes() {
+            const practicasContainer = document.getElementById('practicasContainer');
+            PRACTICAS_PENSADOR_COMPUTACIONAL.forEach(p => {
+                const label = document.createElement('label');
+                label.innerHTML = `<input type="checkbox" name="practica" value="${p.id}"> ${p.nombre}`;
+                practicasContainer.appendChild(label);
+                practicasContainer.appendChild(document.createElement('br'));
+            });
+
+            const actitudesContainer = document.getElementById('actitudesContainer');
+            ACTITUDES_PENSADOR_COMPUTACIONAL.forEach(a => {
+                const label = document.createElement('label');
+                label.innerHTML = `<input type="checkbox" name="actitud" value="${a.id}"> ${a.nombre}`;
+                actitudesContainer.appendChild(label);
+                actitudesContainer.appendChild(document.createElement('br'));
+            });
+        }
+
+        function actualizarTabla3Columnas() {
+            const seleccionados = Array.from(document.querySelectorAll('.saberConceptual:checked')).map(cb => {
+                return {
+                    area: cb.dataset.area,
+                    concepto: cb.dataset.concepto,
+                    indicadorLogro: cb.dataset.indicador
+                };
+            });
+
+            const tablaContainer = document.getElementById('tabla3Columnas');
+            tablaContainer.innerHTML = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Indicadores de Logro</th>
+                            <th>Estrategias de Mediación</th>
+                            <th>Indicadores de Evaluación</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tablaBody">
+                    </tbody>
+                </table>
+            `;
+            const tbody = document.getElementById('tablaBody');
+            seleccionados.forEach((item, index) => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td><textarea data-index="${index}" class="indicadorLogro" rows="2">${item.indicadorLogro}</textarea></td>
+                    <td><textarea data-index="${index}" class="estrategia" rows="2" placeholder="Escriba la estrategia..."></textarea></td>
+                    <td><textarea data-index="${index}" class="indicadorEvaluacion" rows="2" placeholder="Acción + Contenido + Condición"></textarea></td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function generarPromptHandler() {
+            const ciclo = document.getElementById('ciclo').value;
+            const nivel = document.getElementById('nivel').value;
+            const modulo = document.getElementById('modulo').value;
+            const metodologia = document.querySelector('input[name="metodologia"]:checked')?.value || 'No especificada';
+
+            const saberesConceptuales = Array.from(document.querySelectorAll('.saberConceptual:checked')).map(cb => ({
+                concepto: cb.dataset.concepto,
+                indicador: cb.dataset.indicador
+            }));
+
+            const practicas = Array.from(document.querySelectorAll('input[name="practica"]:checked')).map(cb => cb.value);
+            const actitudes = Array.from(document.querySelectorAll('input[name="actitud"]:checked')).map(cb => cb.value);
+
+            const prompt = generarPrompt({
+                ciclo, nivel, modulo, metodologia,
+                saberesConceptuales, practicas, actitudes
+            });
+
+            document.getElementById('promptGenerado').value = prompt;
+        }
+
+        function copiarPrompt() {
+            const prompt = document.getElementById('promptGenerado');
+            prompt.select();
+            document.execCommand('copy');
+            alert('Prompt copiado al portapapeles');
+        }
+
+        async function guardarPlaneamiento(e) {
+            e.preventDefault();
+            
+            const planeamiento = {
+                direccionRegional: document.getElementById('direccionRegional').value,
+                centroEducativo: document.getElementById('centroEducativo').value,
+                codigo: document.getElementById('codigo').value,
+                docente: document.getElementById('docente').value,
+                asignatura: document.getElementById('asignatura').value,
+                cursoLectivo: parseInt(document.getElementById('cursoLectivo').value),
+                ciclo: document.getElementById('ciclo').value,
+                nivel: document.getElementById('nivel').value,
+                modulo: parseInt(document.getElementById('modulo').value),
+                lecciones: parseInt(document.getElementById('lecciones').value),
+                mesInicio: document.getElementById('mesInicio').value,
+                mesFinal: document.getElementById('mesFinal').value,
+                periodicidad: document.getElementById('periodicidad').value,
+                ejes: {
+                    ciudadania: document.getElementById('ejeCiudadania').checked,
+                    pensamiento: document.getElementById('ejePensamiento').checked,
+                    emprendimiento: document.getElementById('ejeEmprendimiento').checked
+                },
+                metodologia: document.querySelector('input[name="metodologia"]:checked')?.value,
+                saberesConceptuales: Array.from(document.querySelectorAll('.saberConceptual:checked')).map(cb => ({
+                    area: cb.dataset.area,
+                    concepto: cb.dataset.concepto,
+                    indicadorLogro: cb.dataset.indicador
+                })),
+                practicas: Array.from(document.querySelectorAll('input[name="practica"]:checked')).map(cb => cb.value),
+                actitudes: Array.from(document.querySelectorAll('input[name="actitud"]:checked')).map(cb => cb.value),
+                tabla: [],
+                reflexiones: {
+                    queFunciono: document.getElementById('queFunciono').value,
+                    queNoFunciono: document.getElementById('queNoFunciono').value,
+                    queMejorar: document.getElementById('queMejorar').value,
+                    aprendizajesPendientes: document.getElementById('aprendizajesPendientes').value
+                },
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString()
+            };
+
+            const filas = document.querySelectorAll('#tablaBody tr');
+            filas.forEach(fila => {
+                planeamiento.tabla.push({
+                    indicadorLogro: fila.querySelector('.indicadorLogro').value,
+                    estrategia: fila.querySelector('.estrategia').value,
+                    indicadorEvaluacion: fila.querySelector('.indicadorEvaluacion').value
+                });
+            });
+
+            try {
+                const id = await addItem('plannings', planeamiento);
+                alert(`Planeamiento guardado con ID: ${id}`);
+                cargarPlaneamientosGuardados();
+                document.getElementById('planningForm').reset();
+                // Limpiar tabla
+                document.getElementById('tabla3Columnas').innerHTML = '';
+            } catch (error) {
+                alert('Error al guardar: ' + error.message);
+            }
+        }
+
+        async function cargarPlaneamientosGuardados() {
+            const lista = document.getElementById('listaPlaneamientos');
+            try {
+                const plannings = await getAll('plannings');
+                if (plannings.length === 0) {
+                    lista.innerHTML = '<p>No hay planeamientos guardados.</p>';
+                    return;
+                }
+                let html = '<ul>';
+                plannings.forEach(p => {
+                    html += `<li>${p.cursoLectivo} - ${p.nivel} - ${p.docente} 
+                        <button onclick="cargarPlaneamiento(${p.id})">Cargar</button>
+                        <button onclick="eliminarPlaneamiento(${p.id})">Eliminar</button>
+                    </li>`;
+                });
+                html += '</ul>';
+                lista.innerHTML = html;
+            } catch (error) {
+                console.error(error);
+            }
+        }
+
+        // Funciones globales para botones de lista
+        window.cargarPlaneamiento = async function(id) {
+            // Implementar carga (opcional)
+            alert('Función cargar planeamiento pendiente');
+        };
+
+        window.eliminarPlaneamiento = async function(id) {
+            if (confirm('¿Está seguro de eliminar este planeamiento?')) {
+                // Implementar eliminación
+                alert('Eliminar pendiente');
+            }
+        };
+
+        function exportarWordHandler() {
+            exportarWord('planningForm');
+        }
+
+        function exportarPDFHandler() {
+            exportarPDF('planningForm');
+        }
     </script>
 </body>
 </html>
