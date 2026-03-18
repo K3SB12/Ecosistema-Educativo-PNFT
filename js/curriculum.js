@@ -1735,6 +1735,14 @@ CURRICULO.secundaria = {
 };
 
 // ============================================
-// EXPORTACIÓN FINAL
+// HACER VARIABLES GLOBALES (agregar esto al FINAL del archivo)
 // ============================================
+// Esto permite que cualquier otro script (como planning.html) acceda a los datos
+window.CURRICULO = CURRICULO;
+window.AREAS_CONOCIMIENTO = AREAS_CONOCIMIENTO;
+window.PRACTICAS_PENSADOR_COMPUTACIONAL = PRACTICAS_PENSADOR_COMPUTACIONAL;
+window.ACTITUDES_PENSADOR_COMPUTACIONAL = ACTITUDES_PENSADOR_COMPUTACIONAL;
+window.PROYECTO_ETAPAS = PROYECTO_ETAPAS;
+
+// Mantenemos el export por si acaso (no interfiere)
 export default CURRICULO;
