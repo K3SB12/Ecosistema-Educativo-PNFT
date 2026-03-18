@@ -6,12 +6,15 @@
     <title>Planeamiento · PNFT Articulador</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="css/style.css">
-    <!-- Intentamos cargar curriculum.js -->
     <script src="js/curriculum.js"></script>
+    <style>
+        .selector-group { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem; }
+        .selector-group select { width:100%; padding:0.6rem; border-radius:8px; border:1px solid #ddd; }
+        .indicador-item { padding:0.8rem; margin:0.5rem 0; background:#f9f9f9; border-radius:8px; border-left:4px solid #2E7D32; }
+    </style>
 </head>
 <body>
     <div class="app">
-        <!-- Sidebar (mantén tu sidebar aquí) -->
         <aside class="sidebar">
             <div class="sidebar-header">
                 <div class="logo">PNFT</div>
@@ -19,16 +22,15 @@
                 <p>MEP Costa Rica</p>
             </div>
             <ul class="nav-menu">
-                <a href="index.html" style="text-decoration: none; color: inherit;"><li class="nav-item"><i class="fas fa-chart-pie"></i> Tablero</li></a>
-                <a href="planning.html" style="text-decoration: none; color: inherit;"><li class="nav-item active"><i class="fas fa-clipboard-list"></i> Planeamiento</li></a>
-                <a href="evaluation.html" style="text-decoration: none; color: inherit;"><li class="nav-item"><i class="fas fa-check-circle"></i> Evaluación</li></a>
-                <a href="logbook.html" style="text-decoration: none; color: inherit;"><li class="nav-item"><i class="fas fa-book-open"></i> Bitácora</li></a>
-                <a href="students.html" style="text-decoration: none; color: inherit;"><li class="nav-item"><i class="fas fa-users"></i> Estudiantes</li></a>
-                <a href="groups.html" style="text-decoration: none; color: inherit;"><li class="nav-item"><i class="fas fa-layer-group"></i> Grupos</li></a>
-                <a href="settings.html" style="text-decoration: none; color: inherit;"><li class="nav-item"><i class="fas fa-cog"></i> Configuración</li></a>
+                <a href="index.html"><li class="nav-item"><i class="fas fa-chart-pie"></i> Tablero</li></a>
+                <a href="planning.html"><li class="nav-item active"><i class="fas fa-clipboard-list"></i> Planeamiento</li></a>
+                <a href="evaluation.html"><li class="nav-item"><i class="fas fa-check-circle"></i> Evaluación</li></a>
+                <a href="logbook.html"><li class="nav-item"><i class="fas fa-book-open"></i> Bitácora</li></a>
+                <a href="students.html"><li class="nav-item"><i class="fas fa-users"></i> Estudiantes</li></a>
+                <a href="groups.html"><li class="nav-item"><i class="fas fa-layer-group"></i> Grupos</li></a>
+                <a href="settings.html"><li class="nav-item"><i class="fas fa-cog"></i> Configuración</li></a>
             </ul>
         </aside>
-
         <main class="main-content">
             <div class="top-bar">
                 <h1 class="page-title">Planeamiento Didáctico</h1>
@@ -37,98 +39,113 @@
                     <span class="user-badge"><i class="fas fa-calendar-alt"></i> 2026</span>
                 </div>
             </div>
-
-            <!-- Selectores (simplificados solo a preescolar por ahora) -->
             <div class="recent-section">
                 <h2>1. Seleccionar nivel y módulo</h2>
-                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem;">
+                <div class="selector-group">
                     <div>
                         <label><strong>Ciclo:</strong></label>
-                        <select id="cicloSelect" style="width:100%; padding:0.5rem;">
+                        <select id="cicloSelect">
                             <option value="">-- Seleccione --</option>
-                            <option value="preescolar" selected>Preescolar</option>
+                            <option value="preescolar">Preescolar</option>
+                            <option value="primaria">I Ciclo</option>
+                            <option value="primaria">II Ciclo</option>
+                            <option value="secundaria">III Ciclo</option>
                         </select>
                     </div>
                     <div>
                         <label><strong>Nivel:</strong></label>
-                        <select id="nivelSelect" style="width:100%; padding:0.5rem;">
-                            <option value="Educación Preescolar">Educación Preescolar</option>
+                        <select id="nivelSelect">
+                            <option value="">-- Primero seleccione ciclo --</option>
                         </select>
                     </div>
                     <div>
                         <label><strong>Módulo:</strong></label>
-                        <select id="moduloSelect" style="width:100%; padding:0.5rem;">
+                        <select id="moduloSelect">
                             <option value="1">Módulo 1</option>
                             <option value="2">Módulo 2</option>
                         </select>
                     </div>
                 </div>
-                <button id="cargarBtn" style="margin-top:1rem; background:#2E7D32; color:white; padding:0.5rem 1rem; border:none; border-radius:4px;">
+                <button id="cargarBtn" style="background:#2E7D32; color:white; padding:0.7rem 2rem; border:none; border-radius:8px; cursor:pointer;">
                     <i class="fas fa-download"></i> Cargar indicadores
                 </button>
             </div>
-
-            <div id="indicadoresContainer" class="recent-section" style="display: none;">
+            <div id="indicadoresContainer" class="recent-section" style="display:none;">
                 <h2>2. Indicadores de logro</h2>
                 <div id="indicadoresList"></div>
             </div>
         </main>
     </div>
-
     <script>
-        console.log('🚀 planning.html iniciado');
-
-        // Verificar si window.CURRICULO existe después de cargar curriculum.js
-        setTimeout(function() {
-            console.log('🔍 Verificando window.CURRICULO...');
-            if (window.CURRICULO) {
-                console.log('✅ window.CURRICULO está definido');
-                console.log('📚 Datos disponibles:', Object.keys(window.CURRICULO));
-            } else {
-                console.error('❌ window.CURRICULO NO está definido');
-                console.log('💡 Posibles causas:');
-                console.log('   - curriculum.js no se cargó (ruta incorrecta)');
-                console.log('   - curriculum.js tiene errores de sintaxis');
-                console.log('   - curriculum.js no asigna a window.CURRICULO');
-            }
-        }, 500); // Esperamos medio segundo a que cargue el script
-
-        // Lógica de carga de indicadores (usando window.CURRICULO si existe)
-        document.getElementById('cargarBtn').addEventListener('click', function() {
-            console.log('🖱️ Botón clickeado');
-
+        document.addEventListener('DOMContentLoaded', function() {
             if (!window.CURRICULO) {
-                alert('Error: window.CURRICULO no está definido. Revisa la consola (F12).');
+                alert('ERROR: window.CURRICULO no está definido. Revisa que js/curriculum.js se haya cargado correctamente.');
                 return;
             }
 
-            const nivel = document.getElementById('nivelSelect').value;
-            const modulo = parseInt(document.getElementById('moduloSelect').value);
+            const cicloSelect = document.getElementById('cicloSelect');
+            const nivelSelect = document.getElementById('nivelSelect');
+            const moduloSelect = document.getElementById('moduloSelect');
+            const cargarBtn = document.getElementById('cargarBtn');
+            const container = document.getElementById('indicadoresContainer');
+            const lista = document.getElementById('indicadoresList');
 
-            console.log('🔍 Buscando:', { nivel, modulo });
+            const nivelesPorCiclo = {
+                preescolar: ['Educación Preescolar'],
+                primaria: ['Primero', 'Segundo', 'Tercero', 'Cuarto', 'Quinto', 'Sexto'],
+                secundaria: ['Sétimo', 'Octavo', 'Noveno']
+            };
 
-            // Buscar en preescolar
-            const moduloData = window.CURRICULO.preescolar?.find(m => m.nivel === nivel && m.modulo === modulo);
-
-            console.log('📦 Resultado:', moduloData);
-
-            if (!moduloData) {
-                document.getElementById('indicadoresList').innerHTML = '<p>No hay indicadores para esta combinación.</p>';
-                document.getElementById('indicadoresContainer').style.display = 'block';
-                return;
-            }
-
-            let html = '';
-            moduloData.areas.forEach(area => {
-                const areaNombre = window.AREAS_CONOCIMIENTO?.find(a => a.id === area.areaId)?.nombre || area.areaId;
-                html += `<h4 style="margin-top:1rem; color:#2E7D32;">${areaNombre}</h4>`;
-                area.saberesConceptuales.forEach(s => {
-                    html += `<p><strong>${s.concepto}:</strong> ${s.indicadorLogro}</p>`;
-                });
+            cicloSelect.addEventListener('change', function() {
+                const ciclo = this.value;
+                nivelSelect.innerHTML = '<option value="">-- Seleccione --</option>';
+                if (ciclo && nivelesPorCiclo[ciclo]) {
+                    nivelesPorCiclo[ciclo].forEach(n => {
+                        nivelSelect.innerHTML += `<option value="${n}">${n}</option>`;
+                    });
+                }
             });
 
-            document.getElementById('indicadoresList').innerHTML = html;
-            document.getElementById('indicadoresContainer').style.display = 'block';
+            cargarBtn.addEventListener('click', function() {
+                const ciclo = cicloSelect.value;
+                const nivel = nivelSelect.value;
+                const modulo = parseInt(moduloSelect.value);
+
+                if (!ciclo || !nivel) {
+                    alert('Seleccione ciclo y nivel');
+                    return;
+                }
+
+                let moduloData = null;
+
+                if (ciclo === 'preescolar') {
+                    moduloData = window.CURRICULO.preescolar?.find(m => m.nivel === nivel && m.modulo === modulo);
+                } else if (ciclo === 'primaria') {
+                    const nivelKey = nivel.toLowerCase();
+                    moduloData = window.CURRICULO.primaria?.[nivelKey]?.find(m => m.modulo === modulo);
+                } else if (ciclo === 'secundaria') {
+                    const mapa = { 'sétimo':'setimo', 'octavo':'octavo', 'noveno':'noveno' };
+                    const nivelKey = mapa[nivel.toLowerCase()];
+                    moduloData = window.CURRICULO.secundaria?.[nivelKey]?.find(m => m.modulo === modulo);
+                }
+
+                if (!moduloData) {
+                    lista.innerHTML = '<p style="color:#c62828;">No hay indicadores para esta combinación.</p>';
+                    container.style.display = 'block';
+                    return;
+                }
+
+                let html = '';
+                moduloData.areas.forEach(area => {
+                    const areaNombre = window.AREAS_CONOCIMIENTO?.find(a => a.id === area.areaId)?.nombre || area.areaId;
+                    html += `<h4 style="margin-top:1rem; color:#2E7D32;">${areaNombre}</h4>`;
+                    area.saberesConceptuales.forEach(s => {
+                        html += `<div class="indicador-item"><strong>${s.concepto}:</strong> ${s.indicadorLogro}</div>`;
+                    });
+                });
+                lista.innerHTML = html;
+                container.style.display = 'block';
+            });
         });
     </script>
 </body>
