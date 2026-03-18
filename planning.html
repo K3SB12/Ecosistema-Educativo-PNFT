@@ -6,16 +6,39 @@
     <title>Planeamiento · PNFT Articulador</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="css/style.css">
+    <!-- Intentamos cargar curriculum.js -->
+    <script src="js/curriculum.js"></script>
 </head>
 <body>
     <div class="app">
-        <!-- Sidebar (igual) -->
-        <aside class="sidebar">... (mantén tu sidebar igual) ...</aside>
+        <!-- Sidebar (mantén tu sidebar aquí) -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">PNFT</div>
+                <h2>Articulador 2026</h2>
+                <p>MEP Costa Rica</p>
+            </div>
+            <ul class="nav-menu">
+                <a href="index.html" style="text-decoration: none; color: inherit;"><li class="nav-item"><i class="fas fa-chart-pie"></i> Tablero</li></a>
+                <a href="planning.html" style="text-decoration: none; color: inherit;"><li class="nav-item active"><i class="fas fa-clipboard-list"></i> Planeamiento</li></a>
+                <a href="evaluation.html" style="text-decoration: none; color: inherit;"><li class="nav-item"><i class="fas fa-check-circle"></i> Evaluación</li></a>
+                <a href="logbook.html" style="text-decoration: none; color: inherit;"><li class="nav-item"><i class="fas fa-book-open"></i> Bitácora</li></a>
+                <a href="students.html" style="text-decoration: none; color: inherit;"><li class="nav-item"><i class="fas fa-users"></i> Estudiantes</li></a>
+                <a href="groups.html" style="text-decoration: none; color: inherit;"><li class="nav-item"><i class="fas fa-layer-group"></i> Grupos</li></a>
+                <a href="settings.html" style="text-decoration: none; color: inherit;"><li class="nav-item"><i class="fas fa-cog"></i> Configuración</li></a>
+            </ul>
+        </aside>
 
         <main class="main-content">
-            <div class="top-bar">...</div>
+            <div class="top-bar">
+                <h1 class="page-title">Planeamiento Didáctico</h1>
+                <div class="user-info">
+                    <span class="user-badge"><i class="fas fa-user-graduate"></i> Docente</span>
+                    <span class="user-badge"><i class="fas fa-calendar-alt"></i> 2026</span>
+                </div>
+            </div>
 
-            <!-- Selectores -->
+            <!-- Selectores (simplificados solo a preescolar por ahora) -->
             <div class="recent-section">
                 <h2>1. Seleccionar nivel y módulo</h2>
                 <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem;">
@@ -23,7 +46,7 @@
                         <label><strong>Ciclo:</strong></label>
                         <select id="cicloSelect" style="width:100%; padding:0.5rem;">
                             <option value="">-- Seleccione --</option>
-                            <option value="preescolar">Preescolar</option>
+                            <option value="preescolar" selected>Preescolar</option>
                         </select>
                     </div>
                     <div>
@@ -53,65 +76,52 @@
     </div>
 
     <script>
-        // ===== DATOS CURRICULARES MÍNIMOS (AQUÍ MISMO) =====
-        const CURRICULO = {
-            preescolar: [
-                {
-                    nivel: 'Educación Preescolar',
-                    modulo: 1,
-                    areas: [
-                        {
-                            areaId: 'apropiacion',
-                            saberesConceptuales: [
-                                { concepto: 'Computadora', indicadorLogro: 'Identificar qué es una computadora.' },
-                                { concepto: 'Software', indicadorLogro: 'Reconocer elementos del software.' }
-                            ]
-                        },
-                        {
-                            areaId: 'programacion',
-                            saberesConceptuales: [
-                                { concepto: 'Evento', indicadorLogro: 'Reconocer eventos causa-efecto.' }
-                            ]
-                        }
-                    ]
-                },
-                {
-                    nivel: 'Educación Preescolar',
-                    modulo: 2,
-                    areas: [
-                        {
-                            areaId: 'apropiacion',
-                            saberesConceptuales: [
-                                { concepto: 'Conexión Bluetooth', indicadorLogro: 'Reconocer conexión entre dispositivos.' }
-                            ]
-                        }
-                    ]
-                }
-            ]
-        };
+        console.log('🚀 planning.html iniciado');
 
-        const AREAS_CONOCIMIENTO = [
-            { id: 'apropiacion', nombre: 'Apropiación Tecnológica' },
-            { id: 'programacion', nombre: 'Programación y Algoritmos' }
-        ];
+        // Verificar si window.CURRICULO existe después de cargar curriculum.js
+        setTimeout(function() {
+            console.log('🔍 Verificando window.CURRICULO...');
+            if (window.CURRICULO) {
+                console.log('✅ window.CURRICULO está definido');
+                console.log('📚 Datos disponibles:', Object.keys(window.CURRICULO));
+            } else {
+                console.error('❌ window.CURRICULO NO está definido');
+                console.log('💡 Posibles causas:');
+                console.log('   - curriculum.js no se cargó (ruta incorrecta)');
+                console.log('   - curriculum.js tiene errores de sintaxis');
+                console.log('   - curriculum.js no asigna a window.CURRICULO');
+            }
+        }, 500); // Esperamos medio segundo a que cargue el script
 
-        // ===== LÓGICA =====
+        // Lógica de carga de indicadores (usando window.CURRICULO si existe)
         document.getElementById('cargarBtn').addEventListener('click', function() {
+            console.log('🖱️ Botón clickeado');
+
+            if (!window.CURRICULO) {
+                alert('Error: window.CURRICULO no está definido. Revisa la consola (F12).');
+                return;
+            }
+
             const nivel = document.getElementById('nivelSelect').value;
             const modulo = parseInt(document.getElementById('moduloSelect').value);
 
-            const moduloData = CURRICULO.preescolar.find(m => m.nivel === nivel && m.modulo === modulo);
+            console.log('🔍 Buscando:', { nivel, modulo });
+
+            // Buscar en preescolar
+            const moduloData = window.CURRICULO.preescolar?.find(m => m.nivel === nivel && m.modulo === modulo);
+
+            console.log('📦 Resultado:', moduloData);
 
             if (!moduloData) {
-                document.getElementById('indicadoresList').innerHTML = '<p>No hay indicadores.</p>';
+                document.getElementById('indicadoresList').innerHTML = '<p>No hay indicadores para esta combinación.</p>';
                 document.getElementById('indicadoresContainer').style.display = 'block';
                 return;
             }
 
             let html = '';
             moduloData.areas.forEach(area => {
-                const areaNombre = AREAS_CONOCIMIENTO.find(a => a.id === area.areaId)?.nombre || area.areaId;
-                html += `<h4>${areaNombre}</h4>`;
+                const areaNombre = window.AREAS_CONOCIMIENTO?.find(a => a.id === area.areaId)?.nombre || area.areaId;
+                html += `<h4 style="margin-top:1rem; color:#2E7D32;">${areaNombre}</h4>`;
                 area.saberesConceptuales.forEach(s => {
                     html += `<p><strong>${s.concepto}:</strong> ${s.indicadorLogro}</p>`;
                 });
