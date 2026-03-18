@@ -331,3 +331,37 @@ td {
         gap: 1rem;
     }
 }
+
+/* Asegurar que los enlaces del menú no tengan subrayado */
+.nav-menu a {
+    text-decoration: none !important;
+    color: inherit !important;
+}
+
+/* Mantener el estilo de los botones de acción */
+.action-btn {
+    background: white;
+    border: 1px solid #e2e8f0;
+    padding: 1.2rem 1rem;
+    border-radius: 18px;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 1rem;
+    font-weight: 500;
+    color: #1e293b;
+    text-decoration: none !important;
+}
+.action-btn i {
+    font-size: 1.3rem;
+    color: #2E7D32;
+    transition: transform 0.2s;
+}
+.action-btn:hover {
+    background: #f8fafc;
+    border-color: #2E7D32;
+    transform: scale(1.02);
+    box-shadow: 0 10px 20px -10px #2E7D3250;
+}
