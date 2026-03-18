@@ -3,7 +3,7 @@
 // ============================================
 
 // ---------- CONSTANTES GLOBALES ----------
-export const PRACTICAS_PENSADOR_COMPUTACIONAL = [
+window.PRACTICAS_PENSADOR_COMPUTACIONAL = [
   { id: 'reconoce_patrones', nombre: 'Reconoce patrones', descripcion: 'Predice a partir de regularidades, similitudes o características comunes de un conjunto de datos o situaciones, patrones que pueda aplicar en la solución a un problema o situación.' },
   { id: 'abstrae', nombre: 'Abstrae', descripcion: 'Concluye cuáles son las características relevantes que debe considerar y cuáles debe omitir, al resolver un problema o situación.' },
   { id: 'generaliza', nombre: 'Generaliza', descripcion: 'Generaliza las funcionalidades o estructuras generales de un elemento que pueda aprovechar en otros contextos al resolver un problema o situación.' },
@@ -19,14 +19,16 @@ export const PRACTICAS_PENSADOR_COMPUTACIONAL = [
   { id: 'maneja_etica_segura', nombre: 'Maneja las tecnologías de forma ética y segura', descripcion: 'Aplica de manera consciente fundamentos de ética y seguridad digital al utilizar herramientas y recursos tecnológicos al resolver un problema o situación.' }
 ];
 
-export const ACTITUDES_PENSADOR_COMPUTACIONAL = [
+
+window.ACTITUDES_PENSADOR_COMPUTACIONAL = [
   { id: 'gusto_precision', nombre: 'Gusto por la precisión', descripcion: 'Demuestra ante los procesos de aprendizaje un comportamiento hacia la búsqueda de la exactitud, al ser minucioso con los detalles.' },
   { id: 'aprender_error', nombre: 'Aprender del error', descripcion: 'Demuestra ante los errores un comportamiento que le permita ganar experiencia a partir de lecciones aprendidas producto de los errores, convirtiendo los desaciertos en oportunidades de aprendizaje.' },
   { id: 'flexibilidad_problemas', nombre: 'Flexibilidad para manejar problemas', descripcion: 'Demuestra un comportamiento hacia la adaptabilidad, flexibilidad y resiliencia ante los desafíos o situaciones imprevistas producto del entorno, la interacción con otros, o bien, con los recursos.' },
   { id: 'tolerancia_frustracion', nombre: 'Tolerancia a la frustración', descripcion: 'Demuestra ante los desafíos, un comportamiento hacia la búsqueda de la autoconfianza, motivación, autocontrol, paciencia y persistencia.' }
 ];
 
-export const AREAS_CONOCIMIENTO = [
+
+window.AREAS_CONOCIMIENTO = [
   { id: 'apropiacion', nombre: 'Apropiación Tecnológica y Digital' },
   { id: 'programacion', nombre: 'Programación y Algoritmos' },
   { id: 'computacion_fisica', nombre: 'Computación Física y Robótica' },
@@ -34,7 +36,8 @@ export const AREAS_CONOCIMIENTO = [
 ];
 
 // ---------- FUNCIONES AUXILIARES ----------
-export function getNiveles() {
+
+window.getNiveles() {
   return [
     { ciclo: 'Preescolar', nivel: 'Educación Preescolar', modulos: [1, 2] },
     { ciclo: 'I Ciclo', nivel: 'Primero', modulos: [1, 2] },
@@ -49,7 +52,8 @@ export function getNiveles() {
   ];
 }
 
-export function getModulo(ciclo, nivel, moduloNumero) {
+
+window.getModulo(ciclo, nivel, moduloNumero) {
   // Busca en la estructura CURRICULO
   if (ciclo === 'Preescolar') {
     return CURRICULO.preescolar.find(m => m.nivel === nivel && m.modulo === moduloNumero);
@@ -64,7 +68,8 @@ export function getModulo(ciclo, nivel, moduloNumero) {
 }
 
 // ---------- DATOS DEL PROYECTO (III Ciclo) ----------
-export const PROYECTO_ETAPAS = {
+
+window.PROYECTO_ETAPAS = {
   inicial: {
     nombre: 'Etapa Inicial',
     porcentaje: 30,
@@ -116,7 +121,8 @@ export const PROYECTO_ETAPAS = {
 // ============================================
 // CURRÍCULO COMPLETO
 // ============================================
-export const CURRICULO = {
+
+window.CURRICULO = {
   preescolar: [
     // ----- Módulo 1 - Básico requerido -----
     {
@@ -364,7 +370,7 @@ export const CURRICULO = {
 // ============================================
 // CURRÍCULO - PRIMARIA (I y II Ciclo)
 // ============================================
-CURRICULO.primaria = {
+window.CURRICULO.primaria = {
   primero: [
     // ----- Módulo 1 - Primero -----
     {
@@ -1233,7 +1239,7 @@ CURRICULO.primaria = {
 // ============================================
 // CURRÍCULO - SECUNDARIA (III Ciclo)
 // ============================================
-CURRICULO.secundaria = {
+window.CURRICULO.secundaria = {
   setimo: [
     // ----- Módulo 1 - Sétimo -----
     {
@@ -1745,4 +1751,4 @@ window.ACTITUDES_PENSADOR_COMPUTACIONAL = ACTITUDES_PENSADOR_COMPUTACIONAL;
 window.PROYECTO_ETAPAS = PROYECTO_ETAPAS;
 
 // Mantenemos el export por si acaso (no interfiere)
-export default CURRICULO;
+window.CURRICULO;
