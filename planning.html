@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Planeamiento · PNFT Articulador</title>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+        body {
+            background: #f8fafc;
+            color: #1e293b;
+            line-height: 1.5;
+        }
+        .app {
+            display: flex;
+            min-height: 100vh;
+        }
+        /* Sidebar (reutilizamos estilos del index) */
+        .sidebar {
+            width: 280px;
+            background: linear-gradient(180deg, #1e5a20 0%, #2E7D32 100%);
+            color: white;
+            padding: 2rem 1.5rem;
+            box-shadow: 4px 0 20px rgba(0,0,0,0.08);
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            overflow-y: auto;
+        }
+        .sidebar-header {
+            text-align: center;
+            margin-bottom: 3rem;
+            border-bottom: 1px solid rgba(255,255,255,0.15);
+            padding-bottom: 1.5rem;
+        }
+        .sidebar-header .logo {
+            width: 80px;
+            height: 80px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 50%;
+            margin: 0 auto 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: white;
+            border: 3px solid rgba(255,255,255,0.2);
+        }
+        .sidebar-header h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            letter-spacing: -0.5px;
+            margin-bottom: 0.25rem;
+        }
+        .sidebar-header p {
+            font-size: 0.85rem;
+            opacity: 0.8;
+            font-weight: 300;
+        }
+        .nav-menu {
+            list-style: none;
+        }
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.9rem 1.2rem;
+            margin-bottom: 0.5rem;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-weight: 500;
+            border: 1px solid transparent;
+        }
+        .nav-item i {
+            width: 24px;
+            font-size: 1.2rem;
+            text-align: center;
+        }
+        .nav-item:hover {
+            background: rgba(255,255,255,0.1);
+            border-color: rgba(255,255,255,0.2);
+            transform: translateX(5px);
+        }
+        .nav-item.active {
+            background: white;
+            color: #2E7D32;
+            box-shadow: 0 10px 20px -5px rgba(0,0,0,0.2);
+            border-color: white;
+        }
+        .nav-item.active i {
+            color: #2E7D32;
+        }
+        /* Contenido principal */
+        .main-content {
+            flex: 1;
+            padding: 2.5rem;
+            background: #f8fafc;
+            overflow-y: auto;
+        }
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            background: white;
+            padding: 1rem 2rem;
+            border-radius: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.02);
+        }
+        .page-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #0f3b1a;
+        }
+        .user-badge {
+            background: #e8f5e9;
+            color: #2E7D32;
+            padding: 0.5rem 1.2rem;
+            border-radius: 40px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        /* Tarjetas y formularios */
+        .card {
+            background: white;
+            border-radius: 24px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.02);
+            border: 1px solid rgba(0,0,0,0.03);
+        }
+        .card-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #0f3b1a;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            border-bottom: 1px solid #e2e8f0;
+            padding-bottom: 0.8rem;
+        }
+        .card-title i {
+            color: #2E7D32;
+        }
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        label {
+            display: block;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+            color: #475569;
+            font-size: 0.95rem;
+        }
+        input, select, textarea {
+            width: 100%;
+            padding: 0.8rem 1rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 0.95rem;
+            transition: border 0.2s;
+            background: white;
+        }
+        input:focus, select:focus, textarea:focus {
+            border-color: #2E7D32;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(46,125,50,0.1);
+        }
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+        .grid-3 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 1.5rem;
+        }
+        button {
+            background: #2E7D32;
+            color: white;
+            border: none;
+            padding: 0.8rem 1.8rem;
+            border-radius: 40px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            border: 1px solid transparent;
+        }
+        button:hover {
+            background: #1e5a20;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px -10px #2E7D32;
+        }
+        button.secondary {
+            background: white;
+            color: #1e293b;
+            border-color: #e2e8f0;
+        }
+        button.secondary:hover {
+            background: #f8fafc;
+            border-color: #2E7D32;
+        }
+        .indicators-list {
+            background: #f8fafc;
+            padding: 1.5rem;
+            border-radius: 16px;
+            margin-top: 1rem;
+        }
+        .indicators-list h4 {
+            color: #2E7D32;
+            margin-bottom: 1rem;
+        }
+        .indicators-list ul {
+            list-style: none;
+        }
+        .indicators-list li {
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            gap: 0.5rem;
+        }
+        .indicators-list li:before {
+            content: "•";
+            color: #2E7D32;
+            font-weight: bold;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1.5rem 0;
+        }
+        th {
+            text-align: left;
+            padding: 1rem 0.5rem;
+            background: #f1f5f9;
+            color: #475569;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+        td {
+            padding: 0.8rem 0.5rem;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        textarea.small {
+            min-height: 60px;
+        }
+        .flex-row {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .badge {
+            background: #e8f5e9;
+            color: #2E7D32;
+            padding: 0.3rem 0.8rem;
+            border-radius: 40px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+        @media (max-width: 768px) {
+            .app { flex-direction: column; }
+            .sidebar { width: 100%; height: auto; position: static; }
+            .grid-2, .grid-3 { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="app">
+        <!-- Sidebar (copiada del index para mantener consistencia) -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo"><span>PNFT</span></div>
+                <h2>Articulador 2026</h2>
+                <p>Programa Nacional de Formación Tecnológica · MEP</p>
+            </div>
+            <ul class="nav-menu">
+                <li class="nav-item" data-page="dashboard"><i class="fas fa-chart-pie"></i> Dashboard</li>
+                <li class="nav-item active" data-page="planning"><i class="fas fa-clipboard-list"></i> Planeamiento</li>
+                <li class="nav-item" data-page="evaluation"><i class="fas fa-check-circle"></i> Evaluación</li>
+                <li class="nav-item" data-page="logbook"><i class="fas fa-book-open"></i> Bitácora</li>
+                <li class="nav-item" data-page="students"><i class="fas fa-users"></i> Estudiantes</li>
+                <li class="nav-item" data-page="groups"><i class="fas fa-layer-group"></i> Grupos</li>
+                <li class="nav-item" data-page="settings"><i class="fas fa-cog"></i> Configuración</li>
+            </ul>
+        </aside>
+
+        <!-- Contenido principal -->
+        <main class="main-content">
+            <div class="top-bar">
+                <h1 class="page-title">Planeamiento Didáctico</h1>
+                <span class="user-badge"><i class="fas fa-user-graduate"></i> Docente</span>
+            </div>
+
+            <!-- SECCIÓN 1: DATOS ADMINISTRATIVOS (simplificada por ahora) -->
+            <div class="card">
+                <div class="card-title"><i class="fas fa-school"></i> 1. Datos administrativos</div>
+                <div class="grid-2">
+                    <div class="form-group">
+                        <label>Dirección Regional</label>
+                        <input type="text" id="region" placeholder="Ej: San José Central">
+                    </div>
+                    <div class="form-group">
+                        <label>Centro educativo</label>
+                        <input type="text" id="centro" placeholder="Ej: Liceo de Costa Rica">
+                    </div>
+                    <div class="form-group">
+                        <label>Código</label>
+                        <input type="text" id="codigo" placeholder="Ej: 12345">
+                    </div>
+                    <div class="form-group">
+                        <label>Nombre del docente</label>
+                        <input type="text" id="docente" placeholder="Su nombre">
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECCIÓN 2: SELECCIÓN DE NIVEL Y MÓDULO (aquí cargaremos el currículo) -->
+            <div class="card">
+                <div class="card-title"><i class="fas fa-layer-group"></i> 2. Seleccionar nivel y módulo</div>
+                <div class="grid-2">
+                    <div class="form-group">
+                        <label>Ciclo</label>
+                        <select id="ciclo">
+                            <option value="">Seleccione...</option>
+                            <option value="Preescolar">Preescolar</option>
+                            <option value="I Ciclo">I Ciclo</option>
+                            <option value="II Ciclo">II Ciclo</option>
+                            <option value="III Ciclo">III Ciclo</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Nivel</label>
+                        <select id="nivel">
+                            <option value="">Primero seleccione ciclo</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Módulo</label>
+                        <select id="modulo">
+                            <option value="1">Módulo 1</option>
+                            <option value="2">Módulo 2</option>
+                        </select>
+                    </div>
+                    <div style="display: flex; align-items: flex-end;">
+                        <button onclick="cargarIndicadores()"><i class="fas fa-download"></i> Cargar indicadores</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Contenedor donde se mostrarán los indicadores cargados -->
+            <div id="indicadoresContainer" style="display: none;">
+                <!-- SECCIÓN 3: INDICADORES DE LOGRO (autoextraídos) -->
+                <div class="card">
+                    <div class="card-title"><i class="fas fa-list"></i> 3. Indicadores de logro</div>
+                    <div id="indicadoresList" class="indicators-list">
+                        <!-- Se llenará dinámicamente -->
+                    </div>
+                </div>
+
+                <!-- SECCIÓN 4: ESTRATEGIAS DE MEDIACIÓN -->
+                <div class="card">
+                    <div class="card-title"><i class="fas fa-chalkboard-teacher"></i> 4. Estrategias de mediación</div>
+                    <div class="form-group">
+                        <label>Inicio (10 minutos)</label>
+                        <textarea id="estrategiaInicio" rows="2" placeholder="Activación de conocimientos previos, diagnóstico..."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Desarrollo (20 minutos)</label>
+                        <textarea id="estrategiaDesarrollo" rows="3" placeholder="Actividad principal, práctica guiada, trabajo colaborativo..."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Cierre (10 minutos)</label>
+                        <textarea id="estrategiaCierre" rows="2" placeholder="Reflexión, evaluación formativa, cierre..."></textarea>
+                    </div>
+                </div>
+
+                <!-- SECCIÓN 5: TABLA DE EVALUACIÓN (3 columnas) -->
+                <div class="card">
+                    <div class="card-title"><i class="fas fa-table"></i> 5. Indicadores de evaluación</div>
+                    <table id="tablaEvaluacion">
+                        <thead>
+                            <tr>
+                                <th>Indicador de logro</th>
+                                <th>Indicador de evaluación (Acción + Contenido + Condición)</th>
+                                <th>Instrumento</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tablaEvaluacionBody">
+                            <!-- Se llenará con filas basadas en los indicadores -->
+                        </tbody>
+                    </table>
+                    <div class="flex-row">
+                        <button class="secondary" onclick="agregarFilaEvaluacion()"><i class="fas fa-plus"></i> Agregar fila</button>
+                        <button onclick="guardarPlaneamiento()"><i class="fas fa-save"></i> Guardar planeamiento</button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Cargar el currículo (asegurar ruta correcta) -->
+    <script src="js/curriculum.js"></script>
+    <script>
+        // ===== FUNCIONES AUXILIARES PARA EL PLANEAMIENTO =====
+        const cicloSelect = document.getElementById('ciclo');
+        const nivelSelect = document.getElementById('nivel');
+        const moduloSelect = document.getElementById('modulo');
+        const indicadoresContainer = document.getElementById('indicadoresContainer');
+        const indicadoresList = document.getElementById('indicadoresList');
+        const tablaBody = document.getElementById('tablaEvaluacionBody');
+
+        // Actualizar opciones de nivel según el ciclo seleccionado
+        function actualizarNiveles() {
+            const ciclo = cicloSelect.value;
+            let opciones = '<option value="">Seleccione nivel</option>';
+            
+            if (ciclo === 'Preescolar') {
+                opciones += '<option value="Educación Preescolar">Educación Preescolar</option>';
+            } else if (ciclo === 'I Ciclo') {
+                opciones += '<option value="Primero">Primero</option>';
+                opciones += '<option value="Segundo">Segundo</option>';
+                opciones += '<option value="Tercero">Tercero</option>';
+            } else if (ciclo === 'II Ciclo') {
+                opciones += '<option value="Cuarto">Cuarto</option>';
+                opciones += '<option value="Quinto">Quinto</option>';
+                opciones += '<option value="Sexto">Sexto</option>';
+            } else if (ciclo === 'III Ciclo') {
+                opciones += '<option value="Sétimo">Sétimo</option>';
+                opciones += '<option value="Octavo">Octavo</option>';
+                opciones += '<option value="Noveno">Noveno</option>';
+            }
+            nivelSelect.innerHTML = opciones;
+        }
+        cicloSelect.addEventListener('change', actualizarNiveles);
+
+        // Función principal: cargar indicadores desde curriculum.js
+        window.cargarIndicadores = function() {
+            const ciclo = cicloSelect.value;
+            const nivel = nivelSelect.value;
+            const modulo = moduloSelect.value;
+
+            if (!ciclo || !nivel || !modulo) {
+                alert('Debe seleccionar ciclo, nivel y módulo');
+                return;
+            }
+
+            // Buscar en la estructura del CURRICULO
+            let moduloData = null;
+            if (ciclo === 'Preescolar') {
+                moduloData = CURRICULO.preescolar.find(m => m.nivel === nivel && m.modulo == modulo);
+            } else if (ciclo === 'I Ciclo' || ciclo === 'II Ciclo') {
+                // primaria
+                const nivelKey = nivel.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                const nivelData = CURRICULO.primaria[nivelKey];
+                if (nivelData) {
+                    moduloData = nivelData.find(m => m.modulo == modulo);
+                }
+            } else if (ciclo === 'III Ciclo') {
+                const nivelMap = { 'Sétimo':'setimo', 'Octavo':'octavo', 'Noveno':'noveno' };
+                const nivelKey = nivelMap[nivel];
+                if (nivelKey) {
+                    const nivelData = CURRICULO.secundaria[nivelKey];
+                    if (nivelData) {
+                        moduloData = nivelData.find(m => m.modulo == modulo);
+                    }
+                }
+            }
+
+            if (!moduloData) {
+                alert('No se encontraron indicadores para la combinación seleccionada.');
+                return;
+            }
+
+            // Mostrar el contenedor
+            indicadoresContainer.style.display = 'block';
+
+            // Generar HTML de los indicadores por área
+            let htmlAreas = '';
+            for (const area of moduloData.areas) {
+                const areaNombre = AREAS_CONOCIMIENTO.find(a => a.id === area.areaId)?.nombre || area.areaId;
+                htmlAreas += `<h4>${areaNombre}</h4><ul>`;
+                for (const saber of area.saberesConceptuales) {
+                    htmlAreas += `<li><strong>${saber.concepto}:</strong> ${saber.indicadorLogro}</li>`;
+                }
+                htmlAreas += '</ul>';
+            }
+            indicadoresList.innerHTML = htmlAreas;
+
+            // Llenar la tabla de evaluación con filas basadas en los indicadores (uno por cada saber conceptual)
+            tablaBody.innerHTML = '';
+            for (const area of moduloData.areas) {
+                for (const saber of area.saberesConceptuales) {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td><textarea class="indicador-logro" rows="2">${saber.indicadorLogro.replace(/\*\*/g, '')}</textarea></td>
+                        <td><textarea class="indicador-eval" rows="2" placeholder="Ej: Explica la importancia... mediante tres ejemplos."></textarea></td>
+                        <td>
+                            <select class="instrumento">
+                                <option>Lista de cotejo</option>
+                                <option>Rúbrica analítica</option>
+                                <option>Escala de desempeño</option>
+                            </select>
+                        </td>
+                    `;
+                    tablaBody.appendChild(row);
+                }
+            }
+        };
+
+        // Agregar una fila vacía a la tabla de evaluación
+        window.agregarFilaEvaluacion = function() {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td><textarea class="indicador-logro" rows="2" placeholder="Indicador de logro"></textarea></td>
+                <td><textarea class="indicador-eval" rows="2" placeholder="Indicador de evaluación"></textarea></td>
+                <td>
+                    <select class="instrumento">
+                        <option>Lista de cotejo</option>
+                        <option>Rúbrica analítica</option>
+                        <option>Escala de desempeño</option>
+                    </select>
+                </td>
+            `;
+            tablaBody.appendChild(row);
+        };
+
+        // Guardar planeamiento (simulado por ahora, después usaremos IndexedDB)
+        window.guardarPlaneamiento = function() {
+            const datos = {
+                administrativos: {
+                    region: document.getElementById('region').value,
+                    centro: document.getElementById('centro').value,
+                    codigo: document.getElementById('codigo').value,
+                    docente: document.getElementById('docente').value
+                },
+                curricular: {
+                    ciclo: cicloSelect.value,
+                    nivel: nivelSelect.value,
+                    modulo: moduloSelect.value
+                },
+                estrategias: {
+                    inicio: document.getElementById('estrategiaInicio').value,
+                    desarrollo: document.getElementById('estrategiaDesarrollo').value,
+                    cierre: document.getElementById('estrategiaCierre').value
+                },
+                evaluacion: []
+            };
+
+            // Recorrer filas de la tabla
+            const filas = document.querySelectorAll('#tablaEvaluacionBody tr');
+            filas.forEach(fila => {
+                const indicadorLogro = fila.querySelector('.indicador-logro')?.value || '';
+                const indicadorEval = fila.querySelector('.indicador-eval')?.value || '';
+                const instrumento = fila.querySelector('.instrumento')?.value || '';
+                datos.evaluacion.push({ indicadorLogro, indicadorEval, instrumento });
+            });
+
+            // Por ahora solo mostramos en consola
+            console.log('Planeamiento guardado:', datos);
+            alert('✅ Planeamiento guardado (simulado). En la siguiente fase se almacenará en IndexedDB.');
+        };
+
+        // Navegación simple (para que los enlaces del sidebar funcionen)
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.addEventListener('click', function(e) {
+                const page = this.dataset.page;
+                if (page === 'dashboard') window.location.href = 'index.html';
+                else if (page === 'planning') window.location.href = 'planning.html';
+                else if (page === 'evaluation') window.location.href = 'evaluation.html';
+                else if (page === 'logbook') window.location.href = 'logbook.html';
+                else if (page === 'students') window.location.href = 'students.html';
+                else if (page === 'groups') window.location.href = 'groups.html';
+                else if (page === 'settings') window.location.href = 'settings.html';
+                // Por ahora, si no existe la página, no hacemos nada
+            });
+        });
+    </script>
+</body>
+</html>
