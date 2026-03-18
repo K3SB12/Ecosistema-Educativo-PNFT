@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Progresión Curricular · PNFT Articulador</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="css/style.css">
+    <script src="js/curriculum.js"></script>
+    <style>
+        .progresion-filters {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+        }
+        .filter-group label {
+            font-weight: 600;
+            margin-bottom: 0.3rem;
+            color: #2E7D32;
+        }
+        .filter-group select {
+            padding: 0.6rem;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 0.95rem;
+        }
+        .table-container {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            overflow-x: auto;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+        }
+        th {
+            background: #2E7D32;
+            color: white;
+            padding: 12px 8px;
+            text-align: left;
+            font-weight: 600;
+        }
+        td {
+            padding: 12px 8px;
+            border-bottom: 1px solid #e0e0e0;
+            vertical-align: top;
+        }
+        tr:hover {
+            background: #f5f5f5;
+        }
+        .area-badge {
+            background: #e8f5e9;
+            color: #2E7D32;
+            padding: 4px 8px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            display: inline-block;
+            margin-bottom: 0.3rem;
+        }
+        .saber-item {
+            margin-bottom: 0.5rem;
+            padding-left: 0.5rem;
+            border-left: 2px solid #2E7D32;
+        }
+        .saber-item strong {
+            color: #1e5a20;
+        }
+        .diagnostico-checkbox {
+            transform: scale(1.2);
+            cursor: pointer;
+        }
+        .diagnostico-checkbox:checked {
+            accent-color: #2E7D32;
+        }
+        .stats-bar {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+        .stat-item {
+            background: #e8f5e9;
+            padding: 0.5rem 1rem;
+            border-radius: 30px;
+            font-size: 0.9rem;
+            color: #1e5a20;
+        }
+        .btn-reset {
+            background: #f0f0f0;
+            border: 1px solid #ccc;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            margin-left: auto;
+        }
+        .btn-reset:hover {
+            background: #e0e0e0;
+        }
+    </style>
+</head>
+<body>
+    <div class="app">
+        <!-- Sidebar (actualizada con enlace a Progresión) -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">PNFT</div>
+                <h2>Articulador 2026</h2>
+                <p>MEP Costa Rica</p>
+            </div>
+            <ul class="nav-menu">
+                <a href="index.html"><li class="nav-item"><i class="fas fa-chart-pie"></i> Tablero</li></a>
+                <a href="planning.html"><li class="nav-item"><i class="fas fa-clipboard-list"></i> Planeamiento</li></a>
+                <a href="progresion.html"><li class="nav-item active"><i class="fas fa-road"></i> Progresión</li></a>
+                <a href="evaluation.html"><li class="nav-item"><i class="fas fa-check-circle"></i> Evaluación</li></a>
+                <a href="logbook.html"><li class="nav-item"><i class="fas fa-book-open"></i> Bitácora</li></a>
+                <a href="students.html"><li class="nav-item"><i class="fas fa-users"></i> Estudiantes</li></a>
+                <a href="groups.html"><li class="nav-item"><i class="fas fa-layer-group"></i> Grupos</li></a>
+                <a href="settings.html"><li class="nav-item"><i class="fas fa-cog"></i> Configuración</li></a>
+            </ul>
+        </aside>
+
+        <!-- Contenido principal -->
+        <main class="main-content">
+            <div class="top-bar">
+                <h1 class="page-title">Progresión Curricular</h1>
+                <div class="user-info">
+                    <span class="user-badge"><i class="fas fa-user-graduate"></i> Docente</span>
+                    <span class="user-badge"><i class="fas fa-calendar-alt"></i> 2026</span>
+                </div>
+            </div>
+
+            <!-- Filtros -->
+            <div class="progresion-filters">
+                <div class="filter-group">
+                    <label><i class="fas fa-layer-group"></i> Ciclo</label>
+                    <select id="filtroCiclo">
+                        <option value="todos">Todos los ciclos</option>
+                        <option value="preescolar">Preescolar</option>
+                        <option value="primaria">I Ciclo</option>
+                        <option value="primaria">II Ciclo</option>
+                        <option value="secundaria">III Ciclo</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label><i class="fas fa-graduation-cap"></i> Nivel</label>
+                    <select id="filtroNivel">
+                        <option value="todos">Todos los niveles</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label><i class="fas fa-cubes"></i> Módulo</label>
+                    <select id="filtroModulo">
+                        <option value="todos">Ambos módulos</option>
+                        <option value="1">Módulo 1 (feb-jun)</option>
+                        <option value="2">Módulo 2 (jul-nov)</option>
+                    </select>
+                </div>
+                <button id="btnAplicarFiltros" class="btn-reset" style="background:#2E7D32; color:white; border:none;">
+                    <i class="fas fa-filter"></i> Aplicar filtros
+                </button>
+                <button id="btnReset" class="btn-reset">
+                    <i class="fas fa-undo"></i> Restaurar
+                </button>
+            </div>
+
+            <!-- Barra de estadísticas -->
+            <div class="stats-bar">
+                <span class="stat-item"><i class="fas fa-book"></i> Total saberes: <span id="totalSaberes">0</span></span>
+                <span class="stat-item"><i class="fas fa-check-circle"></i> Dominados: <span id="dominados">0</span></span>
+                <span class="stat-item"><i class="fas fa-exclamation-triangle"></i> Prioritarios: <span id="prioritarios">0</span></span>
+            </div>
+
+            <!-- Tabla de progresión -->
+            <div class="table-container">
+                <table id="tablaProgresion">
+                    <thead>
+                        <tr>
+                            <th>Ciclo</th>
+                            <th>Nivel</th>
+                            <th>Módulo</th>
+                            <th>Área</th>
+                            <th>RdA / Saberes</th>
+                            <th>Diagnóstico</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tablaBody">
+                        <!-- Se llenará con JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        (function() {
+            if (!window.CURRICULO) {
+                alert('Error: No se encontró window.CURRICULO. Verifique que curriculum.js esté cargado.');
+                return;
+            }
+
+            // Elementos del DOM
+            const filtroCiclo = document.getElementById('filtroCiclo');
+            const filtroNivel = document.getElementById('filtroNivel');
+            const filtroModulo = document.getElementById('filtroModulo');
+            const btnAplicar = document.getElementById('btnAplicarFiltros');
+            const btnReset = document.getElementById('btnReset');
+            const tablaBody = document.getElementById('tablaBody');
+            const totalSaberesSpan = document.getElementById('totalSaberes');
+            const dominadosSpan = document.getElementById('dominados');
+            const prioritariosSpan = document.getElementById('prioritarios');
+
+            // Estado de saberes dominados (guardado en localStorage)
+            let saberesDominados = JSON.parse(localStorage.getItem('pnft_dominados') || '{}');
+
+            // Función para guardar estado
+            function guardarDominados() {
+                localStorage.setItem('pnft_dominados', JSON.stringify(saberesDominados));
+                actualizarEstadisticas();
+            }
+
+            // Generar opciones de nivel según ciclo
+            function actualizarNiveles(cicloSeleccionado) {
+                filtroNivel.innerHTML = '<option value="todos">Todos los niveles</option>';
+                let niveles = [];
+                if (cicloSeleccionado === 'preescolar') {
+                    niveles = ['Educación Preescolar'];
+                } else if (cicloSeleccionado === 'primaria') {
+                    // Para I y II ciclo, mostramos todos los niveles de primaria
+                    niveles = ['Primero', 'Segundo', 'Tercero', 'Cuarto', 'Quinto', 'Sexto'];
+                } else if (cicloSeleccionado === 'secundaria') {
+                    niveles = ['Sétimo', 'Octavo', 'Noveno'];
+                } else {
+                    // Si es 'todos', no agregamos opciones específicas, solo "Todos"
+                    return;
+                }
+                niveles.forEach(n => {
+                    filtroNivel.innerHTML += `<option value="${n}">${n}</option>`;
+                });
+            }
+
+            // Evento cambio de ciclo
+            filtroCiclo.addEventListener('change', function() {
+                actualizarNiveles(this.value);
+            });
+
+            // Función para renderizar la tabla
+            function renderizarTabla(cicloFiltro, nivelFiltro, moduloFiltro) {
+                let html = '';
+                let totalSaberes = 0;
+                let dominadosCount = 0;
+
+                // Recorrer preescolar
+                if (window.CURRICULO.preescolar && (cicloFiltro === 'todos' || cicloFiltro === 'preescolar')) {
+                    window.CURRICULO.preescolar.forEach(modulo => {
+                        if (moduloFiltro !== 'todos' && modulo.modulo != moduloFiltro) return;
+                        if (nivelFiltro !== 'todos' && modulo.nivel !== nivelFiltro) return;
+
+                        modulo.areas.forEach(area => {
+                            const areaNombre = window.AREAS_CONOCIMIENTO?.find(a => a.id === area.areaId)?.nombre || area.areaId;
+                            area.saberesConceptuales.forEach(saber => {
+                                totalSaberes++;
+                                const saberId = `${modulo.ciclo}-${modulo.nivel}-${modulo.modulo}-${area.areaId}-${saber.concepto}`.replace(/\s/g, '_');
+                                const dominado = saberesDominados[saberId] || false;
+                                if (dominado) dominadosCount++;
+
+                                html += `<tr>
+                                    <td>Preescolar</td>
+                                    <td>${modulo.nivel}</td>
+                                    <td>${modulo.modulo}</td>
+                                    <td><span class="area-badge">${areaNombre}</span></td>
+                                    <td>
+                                        <div><strong>RdA:</strong> ${area.rda || 'No disponible'}</div>
+                                        <div class="saber-item">
+                                            <strong>${saber.concepto}:</strong> ${saber.indicadorLogro}
+                                        </div>
+                                    </td>
+                                    <td style="text-align:center;">
+                                        <input type="checkbox" class="diagnostico-checkbox" data-saber-id="${saberId}" ${dominado ? 'checked' : ''}>
+                                    </td>
+                                </tr>`;
+                            });
+                        });
+                    });
+                }
+
+                // Recorrer primaria
+                if (window.CURRICULO.primaria && (cicloFiltro === 'todos' || cicloFiltro === 'primaria')) {
+                    const ciclosPrimaria = ['primero', 'segundo', 'tercero', 'cuarto', 'quinto', 'sexto'];
+                    ciclosPrimaria.forEach(nivelKey => {
+                        const nivelData = window.CURRICULO.primaria[nivelKey];
+                        if (!nivelData) return;
+                        nivelData.forEach(modulo => {
+                            if (moduloFiltro !== 'todos' && modulo.modulo != moduloFiltro) return;
+                            if (nivelFiltro !== 'todos' && modulo.nivel !== nivelFiltro) return;
+
+                            // Determinar ciclo (I o II)
+                            const cicloTexto = (nivelKey === 'primero' || nivelKey === 'segundo' || nivelKey === 'tercero') ? 'I Ciclo' : 'II Ciclo';
+
+                            modulo.areas.forEach(area => {
+                                const areaNombre = window.AREAS_CONOCIMIENTO?.find(a => a.id === area.areaId)?.nombre || area.areaId;
+                                area.saberesConceptuales.forEach(saber => {
+                                    totalSaberes++;
+                                    const saberId = `${cicloTexto}-${modulo.nivel}-${modulo.modulo}-${area.areaId}-${saber.concepto}`.replace(/\s/g, '_');
+                                    const dominado = saberesDominados[saberId] || false;
+                                    if (dominado) dominadosCount++;
+
+                                    html += `<tr>
+                                        <td>${cicloTexto}</td>
+                                        <td>${modulo.nivel}</td>
+                                        <td>${modulo.modulo}</td>
+                                        <td><span class="area-badge">${areaNombre}</span></td>
+                                        <td>
+                                            <div><strong>RdA:</strong> ${area.rda || 'No disponible'}</div>
+                                            <div class="saber-item">
+                                                <strong>${saber.concepto}:</strong> ${saber.indicadorLogro}
+                                            </div>
+                                        </td>
+                                        <td style="text-align:center;">
+                                            <input type="checkbox" class="diagnostico-checkbox" data-saber-id="${saberId}" ${dominado ? 'checked' : ''}>
+                                        </td>
+                                    </tr>`;
+                                });
+                            });
+                        });
+                    });
+                }
+
+                // Recorrer secundaria
+                if (window.CURRICULO.secundaria && (cicloFiltro === 'todos' || cicloFiltro === 'secundaria')) {
+                    const nivelesSec = ['setimo', 'octavo', 'noveno'];
+                    nivelesSec.forEach(nivelKey => {
+                        const nivelData = window.CURRICULO.secundaria[nivelKey];
+                        if (!nivelData) return;
+                        nivelData.forEach(modulo => {
+                            if (moduloFiltro !== 'todos' && modulo.modulo != moduloFiltro) return;
+                            if (nivelFiltro !== 'todos' && modulo.nivel !== nivelFiltro) return;
+
+                            modulo.areas.forEach(area => {
+                                const areaNombre = window.AREAS_CONOCIMIENTO?.find(a => a.id === area.areaId)?.nombre || area.areaId;
+                                area.saberesConceptuales.forEach(saber => {
+                                    totalSaberes++;
+                                    const saberId = `III Ciclo-${modulo.nivel}-${modulo.modulo}-${area.areaId}-${saber.concepto}`.replace(/\s/g, '_');
+                                    const dominado = saberesDominados[saberId] || false;
+                                    if (dominado) dominadosCount++;
+
+                                    html += `<tr>
+                                        <td>III Ciclo</td>
+                                        <td>${modulo.nivel}</td>
+                                        <td>${modulo.modulo}</td>
+                                        <td><span class="area-badge">${areaNombre}</span></td>
+                                        <td>
+                                            <div><strong>RdA:</strong> ${area.rda || 'No disponible'}</div>
+                                            <div class="saber-item">
+                                                <strong>${saber.concepto}:</strong> ${saber.indicadorLogro}
+                                            </div>
+                                        </td>
+                                        <td style="text-align:center;">
+                                            <input type="checkbox" class="diagnostico-checkbox" data-saber-id="${saberId}" ${dominado ? 'checked' : ''}>
+                                        </td>
+                                    </tr>`;
+                                });
+                            });
+                        });
+                    });
+                }
+
+                tablaBody.innerHTML = html || '<tr><td colspan="6" style="text-align:center; padding:2rem;">No hay saberes para los filtros seleccionados.</td></tr>';
+                totalSaberesSpan.textContent = totalSaberes;
+                dominadosSpan.textContent = dominadosCount;
+                prioritariosSpan.textContent = totalSaberes - dominadosCount;
+
+                // Agregar event listeners a los checkboxes
+                document.querySelectorAll('.diagnostico-checkbox').forEach(cb => {
+                    cb.addEventListener('change', function() {
+                        const saberId = this.dataset.saberId;
+                        if (this.checked) {
+                            saberesDominados[saberId] = true;
+                        } else {
+                            delete saberesDominados[saberId];
+                        }
+                        guardarDominados();
+                        // Actualizar contadores sin recargar toda la tabla
+                        dominadosSpan.textContent = Object.keys(saberesDominados).length;
+                        prioritariosSpan.textContent = totalSaberes - Object.keys(saberesDominados).length;
+                    });
+                });
+            }
+
+            // Aplicar filtros
+            btnAplicar.addEventListener('click', function() {
+                renderizarTabla(filtroCiclo.value, filtroNivel.value, filtroModulo.value);
+            });
+
+            // Restaurar filtros a valores por defecto
+            btnReset.addEventListener('click', function() {
+                filtroCiclo.value = 'todos';
+                filtroNivel.innerHTML = '<option value="todos">Todos los niveles</option>';
+                filtroModulo.value = 'todos';
+                renderizarTabla('todos', 'todos', 'todos');
+            });
+
+            // Inicializar con todos los datos
+            renderizarTabla('todos', 'todos', 'todos');
+        })();
+    </script>
+</body>
+</html>
