@@ -37,7 +37,7 @@ window.AREAS_CONOCIMIENTO = [
 
 // ---------- FUNCIONES AUXILIARES ----------
 
-window.getNiveles() {
+window.getNiveles = function() {
   return [
     { ciclo: 'Preescolar', nivel: 'Educación Preescolar', modulos: [1, 2] },
     { ciclo: 'I Ciclo', nivel: 'Primero', modulos: [1, 2] },
@@ -53,7 +53,7 @@ window.getNiveles() {
 }
 
 
-window.getModulo(ciclo, nivel, moduloNumero) {
+window.getModulo = function(ciclo, nivel, moduloNumero) {
   // Busca en la estructura CURRICULO
   if (ciclo === 'Preescolar') {
     return CURRICULO.preescolar.find(m => m.nivel === nivel && m.modulo === moduloNumero);
@@ -1741,6 +1741,11 @@ window.CURRICULO.secundaria = {
 };
 
 // ============================================
+// VERIFICACIÓN (opcional, puedes borrarlo)
+// ============================================
+console.log('✅ curriculum.js cargado correctamente. CURRICULO disponible:', !!window.CURRICULO);
+
+// ============================================
 // HACER VARIABLES GLOBALES (agregar esto al FINAL del archivo)
 // ============================================
 // Esto permite que cualquier otro script (como planning.html) acceda a los datos
@@ -1750,5 +1755,3 @@ window.PRACTICAS_PENSADOR_COMPUTACIONAL = PRACTICAS_PENSADOR_COMPUTACIONAL;
 window.ACTITUDES_PENSADOR_COMPUTACIONAL = ACTITUDES_PENSADOR_COMPUTACIONAL;
 window.PROYECTO_ETAPAS = PROYECTO_ETAPAS;
 
-// Mantenemos el export por si acaso (no interfiere)
-window.CURRICULO;
