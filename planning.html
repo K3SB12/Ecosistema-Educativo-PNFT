@@ -47,8 +47,8 @@
                         <select id="cicloSelect">
                             <option value="">-- Seleccione --</option>
                             <option value="preescolar">Preescolar</option>
-                            <option value="primaria">I Ciclo</option>
-                            <option value="primaria">II Ciclo</option>
+                            <option value="primaria_I">I Ciclo</option>
+                            <option value="primaria_II">II Ciclo</option>
                             <option value="secundaria">III Ciclo</option>
                         </select>
                     </div>
@@ -90,9 +90,11 @@
             const container = document.getElementById('indicadoresContainer');
             const lista = document.getElementById('indicadoresList');
 
+            // Definir niveles por ciclo (diferenciando I y II)
             const nivelesPorCiclo = {
                 preescolar: ['Educación Preescolar'],
-                primaria: ['Primero', 'Segundo', 'Tercero', 'Cuarto', 'Quinto', 'Sexto'],
+                primaria_I: ['Primero', 'Segundo', 'Tercero'],
+                primaria_II: ['Cuarto', 'Quinto', 'Sexto'],
                 secundaria: ['Sétimo', 'Octavo', 'Noveno']
             };
 
@@ -120,7 +122,8 @@
 
                 if (ciclo === 'preescolar') {
                     moduloData = window.CURRICULO.preescolar?.find(m => m.nivel === nivel && m.modulo === modulo);
-                } else if (ciclo === 'primaria') {
+                } else if (ciclo === 'primaria_I' || ciclo === 'primaria_II') {
+                    // Ambos ciclos usan la misma estructura en CURRICULO.primaria
                     const nivelKey = nivel.toLowerCase();
                     moduloData = window.CURRICULO.primaria?.[nivelKey]?.find(m => m.modulo === modulo);
                 } else if (ciclo === 'secundaria') {
