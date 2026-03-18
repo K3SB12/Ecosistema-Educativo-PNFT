@@ -1,68 +1,45 @@
 // js/router.js
-class Router {
-    constructor() {
-        this.routes = {
-            'dashboard': { render: () => window.Dashboard.render(), title: 'Tablero' },
-            'planning': { render: () => window.Planning.render(), title: 'Planeamiento' },
-            'evaluation': { render: () => window.Evaluation.render(), title: 'Evaluación' },
-            'logbook': { render: () => window.Logbook.render(), title: 'Bitácora' },
-            'students': { render: () => window.Students.render(), title: 'Estudiantes' },
-            'groups': { render: () => window.Groups.render(), title: 'Grupos' },
-            'settings': { render: () => window.Settings.render(), title: 'Configuración' }
-        };
+const Router = {
+    init: () => {
+        // Escuchar clics en enlaces internos
+        document.addEventListener('click', e => {
+            const link = e.target.closest('a');
+            if (!link) return;
+            const href = link.getAttribute('href');
+            if (href && href.startsWith('/')) {
+                e.preventDefault();
+                Router.go(href);
+            }
+        });
 
-        this.container = document.getElementById('app');
-        this.init();
-    }
+        // Escuchar cambios en el historial
+        window.addEventListener('popstate', () => {
+            Router.go(window.location.pathname, false);
+        });
 
-    init() {
-        // Escuchar cambios en el hash
-        window.addEventListener('hashchange', () => this.handleRoute());
         // Cargar la ruta inicial
-        if (!window.location.hash) {
-            window.location.hash = '#dashboard';
+        Router.go(window.location.pathname);
+    },
+
+    go: (path, addToHistory = true) => {
+        if (addToHistory) {
+            history.pushState(null, '', path);
+        }
+        Router.render(path);
+    },
+
+    render: (path) => {
+        const main = document.querySelector('main');
+        if (!main) return;
+
+        // Por ahora, solo mostramos el dashboard
+        if (path === '/' || path === '/index.html') {
+            main.innerHTML = '<h1>Tablero</h1><p>Contenido del tablero aquí</p>';
         } else {
-            this.handleRoute();
+            main.innerHTML = '<h1>404</h1><p>Página no encontrada</p>';
         }
     }
+};
 
-    handleRoute() {
-        const hash = window.location.hash.slice(1) || 'dashboard';
-        const route = this.routes[hash];
-        if (route) {
-            this.renderPage(route.render(), hash, route.title);
-        } else {
-            // Ruta no encontrada, redirigir a dashboard
-            window.location.hash = '#dashboard';
-        }
-    }
-
-    renderPage(content, activePage, title) {
-        // Construir la estructura completa: sidebar + main-content
-        const html = `
-            ${window.Sidebar.render()}
-            <main class="main-content">
-                ${window.Header.render(title)}
-                <div id="page-content">${content}</div>
-            </main>
-        `;
-        this.container.innerHTML = html;
-
-        // Marcar el ítem activo en el menú
-        const activeItem = document.querySelector(`.nav-item[data-page="${activePage}"]`);
-        if (activeItem) {
-            activeItem.classList.add('active');
-        }
-
-        // Disparar evento personalizado para que las páginas puedan adjuntar listeners
-        const event = new CustomEvent('page-loaded', { detail: { page: activePage } });
-        document.dispatchEvent(event);
-    }
-
-    // Método para navegar programáticamente
-    navigateTo(page) {
-        window.location.hash = page;
-    }
-}
-
-window.Router = Router;
+// Iniciar el router cuando el DOM esté listo
+document.addEventListener('DOMContentLoaded', () => Router.init());
