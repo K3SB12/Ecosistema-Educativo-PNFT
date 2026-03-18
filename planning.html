@@ -6,199 +6,120 @@
     <title>Planeamiento · PNFT Articulador</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="css/style.css">
-    <!-- Cargar currículo (ya debe estar en js/curriculum.js con window.CURRICULO) -->
-    <script src="js/curriculum.js"></script>
 </head>
 <body>
     <div class="app">
-        <!-- Sidebar -->
-        <aside class="sidebar">
-            <div class="sidebar-header">
-                <div class="logo">PNFT</div>
-                <h2>Articulador 2026</h2>
-                <p>MEP Costa Rica</p>
-            </div>
-            <ul class="nav-menu">
-                <a href="index.html" style="text-decoration: none; color: inherit;"><li class="nav-item"><i class="fas fa-chart-pie"></i> Tablero</li></a>
-                <a href="planning.html" style="text-decoration: none; color: inherit;"><li class="nav-item active"><i class="fas fa-clipboard-list"></i> Planeamiento</li></a>
-                <a href="evaluation.html" style="text-decoration: none; color: inherit;"><li class="nav-item"><i class="fas fa-check-circle"></i> Evaluación</li></a>
-                <a href="logbook.html" style="text-decoration: none; color: inherit;"><li class="nav-item"><i class="fas fa-book-open"></i> Bitácora</li></a>
-                <a href="students.html" style="text-decoration: none; color: inherit;"><li class="nav-item"><i class="fas fa-users"></i> Estudiantes</li></a>
-                <a href="groups.html" style="text-decoration: none; color: inherit;"><li class="nav-item"><i class="fas fa-layer-group"></i> Grupos</li></a>
-                <a href="settings.html" style="text-decoration: none; color: inherit;"><li class="nav-item"><i class="fas fa-cog"></i> Configuración</li></a>
-            </ul>
-        </aside>
+        <!-- Sidebar (igual) -->
+        <aside class="sidebar">... (mantén tu sidebar igual) ...</aside>
 
-        <!-- Contenido principal -->
         <main class="main-content">
-            <div class="top-bar">
-                <h1 class="page-title">Planeamiento Didáctico</h1>
-                <div class="user-info">
-                    <span class="user-badge"><i class="fas fa-user-graduate"></i> Docente</span>
-                    <span class="user-badge"><i class="fas fa-calendar-alt"></i> 2026</span>
-                </div>
-            </div>
+            <div class="top-bar">...</div>
 
             <!-- Selectores -->
             <div class="recent-section">
-                <h2><i class="fas fa-search" style="color:#2E7D32;"></i> 1. Seleccionar nivel y módulo</h2>
-                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
+                <h2>1. Seleccionar nivel y módulo</h2>
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem;">
                     <div>
                         <label><strong>Ciclo:</strong></label>
-                        <select id="cicloSelect" style="width:100%; padding:0.6rem; border-radius:8px; border:1px solid #ddd;">
+                        <select id="cicloSelect" style="width:100%; padding:0.5rem;">
                             <option value="">-- Seleccione --</option>
                             <option value="preescolar">Preescolar</option>
-                            <option value="primaria">I Ciclo</option>
-                            <option value="primaria">II Ciclo</option>
-                            <option value="secundaria">III Ciclo</option>
                         </select>
                     </div>
                     <div>
                         <label><strong>Nivel:</strong></label>
-                        <select id="nivelSelect" style="width:100%; padding:0.6rem; border-radius:8px; border:1px solid #ddd;">
-                            <option value="">-- Primero seleccione ciclo --</option>
+                        <select id="nivelSelect" style="width:100%; padding:0.5rem;">
+                            <option value="Educación Preescolar">Educación Preescolar</option>
                         </select>
                     </div>
                     <div>
                         <label><strong>Módulo:</strong></label>
-                        <select id="moduloSelect" style="width:100%; padding:0.6rem; border-radius:8px; border:1px solid #ddd;">
+                        <select id="moduloSelect" style="width:100%; padding:0.5rem;">
                             <option value="1">Módulo 1</option>
                             <option value="2">Módulo 2</option>
                         </select>
                     </div>
                 </div>
-                <button id="cargarBtn" style="background:#2E7D32; color:white; padding:0.7rem 2rem; border:none; border-radius:8px; cursor:pointer; font-size:1rem;">
+                <button id="cargarBtn" style="margin-top:1rem; background:#2E7D32; color:white; padding:0.5rem 1rem; border:none; border-radius:4px;">
                     <i class="fas fa-download"></i> Cargar indicadores
                 </button>
             </div>
 
-            <!-- Contenedor de indicadores (inicialmente oculto) -->
             <div id="indicadoresContainer" class="recent-section" style="display: none;">
-                <h2><i class="fas fa-list" style="color:#2E7D32;"></i> 2. Indicadores de logro</h2>
-                <div id="indicadoresList" style="background:#f9f9f9; padding:1rem; border-radius:8px; max-height:400px; overflow-y:auto;"></div>
+                <h2>2. Indicadores de logro</h2>
+                <div id="indicadoresList"></div>
             </div>
         </main>
     </div>
 
     <script>
-        (function() {
-            console.log('🚀 planning.html iniciado');
+        // ===== DATOS CURRICULARES MÍNIMOS (AQUÍ MISMO) =====
+        const CURRICULO = {
+            preescolar: [
+                {
+                    nivel: 'Educación Preescolar',
+                    modulo: 1,
+                    areas: [
+                        {
+                            areaId: 'apropiacion',
+                            saberesConceptuales: [
+                                { concepto: 'Computadora', indicadorLogro: 'Identificar qué es una computadora.' },
+                                { concepto: 'Software', indicadorLogro: 'Reconocer elementos del software.' }
+                            ]
+                        },
+                        {
+                            areaId: 'programacion',
+                            saberesConceptuales: [
+                                { concepto: 'Evento', indicadorLogro: 'Reconocer eventos causa-efecto.' }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    nivel: 'Educación Preescolar',
+                    modulo: 2,
+                    areas: [
+                        {
+                            areaId: 'apropiacion',
+                            saberesConceptuales: [
+                                { concepto: 'Conexión Bluetooth', indicadorLogro: 'Reconocer conexión entre dispositivos.' }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        };
 
-            // Verificar que window.CURRICULO exista
-            if (!window.CURRICULO) {
-                console.error('❌ window.CURRICULO no está definido. Revisa js/curriculum.js');
-                alert('Error crítico: No se encontró la base de datos curricular. Abre la consola para más detalles.');
+        const AREAS_CONOCIMIENTO = [
+            { id: 'apropiacion', nombre: 'Apropiación Tecnológica' },
+            { id: 'programacion', nombre: 'Programación y Algoritmos' }
+        ];
+
+        // ===== LÓGICA =====
+        document.getElementById('cargarBtn').addEventListener('click', function() {
+            const nivel = document.getElementById('nivelSelect').value;
+            const modulo = parseInt(document.getElementById('moduloSelect').value);
+
+            const moduloData = CURRICULO.preescolar.find(m => m.nivel === nivel && m.modulo === modulo);
+
+            if (!moduloData) {
+                document.getElementById('indicadoresList').innerHTML = '<p>No hay indicadores.</p>';
+                document.getElementById('indicadoresContainer').style.display = 'block';
                 return;
             }
-            console.log('✅ window.CURRICULO disponible');
 
-            const cicloSelect = document.getElementById('cicloSelect');
-            const nivelSelect = document.getElementById('nivelSelect');
-            const moduloSelect = document.getElementById('moduloSelect');
-            const cargarBtn = document.getElementById('cargarBtn');
-            const indicadoresContainer = document.getElementById('indicadoresContainer');
-            const indicadoresList = document.getElementById('indicadoresList');
-
-            // Mapa de niveles por ciclo (basado en la estructura real)
-            const nivelesMap = {
-                preescolar: ['Educación Preescolar'],
-                primaria: {
-                    'I Ciclo': ['Primero', 'Segundo', 'Tercero'],
-                    'II Ciclo': ['Cuarto', 'Quinto', 'Sexto']
-                },
-                secundaria: ['Sétimo', 'Octavo', 'Noveno']
-            };
-
-            // Actualizar niveles según ciclo seleccionado
-            cicloSelect.addEventListener('change', function() {
-                const ciclo = this.value;
-                nivelSelect.innerHTML = '<option value="">-- Seleccione --</option>';
-                
-                if (ciclo === 'preescolar') {
-                    nivelesMap.preescolar.forEach(n => {
-                        nivelSelect.innerHTML += `<option value="${n}">${n}</option>`;
-                    });
-                } else if (ciclo === 'primaria') {
-                    // Para I y II ciclo, mostramos todos (luego la búsqueda los distinguirá por el nombre)
-                    nivelesMap.primaria['I Ciclo'].forEach(n => {
-                        nivelSelect.innerHTML += `<option value="${n}">${n} (I Ciclo)</option>`;
-                    });
-                    nivelesMap.primaria['II Ciclo'].forEach(n => {
-                        nivelSelect.innerHTML += `<option value="${n}">${n} (II Ciclo)</option>`;
-                    });
-                } else if (ciclo === 'secundaria') {
-                    nivelesMap.secundaria.forEach(n => {
-                        nivelSelect.innerHTML += `<option value="${n}">${n}</option>`;
-                    });
-                }
-            });
-
-            // Botón cargar indicadores
-            cargarBtn.addEventListener('click', function() {
-                const ciclo = cicloSelect.value;
-                const nivel = nivelSelect.value;
-                const modulo = parseInt(moduloSelect.value);
-
-                console.log('🔍 Buscando:', { ciclo, nivel, modulo });
-
-                if (!ciclo || !nivel) {
-                    alert('Seleccione ciclo y nivel');
-                    return;
-                }
-
-                let moduloData = null;
-
-                // Búsqueda en la estructura correcta según ciclo
-                if (ciclo === 'preescolar') {
-                    moduloData = window.CURRICULO.preescolar?.find(m => 
-                        m.nivel === nivel && m.modulo === modulo
-                    );
-                } else if (ciclo === 'primaria') {
-                    // Extraer el nombre base del nivel (sin el "(I Ciclo)" si existe)
-                    const nivelBase = nivel.replace(/\s*\([^)]*\)/, '').toLowerCase();
-                    moduloData = window.CURRICULO.primaria?.[nivelBase]?.find(m => 
-                        m.modulo === modulo
-                    );
-                } else if (ciclo === 'secundaria') {
-                    const nivelMap = { 'sétimo':'setimo', 'octavo':'octavo', 'noveno':'noveno' };
-                    const nivelKey = nivelMap[nivel.toLowerCase()];
-                    moduloData = window.CURRICULO.secundaria?.[nivelKey]?.find(m => 
-                        m.modulo === modulo
-                    );
-                }
-
-                console.log('📦 Módulo encontrado:', moduloData);
-
-                if (!moduloData) {
-                    indicadoresList.innerHTML = '<p style="color:#c62828;">No hay indicadores para esta combinación.</p>';
-                    indicadoresContainer.style.display = 'block';
-                    return;
-                }
-
-                // Construir HTML de indicadores
-                let html = '';
-                moduloData.areas.forEach(area => {
-                    // Buscar nombre del área en AREAS_CONOCIMIENTO
-                    const areaInfo = window.AREAS_CONOCIMIENTO?.find(a => a.id === area.areaId);
-                    const areaNombre = areaInfo ? areaInfo.nombre : area.areaId;
-                    
-                    html += `<h3 style="margin:1.5rem 0 0.5rem; color:#2E7D32; border-bottom:2px solid #2E7D3220; padding-bottom:0.3rem;">${areaNombre}</h3>`;
-                    
-                    area.saberesConceptuales.forEach(s => {
-                        html += `
-                            <div style="padding:0.8rem; margin:0.5rem 0; background:white; border-radius:8px; border-left:4px solid #2E7D32;">
-                                <strong style="color:#2E7D32;">${s.concepto}:</strong>
-                                <p style="margin:0.3rem 0 0; color:#333;">${s.indicadorLogro}</p>
-                            </div>
-                        `;
-                    });
+            let html = '';
+            moduloData.areas.forEach(area => {
+                const areaNombre = AREAS_CONOCIMIENTO.find(a => a.id === area.areaId)?.nombre || area.areaId;
+                html += `<h4>${areaNombre}</h4>`;
+                area.saberesConceptuales.forEach(s => {
+                    html += `<p><strong>${s.concepto}:</strong> ${s.indicadorLogro}</p>`;
                 });
-
-                indicadoresList.innerHTML = html;
-                indicadoresContainer.style.display = 'block';
             });
 
-        })();
+            document.getElementById('indicadoresList').innerHTML = html;
+            document.getElementById('indicadoresContainer').style.display = 'block';
+        });
     </script>
 </body>
 </html>
