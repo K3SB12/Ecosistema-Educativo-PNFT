@@ -114,7 +114,7 @@
 </head>
 <body>
     <div class="app">
-        <!-- Sidebar (actualizada con enlace a Progresión) -->
+        <!-- Sidebar (igual que en index) -->
         <aside class="sidebar">
             <div class="sidebar-header">
                 <div class="logo">PNFT</div>
@@ -133,7 +133,6 @@
             </ul>
         </aside>
 
-        <!-- Contenido principal -->
         <main class="main-content">
             <div class="top-bar">
                 <h1 class="page-title">Progresión Curricular</h1>
@@ -212,7 +211,6 @@
                 return;
             }
 
-            // Elementos del DOM
             const filtroCiclo = document.getElementById('filtroCiclo');
             const filtroNivel = document.getElementById('filtroNivel');
             const filtroModulo = document.getElementById('filtroModulo');
@@ -223,28 +221,23 @@
             const dominadosSpan = document.getElementById('dominados');
             const prioritariosSpan = document.getElementById('prioritarios');
 
-            // Estado de saberes dominados (guardado en localStorage)
             let saberesDominados = JSON.parse(localStorage.getItem('pnft_dominados') || '{}');
 
-            // Función para guardar estado
             function guardarDominados() {
                 localStorage.setItem('pnft_dominados', JSON.stringify(saberesDominados));
                 actualizarEstadisticas();
             }
 
-            // Generar opciones de nivel según ciclo
             function actualizarNiveles(cicloSeleccionado) {
                 filtroNivel.innerHTML = '<option value="todos">Todos los niveles</option>';
                 let niveles = [];
                 if (cicloSeleccionado === 'preescolar') {
                     niveles = ['Educación Preescolar'];
                 } else if (cicloSeleccionado === 'primaria') {
-                    // Para I y II ciclo, mostramos todos los niveles de primaria
                     niveles = ['Primero', 'Segundo', 'Tercero', 'Cuarto', 'Quinto', 'Sexto'];
                 } else if (cicloSeleccionado === 'secundaria') {
                     niveles = ['Sétimo', 'Octavo', 'Noveno'];
                 } else {
-                    // Si es 'todos', no agregamos opciones específicas, solo "Todos"
                     return;
                 }
                 niveles.forEach(n => {
@@ -252,12 +245,10 @@
                 });
             }
 
-            // Evento cambio de ciclo
             filtroCiclo.addEventListener('change', function() {
                 actualizarNiveles(this.value);
             });
 
-            // Función para renderizar la tabla
             function renderizarTabla(cicloFiltro, nivelFiltro, moduloFiltro) {
                 let html = '';
                 let totalSaberes = 0;
@@ -307,7 +298,6 @@
                             if (moduloFiltro !== 'todos' && modulo.modulo != moduloFiltro) return;
                             if (nivelFiltro !== 'todos' && modulo.nivel !== nivelFiltro) return;
 
-                            // Determinar ciclo (I o II)
                             const cicloTexto = (nivelKey === 'primero' || nivelKey === 'segundo' || nivelKey === 'tercero') ? 'I Ciclo' : 'II Ciclo';
 
                             modulo.areas.forEach(area => {
@@ -383,7 +373,6 @@
                 dominadosSpan.textContent = dominadosCount;
                 prioritariosSpan.textContent = totalSaberes - dominadosCount;
 
-                // Agregar event listeners a los checkboxes
                 document.querySelectorAll('.diagnostico-checkbox').forEach(cb => {
                     cb.addEventListener('change', function() {
                         const saberId = this.dataset.saberId;
@@ -393,19 +382,16 @@
                             delete saberesDominados[saberId];
                         }
                         guardarDominados();
-                        // Actualizar contadores sin recargar toda la tabla
                         dominadosSpan.textContent = Object.keys(saberesDominados).length;
                         prioritariosSpan.textContent = totalSaberes - Object.keys(saberesDominados).length;
                     });
                 });
             }
 
-            // Aplicar filtros
             btnAplicar.addEventListener('click', function() {
                 renderizarTabla(filtroCiclo.value, filtroNivel.value, filtroModulo.value);
             });
 
-            // Restaurar filtros a valores por defecto
             btnReset.addEventListener('click', function() {
                 filtroCiclo.value = 'todos';
                 filtroNivel.innerHTML = '<option value="todos">Todos los niveles</option>';
@@ -413,16 +399,7 @@
                 renderizarTabla('todos', 'todos', 'todos');
             });
 
-            // Inicializar con todos los datos
             renderizarTabla('todos', 'todos', 'todos');
-
-            (function() {
-        if (!window.CURRICULO) {
-            alert('Error: No se encontró window.CURRICULO. Verifique que curriculum.js esté cargado.');
-            return;
-        }
-        // ... (todo el código que te di antes, con los filtros, la tabla y los checkboxes)
-            
         })();
     </script>
 </body>
