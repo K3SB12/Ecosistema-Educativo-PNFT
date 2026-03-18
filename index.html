@@ -3,32 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PNFT Articulador 2026 · MEP Costa Rica</title>
-    <!-- Font Awesome -->
+    <title>PNFT Articulador 2026</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <!-- Estilos globales -->
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-    <div id="app" class="app"></div>
+    <div class="app" id="app"></div>
 
-    <!-- Carga de scripts en orden -->
     <script src="js/components/sidebar.js"></script>
-    <script src="js/components/header.js"></script>
-    <script src="js/router.js"></script>
-    <!-- Páginas (se registrarán en router) -->
     <script src="js/pages/dashboard.js"></script>
-    <script src="js/pages/planning.js"></script>
-    <script src="js/pages/evaluation.js"></script>
-    <script src="js/pages/logbook.js"></script>
-    <script src="js/pages/students.js"></script>
-    <script src="js/pages/groups.js"></script>
-    <script src="js/pages/settings.js"></script>
-    <!-- Inicialización -->
+    <script src="js/router.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            window.app = new Router();
-        });
+        // Renderizar la estructura base
+        document.getElementById('app').innerHTML = Sidebar.render() + '<main></main>';
+        // El router se inicializa solo al final del archivo router.js
     </script>
 </body>
 </html>
