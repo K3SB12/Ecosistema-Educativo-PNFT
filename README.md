@@ -38,7 +38,6 @@ Todo almacenado localmente (IndexedDB) con backup exportable.
 
 ## 🛠️ Tecnologías
 
-- **Frontend**: React 18 + Vite, Material UI
 - **Base de datos local**: IndexedDB (via idb)
 - **Exportación**: docxtemplater, jsPDF, SheetJS (xlsx)
 - **Hosting**: GitHub Pages (gratuito)
@@ -46,9 +45,6 @@ Todo almacenado localmente (IndexedDB) con backup exportable.
 ---
 
 ## 📦 Instalación y uso
-
-### Requisitos
-- Node.js 18+ y npm (solo para desarrollo, no para uso final)
 
 ### Desarrollo local
 ```bash
