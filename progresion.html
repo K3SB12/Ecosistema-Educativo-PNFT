@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="css/style.css">
     <script src="js/curriculum.js"></script>
     <style>
+        /* Estilos específicos para progresión */
         .progresion-filters {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -98,23 +99,114 @@
             font-size: 0.9rem;
             color: #1e5a20;
         }
-        .btn-reset {
-            background: #f0f0f0;
-            border: 1px solid #ccc;
-            padding: 0.5rem 1rem;
-            border-radius: 6px;
+        .btn-ia {
+            background: #1976D2;
+            color: white;
+            border: none;
+            padding: 0.7rem 1.5rem;
+            border-radius: 30px;
             cursor: pointer;
-            font-size: 0.9rem;
-            margin-left: auto;
+            font-size: 1rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: background 0.2s;
+            margin-right: 0.5rem;
         }
-        .btn-reset:hover {
-            background: #e0e0e0;
+        .btn-ia:hover {
+            background: #0d5a9e;
+        }
+        .btn-ia i {
+            font-size: 1.2rem;
+        }
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            overflow: auto;
+        }
+        .modal-content {
+            background-color: white;
+            margin: 5% auto;
+            padding: 2rem;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 800px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+            position: relative;
+        }
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .close:hover {
+            color: black;
+        }
+        .prompt-area {
+            background: #f5f5f5;
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin: 1.5rem 0;
+            white-space: pre-wrap;
+            font-family: monospace;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .ia-buttons {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .ia-btn {
+            flex: 1;
+            min-width: 150px;
+            padding: 1rem;
+            border: none;
+            border-radius: 12px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            transition: transform 0.2s;
+        }
+        .ia-btn:hover {
+            transform: translateY(-3px);
+        }
+        .ia-btn.chatgpt { background: #10a37f; }
+        .ia-btn.copilot { background: #5c2d91; }
+        .ia-btn.gemini { background: #1a73e8; }
+        .ia-btn i { font-size: 1.3rem; }
+        .copy-btn {
+            background: #2E7D32;
+            color: white;
+            border: none;
+            padding: 0.8rem 2rem;
+            border-radius: 30px;
+            font-size: 1rem;
+            cursor: pointer;
+            margin-top: 1rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
         }
     </style>
 </head>
 <body>
     <div class="app">
-        <!-- Sidebar (igual que en index) -->
+        <!-- Sidebar -->
         <aside class="sidebar">
             <div class="sidebar-header">
                 <div class="logo">PNFT</div>
@@ -149,9 +241,8 @@
                     <select id="filtroCiclo">
                         <option value="todos">Todos los ciclos</option>
                         <option value="preescolar">Preescolar</option>
-                        <option value="primaria">I Ciclo</option>
-                        <option value="primaria">II Ciclo</option>
-                        <option value="secundaria">III Ciclo</option>
+                        <option value="primaria">I y II Ciclo (Primaria)</option>
+                        <option value="secundaria">III Ciclo (Secundaria)</option>
                     </select>
                 </div>
                 <div class="filter-group">
@@ -176,11 +267,14 @@
                 </button>
             </div>
 
-            <!-- Barra de estadísticas -->
-            <div class="stats-bar">
-                <span class="stat-item"><i class="fas fa-book"></i> Total saberes: <span id="totalSaberes">0</span></span>
-                <span class="stat-item"><i class="fas fa-check-circle"></i> Dominados: <span id="dominados">0</span></span>
-                <span class="stat-item"><i class="fas fa-exclamation-triangle"></i> Prioritarios: <span id="prioritarios">0</span></span>
+            <!-- Barra de estadísticas y botón IA -->
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; margin-bottom: 1rem;">
+                <div class="stats-bar">
+                    <span class="stat-item"><i class="fas fa-book"></i> Total saberes: <span id="totalSaberes">0</span></span>
+                    <span class="stat-item"><i class="fas fa-check-circle"></i> Dominados: <span id="dominados">0</span></span>
+                    <span class="stat-item"><i class="fas fa-exclamation-triangle"></i> Prioritarios: <span id="prioritarios">0</span></span>
+                </div>
+                <button id="btnIA" class="btn-ia"><i class="fas fa-robot"></i> Generar prompt con IA</button>
             </div>
 
             <!-- Tabla de progresión -->
@@ -193,7 +287,7 @@
                             <th>Módulo</th>
                             <th>Área</th>
                             <th>RdA / Saberes</th>
-                            <th>Diagnóstico</th>
+                            <th id="thDiagnostico">Diagnóstico</th>
                         </tr>
                     </thead>
                     <tbody id="tablaBody">
@@ -204,16 +298,23 @@
         </main>
     </div>
 
-    <!-- Sección de análisis y ruta de aprendizaje -->
-    <div class="recent-section" id="analisisSection" style="margin-top:2rem;">
-        <div class="section-header">
-            <h2><i class="fas fa-route" style="color:#2E7D32;"></i> Ruta de aprendizaje sugerida</h2>
-            <button id="btnGenerarRuta" class="action-btn" style="background:#2E7D32; color:white;">
-                <i class="fas fa-magic"></i> Generar ruta con IA
-            </button>
-        </div>
-        <div id="rutaResultado" style="background:#f9f9f9; padding:1.5rem; border-radius:12px; border-left:4px solid #2E7D32;">
-            <p style="color:#666;">Haz clic en "Generar ruta" para obtener un análisis de los saberes seleccionados.</p>
+    <!-- Modal para el prompt de IA -->
+    <div id="modalIA" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2><i class="fas fa-robot" style="color:#2E7D32;"></i> Prompt generado para IA</h2>
+            <p>Este prompt contiene el contexto y los saberes seleccionados. Cópialo y pégalo en tu IA favorita.</p>
+            <div id="promptTexto" class="prompt-area">
+                Generando prompt...
+            </div>
+            <div class="ia-buttons">
+                <button id="btnChatGPT" class="ia-btn chatgpt"><i class="fab fa-openai"></i> ChatGPT</button>
+                <button id="btnCopilot" class="ia-btn copilot"><i class="fas fa-microsoft"></i> Copilot</button>
+                <button id="btnGemini" class="ia-btn gemini"><i class="fas fa-google"></i> Gemini</button>
+            </div>
+            <div style="text-align: center; margin-top: 1.5rem;">
+                <button id="btnCopiarPrompt" class="copy-btn"><i class="fas fa-copy"></i> Copiar prompt</button>
+            </div>
         </div>
     </div>
 
@@ -224,16 +325,26 @@
                 return;
             }
 
+            // Elementos del DOM
             const filtroCiclo = document.getElementById('filtroCiclo');
             const filtroNivel = document.getElementById('filtroNivel');
             const filtroModulo = document.getElementById('filtroModulo');
             const btnAplicar = document.getElementById('btnAplicarFiltros');
             const btnReset = document.getElementById('btnReset');
+            const btnIA = document.getElementById('btnIA');
             const tablaBody = document.getElementById('tablaBody');
             const totalSaberesSpan = document.getElementById('totalSaberes');
             const dominadosSpan = document.getElementById('dominados');
             const prioritariosSpan = document.getElementById('prioritarios');
+            const modal = document.getElementById('modalIA');
+            const spanClose = document.querySelector('.close');
+            const promptTexto = document.getElementById('promptTexto');
+            const btnCopiar = document.getElementById('btnCopiarPrompt');
+            const btnChatGPT = document.getElementById('btnChatGPT');
+            const btnCopilot = document.getElementById('btnCopilot');
+            const btnGemini = document.getElementById('btnGemini');
 
+            // Estado de saberes dominados
             let saberesDominados = JSON.parse(localStorage.getItem('pnft_dominados') || '{}');
 
             function guardarDominados() {
@@ -241,6 +352,7 @@
                 actualizarEstadisticas();
             }
 
+            // Actualizar niveles según ciclo
             function actualizarNiveles(cicloSeleccionado) {
                 filtroNivel.innerHTML = '<option value="todos">Todos los niveles</option>';
                 let niveles = [];
@@ -251,10 +363,14 @@
                 } else if (cicloSeleccionado === 'secundaria') {
                     niveles = ['Sétimo', 'Octavo', 'Noveno'];
                 } else {
+                    // Si es 'todos', no agregamos opciones específicas
                     return;
                 }
                 niveles.forEach(n => {
-                    filtroNivel.innerHTML += `<option value="${n}">${n}</option>`;
+                    const option = document.createElement('option');
+                    option.value = n;
+                    option.textContent = n;
+                    filtroNivel.appendChild(option);
                 });
             }
 
@@ -262,57 +378,20 @@
                 actualizarNiveles(this.value);
             });
 
+            // Renderizar tabla
             function renderizarTabla(cicloFiltro, nivelFiltro, moduloFiltro) {
                 let html = '';
                 let totalSaberes = 0;
                 let dominadosCount = 0;
 
-                // Recorrer preescolar
-                if (window.CURRICULO.preescolar && (cicloFiltro === 'todos' || cicloFiltro === 'preescolar')) {
-                    window.CURRICULO.preescolar.forEach(modulo => {
-                        if (moduloFiltro !== 'todos' && modulo.modulo != moduloFiltro) return;
-                        if (nivelFiltro !== 'todos' && modulo.nivel !== nivelFiltro) return;
-
-                        modulo.areas.forEach(area => {
-                            const areaNombre = window.AREAS_CONOCIMIENTO?.find(a => a.id === area.areaId)?.nombre || area.areaId;
-                            area.saberesConceptuales.forEach(saber => {
-                                totalSaberes++;
-                                const saberId = `${modulo.ciclo}-${modulo.nivel}-${modulo.modulo}-${area.areaId}-${saber.concepto}`.replace(/\s/g, '_');
-                                const dominado = saberesDominados[saberId] || false;
-                                if (dominado) dominadosCount++;
-
-                                html += `<tr>
-                                    <td>Preescolar</td>
-                                    <td>${modulo.nivel}</td>
-                                    <td>${modulo.modulo}</td>
-                                    <td><span class="area-badge">${areaNombre}</span></td>
-                                    <td>
-                                        <div><strong>RdA:</strong> ${area.rda || 'No disponible'}</div>
-                                        <div class="saber-item">
-                                            <strong>${saber.concepto}:</strong> ${saber.indicadorLogro}
-                                        </div>
-                                    </td>
-                                    <td style="text-align:center;">
-                                        <input type="checkbox" class="diagnostico-checkbox" data-saber-id="${saberId}" ${dominado ? 'checked' : ''}>
-                                    </td>
-                                </tr>`;
-                            });
-                        });
-                    });
-                }
-
-                // Recorrer primaria
-                if (window.CURRICULO.primaria && (cicloFiltro === 'todos' || cicloFiltro === 'primaria')) {
-                    const ciclosPrimaria = ['primero', 'segundo', 'tercero', 'cuarto', 'quinto', 'sexto'];
-                    ciclosPrimaria.forEach(nivelKey => {
-                        const nivelData = window.CURRICULO.primaria[nivelKey];
-                        if (!nivelData) return;
-                        nivelData.forEach(modulo => {
-                            if (moduloFiltro !== 'todos' && modulo.modulo != moduloFiltro) return;
-                            if (nivelFiltro !== 'todos' && modulo.nivel !== nivelFiltro) return;
-
-                            const cicloTexto = (nivelKey === 'primero' || nivelKey === 'segundo' || nivelKey === 'tercero') ? 'I Ciclo' : 'II Ciclo';
-
+                // Función auxiliar para agregar filas
+                function agregarFilas(coleccion, cicloTexto, filtroNivel, filtroModulo) {
+                    if (!coleccion) return;
+                    // Para preescolar, es un array
+                    if (Array.isArray(coleccion)) {
+                        coleccion.forEach(modulo => {
+                            if (filtroModulo !== 'todos' && modulo.modulo != filtroModulo) return;
+                            if (filtroNivel !== 'todos' && modulo.nivel !== filtroNivel) return;
                             modulo.areas.forEach(area => {
                                 const areaNombre = window.AREAS_CONOCIMIENTO?.find(a => a.id === area.areaId)?.nombre || area.areaId;
                                 area.saberesConceptuales.forEach(saber => {
@@ -339,46 +418,56 @@
                                 });
                             });
                         });
-                    });
+                    } else {
+                        // Para primaria y secundaria, coleccion es un objeto con niveles como claves
+                        for (let nivelKey in coleccion) {
+                            const nivelArray = coleccion[nivelKey];
+                            nivelArray.forEach(modulo => {
+                                if (filtroModulo !== 'todos' && modulo.modulo != filtroModulo) return;
+                                if (filtroNivel !== 'todos' && modulo.nivel !== filtroNivel) return;
+                                modulo.areas.forEach(area => {
+                                    const areaNombre = window.AREAS_CONOCIMIENTO?.find(a => a.id === area.areaId)?.nombre || area.areaId;
+                                    area.saberesConceptuales.forEach(saber => {
+                                        totalSaberes++;
+                                        const saberId = `${cicloTexto}-${modulo.nivel}-${modulo.modulo}-${area.areaId}-${saber.concepto}`.replace(/\s/g, '_');
+                                        const dominado = saberesDominados[saberId] || false;
+                                        if (dominado) dominadosCount++;
+
+                                        html += `<tr>
+                                            <td>${cicloTexto}</td>
+                                            <td>${modulo.nivel}</td>
+                                            <td>${modulo.modulo}</td>
+                                            <td><span class="area-badge">${areaNombre}</span></td>
+                                            <td>
+                                                <div><strong>RdA:</strong> ${area.rda || 'No disponible'}</div>
+                                                <div class="saber-item">
+                                                    <strong>${saber.concepto}:</strong> ${saber.indicadorLogro}
+                                                </div>
+                                            </td>
+                                            <td style="text-align:center;">
+                                                <input type="checkbox" class="diagnostico-checkbox" data-saber-id="${saberId}" ${dominado ? 'checked' : ''}>
+                                            </td>
+                                        </tr>`;
+                                    });
+                                });
+                            });
+                        }
+                    }
+                }
+
+                // Recorrer preescolar
+                if (window.CURRICULO.preescolar && (cicloFiltro === 'todos' || cicloFiltro === 'preescolar')) {
+                    agregarFilas(window.CURRICULO.preescolar, 'Preescolar', nivelFiltro, moduloFiltro);
+                }
+
+                // Recorrer primaria (I y II Ciclo)
+                if (window.CURRICULO.primaria && (cicloFiltro === 'todos' || cicloFiltro === 'primaria')) {
+                    agregarFilas(window.CURRICULO.primaria, 'Primaria', nivelFiltro, moduloFiltro);
                 }
 
                 // Recorrer secundaria
                 if (window.CURRICULO.secundaria && (cicloFiltro === 'todos' || cicloFiltro === 'secundaria')) {
-                    const nivelesSec = ['setimo', 'octavo', 'noveno'];
-                    nivelesSec.forEach(nivelKey => {
-                        const nivelData = window.CURRICULO.secundaria[nivelKey];
-                        if (!nivelData) return;
-                        nivelData.forEach(modulo => {
-                            if (moduloFiltro !== 'todos' && modulo.modulo != moduloFiltro) return;
-                            if (nivelFiltro !== 'todos' && modulo.nivel !== nivelFiltro) return;
-
-                            modulo.areas.forEach(area => {
-                                const areaNombre = window.AREAS_CONOCIMIENTO?.find(a => a.id === area.areaId)?.nombre || area.areaId;
-                                area.saberesConceptuales.forEach(saber => {
-                                    totalSaberes++;
-                                    const saberId = `III Ciclo-${modulo.nivel}-${modulo.modulo}-${area.areaId}-${saber.concepto}`.replace(/\s/g, '_');
-                                    const dominado = saberesDominados[saberId] || false;
-                                    if (dominado) dominadosCount++;
-
-                                    html += `<tr>
-                                        <td>III Ciclo</td>
-                                        <td>${modulo.nivel}</td>
-                                        <td>${modulo.modulo}</td>
-                                        <td><span class="area-badge">${areaNombre}</span></td>
-                                        <td>
-                                            <div><strong>RdA:</strong> ${area.rda || 'No disponible'}</div>
-                                            <div class="saber-item">
-                                                <strong>${saber.concepto}:</strong> ${saber.indicadorLogro}
-                                            </div>
-                                        </td>
-                                        <td style="text-align:center;">
-                                            <input type="checkbox" class="diagnostico-checkbox" data-saber-id="${saberId}" ${dominado ? 'checked' : ''}>
-                                        </td>
-                                    </tr>`;
-                                });
-                            });
-                        });
-                    });
+                    agregarFilas(window.CURRICULO.secundaria, 'Secundaria', nivelFiltro, moduloFiltro);
                 }
 
                 tablaBody.innerHTML = html || '<tr><td colspan="6" style="text-align:center; padding:2rem;">No hay saberes para los filtros seleccionados.</td></tr>';
@@ -386,6 +475,7 @@
                 dominadosSpan.textContent = dominadosCount;
                 prioritariosSpan.textContent = totalSaberes - dominadosCount;
 
+                // Agregar evento a los checkboxes
                 document.querySelectorAll('.diagnostico-checkbox').forEach(cb => {
                     cb.addEventListener('change', function() {
                         const saberId = this.dataset.saberId;
@@ -395,6 +485,7 @@
                             delete saberesDominados[saberId];
                         }
                         guardarDominados();
+                        // Actualizar contadores
                         dominadosSpan.textContent = Object.keys(saberesDominados).length;
                         prioritariosSpan.textContent = totalSaberes - Object.keys(saberesDominados).length;
                     });
@@ -412,126 +503,110 @@
                 renderizarTabla('todos', 'todos', 'todos');
             });
 
+            // Checkbox "Seleccionar todos"
+            const thDiagnostico = document.getElementById('thDiagnostico');
+            const selectAllCheckbox = document.createElement('input');
+            selectAllCheckbox.type = 'checkbox';
+            selectAllCheckbox.id = 'seleccionarTodos';
+            selectAllCheckbox.style.marginRight = '0.5rem';
+            const label = document.createElement('label');
+            label.htmlFor = 'seleccionarTodos';
+            label.textContent = 'Seleccionar todos';
+            thDiagnostico.innerHTML = '';
+            thDiagnostico.appendChild(selectAllCheckbox);
+            thDiagnostico.appendChild(label);
+
+            selectAllCheckbox.addEventListener('change', function() {
+                document.querySelectorAll('.diagnostico-checkbox').forEach(cb => {
+                    cb.checked = this.checked;
+                    // Disparar evento change para actualizar estado
+                    cb.dispatchEvent(new Event('change'));
+                });
+            });
+
+            // Generar prompt para IA
+            function generarPrompt() {
+                const saberesSeleccionados = [];
+                document.querySelectorAll('.diagnostico-checkbox:checked').forEach(cb => {
+                    const tr = cb.closest('tr');
+                    if (!tr) return;
+                    const celdas = tr.querySelectorAll('td');
+                    if (celdas.length < 5) return;
+                    saberesSeleccionados.push({
+                        ciclo: celdas[0].textContent.trim(),
+                        nivel: celdas[1].textContent.trim(),
+                        modulo: celdas[2].textContent.trim(),
+                        area: celdas[3].textContent.trim(),
+                        saber: celdas[4].querySelector('.saber-item strong')?.textContent || '',
+                        indicador: celdas[4].querySelector('.saber-item')?.innerText || ''
+                    });
+                });
+
+                if (saberesSeleccionados.length === 0) {
+                    alert('Selecciona al menos un saber para generar el prompt.');
+                    return null;
+                }
+
+                let prompt = `**CONTEXTO**: Programa Nacional de Formación Tecnológica (PNFT), Ministerio de Educación Pública de Costa Rica, curso lectivo 2026.\n\n`;
+                prompt += `**SABERES SELECCIONADOS POR EL DOCENTE** (marcados como "dominados" o en proceso):\n\n`;
+                saberesSeleccionados.forEach((s, index) => {
+                    prompt += `${index+1}. **${s.ciclo} - ${s.nivel} (Mód. ${s.modulo}) - ${s.area}**\n`;
+                    prompt += `   - Concepto: ${s.saber}\n`;
+                    prompt += `   - Indicador: ${s.indicador}\n\n`;
+                });
+
+                prompt += `**INSTRUCCIONES PARA LA IA**:\n`;
+                prompt += `Con base en los saberes anteriores, genera un análisis de progresión curricular que incluya:\n`;
+                prompt += `1. **Relaciones entre los saberes**: Explica cómo se conectan unos con otros, identificando posibles prerrequisitos y secuencias lógicas.\n`;
+                prompt += `2. **Proyección por ciclos**: Indica cómo estos saberes contribuyen a los Resultados de Aprendizaje (RdA) de cada ciclo (Preescolar, I Ciclo, II Ciclo, III Ciclo).\n`;
+                prompt += `3. **Recomendaciones didácticas**: Sugiere una ruta de aprendizaje (inicio, desarrollo, cierre) para abordar estos saberes de manera integrada.\n`;
+                prompt += `4. **Mapa conceptual o tabla**: Si es posible, representa visualmente la progresión (puede ser en formato texto, con viñetas o una tabla).\n\n`;
+                prompt += `El objetivo es que el docente tenga una visión clara de cómo los saberes seleccionados se articulan para alcanzar las competencias del PNFT.`;
+
+                return prompt;
+            }
+
+            btnIA.addEventListener('click', function() {
+                const prompt = generarPrompt();
+                if (prompt) {
+                    promptTexto.textContent = prompt;
+                    modal.style.display = 'block';
+                }
+            });
+
+            // Cerrar modal
+            spanClose.onclick = function() {
+                modal.style.display = 'none';
+            }
+            window.onclick = function(event) {
+                if (event.target == modal) {
+                    modal.style.display = 'none';
+                }
+            }
+
+            // Copiar prompt
+            btnCopiar.addEventListener('click', function() {
+                navigator.clipboard.writeText(promptTexto.textContent).then(() => {
+                    alert('✅ Prompt copiado al portapapeles');
+                }).catch(() => {
+                    alert('❌ No se pudo copiar');
+                });
+            });
+
+            // Abrir IAs (solo abren la página, el usuario debe pegar)
+            btnChatGPT.addEventListener('click', function() {
+                window.open('https://chat.openai.com', '_blank');
+            });
+            btnCopilot.addEventListener('click', function() {
+                window.open('https://copilot.microsoft.com', '_blank');
+            });
+            btnGemini.addEventListener('click', function() {
+                window.open('https://gemini.google.com', '_blank');
+            });
+
+            // Inicializar con todos los datos
             renderizarTabla('todos', 'todos', 'todos');
         })();
-        // Checkbox "Seleccionar todos"
-        const checkboxSeleccionarTodos = document.createElement('input');
-        checkboxSeleccionarTodos.type = 'checkbox';
-        checkboxSeleccionarTodos.id = 'seleccionarTodos';
-        checkboxSeleccionarTodos.style.marginRight = '0.5rem';
-        const labelSeleccionarTodos = document.createElement('label');
-        labelSeleccionarTodos.htmlFor = 'seleccionarTodos';
-        labelSeleccionarTodos.innerHTML = '<strong>Seleccionar todos</strong>';
-        // Insertar en el encabezado de la columna Diagnóstico
-        const thDiagnostico = document.querySelector('th:last-child');
-        thDiagnostico.innerHTML = '';
-        thDiagnostico.appendChild(checkboxSeleccionarTodos);
-        thDiagnostico.appendChild(labelSeleccionarTodos);
-        
-        checkboxSeleccionarTodos.addEventListener('change', function() {
-            document.querySelectorAll('.diagnostico-checkbox').forEach(cb => {
-                cb.checked = this.checked;
-                // Disparar el evento change para actualizar el estado
-                cb.dispatchEvent(new Event('change'));
-            });
-        });
-        
-        // Botón generar ruta
-        document.getElementById('btnGenerarRuta').addEventListener('click', function() {
-            const saberesSeleccionados = [];
-            document.querySelectorAll('.diagnostico-checkbox:checked').forEach(cb => {
-                const tr = cb.closest('tr');
-                if (!tr) return;
-                const celdas = tr.querySelectorAll('td');
-                if (celdas.length < 5) return;
-                saberesSeleccionados.push({
-                    ciclo: celdas[0].textContent.trim(),
-                    nivel: celdas[1].textContent.trim(),
-                    modulo: celdas[2].textContent.trim(),
-                    area: celdas[3].textContent.trim(),
-                    saber: celdas[4].querySelector('.saber-item strong')?.textContent || '',
-                    indicador: celdas[4].querySelector('.saber-item')?.innerText || ''
-                });
-            });
-        
-            if (saberesSeleccionados.length === 0) {
-                document.getElementById('rutaResultado').innerHTML = '<p style="color:#c62828;">Selecciona al menos un saber para generar la ruta.</p>';
-                return;
-            }
-        
-            // Análisis simplificado
-            const analisis = generarAnalisis(saberesSeleccionados);
-            document.getElementById('rutaResultado').innerHTML = analisis;
-        });
-        
-        function generarAnalisis(saberes) {
-            // Agrupar por área y ciclo
-            const grupos = {};
-            saberes.forEach(s => {
-                const clave = `${s.ciclo} - ${s.area}`;
-                if (!grupos[clave]) grupos[clave] = [];
-                grupos[clave].push(s);
-            });
-        
-            let html = '<h3 style="color:#2E7D32;">Resumen de saberes seleccionados</h3>';
-            html += '<ul>';
-            saberes.forEach(s => {
-                html += `<li><strong>${s.ciclo} - ${s.nivel} (Mód. ${s.modulo}):</strong> ${s.saber}</li>`;
-            });
-            html += '</ul>';
-        
-            html += '<h3 style="color:#2E7D32; margin-top:1.5rem;">Relaciones y progresión</h3>';
-            html += '<p>Basado en el currículo PNFT, se observa la siguiente progresión:</p>';
-        
-            for (let clave in grupos) {
-                html += `<h4>${clave}</h4><ul>`;
-                grupos[clave].sort((a, b) => {
-                    // Ordenar por nivel (de menor a mayor)
-                    const ordenNivel = { 'Educación Preescolar':0, 'Primero':1, 'Segundo':2, 'Tercero':3, 'Cuarto':4, 'Quinto':5, 'Sexto':6, 'Sétimo':7, 'Octavo':8, 'Noveno':9 };
-                    return (ordenNivel[a.nivel] || 0) - (ordenNivel[b.nivel] || 0);
-                }).forEach(s => {
-                    html += `<li>En ${s.nivel} (Mód. ${s.modulo}) se aborda <strong>${s.saber}</strong>, que sienta las bases para niveles superiores.</li>`;
-                });
-                html += '</ul>';
-            }
-        
-            html += '<h3 style="color:#2E7D32; margin-top:1.5rem;">Implicaciones para los RdA</h3>';
-            html += '<p>Los saberes seleccionados contribuyen al logro de los siguientes resultados de aprendizaje:</p><ul>';
-        
-            // Buscar RdA relacionados (simplificado: mostramos los RdA de los módulos seleccionados)
-            const rdasVistos = new Set();
-            saberes.forEach(s => {
-                // Buscar el módulo completo en window.CURRICULO para obtener el RdA del área
-                let moduloEncontrado = null;
-                if (s.ciclo.includes('Preescolar')) {
-                    moduloEncontrado = window.CURRICULO.preescolar?.find(m => m.nivel === s.nivel && m.modulo == s.modulo);
-                } else if (s.ciclo.includes('I') || s.ciclo.includes('II')) {
-                    const nivelKey = s.nivel.toLowerCase();
-                    moduloEncontrado = window.CURRICULO.primaria?.[nivelKey]?.find(m => m.modulo == s.modulo);
-                } else if (s.ciclo.includes('III')) {
-                    const nivelMap = { 'Sétimo':'setimo', 'Octavo':'octavo', 'Noveno':'noveno' };
-                    const nivelKey = nivelMap[s.nivel];
-                    moduloEncontrado = window.CURRICULO.secundaria?.[nivelKey]?.find(m => m.modulo == s.modulo);
-                }
-                if (moduloEncontrado) {
-                    const area = moduloEncontrado.areas.find(a => a.areaId === s.area.toLowerCase().replace(/ /g, '_'));
-                    if (area && area.rda && !rdasVistos.has(area.rda)) {
-                        rdasVistos.add(area.rda);
-                        html += `<li><strong>${s.area}:</strong> ${area.rda}</li>`;
-                    }
-                }
-            });
-        
-            if (rdasVistos.size === 0) {
-                html += '<li>No se encontraron RdA específicos para estos saberes.</li>';
-            }
-            html += '</ul>';
-        
-            html += '<h3 style="color:#2E7D32; margin-top:1.5rem;">Recomendación didáctica</h3>';
-            html += '<p>Para asegurar la progresión, se sugiere abordar los saberes en el orden natural de los niveles. Si se han marcado como "dominados" saberes de niveles superiores, verificar que los prerrequisitos de niveles anteriores estén realmente consolidados.</p>';
-        
-            return html;
-        }
     </script>
 </body>
 </html>
