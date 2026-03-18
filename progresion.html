@@ -415,6 +415,13 @@
 
             // Inicializar con todos los datos
             renderizarTabla('todos', 'todos', 'todos');
+
+            (function() {
+        if (!window.CURRICULO) {
+            alert('Error: No se encontró window.CURRICULO. Verifique que curriculum.js esté cargado.');
+            return;
+        }
+        // ... (todo el código que te di antes, con los filtros, la tabla y los checkboxes)
             
         })();
     </script>
