@@ -6,9 +6,12 @@
     <title>Planeamiento · PNFT Articulador</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="css/style.css">
+    <!-- Cargar el currículo -->
+    <script src="js/curriculum.js" defer></script>
 </head>
 <body>
     <div class="app">
+        <!-- Sidebar (idéntico al index.html) -->
         <aside class="sidebar">
             <div class="sidebar-header">
                 <div class="logo">PNFT</div>
@@ -40,6 +43,7 @@
             </ul>
         </aside>
 
+        <!-- Contenido principal -->
         <main class="main-content">
             <div class="top-bar">
                 <h1 class="page-title">Planeamiento Didáctico</h1>
@@ -49,12 +53,83 @@
                 </div>
             </div>
 
-            <!-- CONTENIDO DE PLANEAMIENTO (POR AHORA SOLO UN MENSAJE) -->
+            <!-- Selectores -->
             <div class="recent-section">
-                <h2>Módulo en construcción</h2>
-                <p>Pronto podrá crear planeamientos aquí.</p>
+                <h2>1. Seleccionar nivel y módulo</h2>
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                    <div>
+                        <label><strong>Ciclo:</strong></label>
+                        <select id="cicloSelect" style="width:100%; padding:0.5rem;">
+                            <option value="">-- Seleccione --</option>
+                            <option value="preescolar">Preescolar</option>
+                            <!-- Luego agregaremos más ciclos -->
+                        </select>
+                    </div>
+                    <div>
+                        <label><strong>Módulo:</strong></label>
+                        <select id="moduloSelect" style="width:100%; padding:0.5rem;">
+                            <option value="1">Módulo 1</option>
+                            <option value="2">Módulo 2</option>
+                        </select>
+                    </div>
+                    <div style="display: flex; align-items: flex-end;">
+                        <button id="cargarBtn" style="background:#2E7D32; color:white; padding:0.5rem 1rem; border:none; border-radius:4px; cursor:pointer;">
+                            <i class="fas fa-download"></i> Cargar indicadores
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Contenedor para los indicadores (inicialmente vacío) -->
+            <div id="indicadoresContainer" class="recent-section" style="display: none;">
+                <h2>2. Indicadores de logro</h2>
+                <div id="indicadoresList"></div>
             </div>
         </main>
     </div>
+
+    <script>
+        // Esperar a que el DOM esté listo
+        document.addEventListener('DOMContentLoaded', function() {
+            const cicloSelect = document.getElementById('cicloSelect');
+            const moduloSelect = document.getElementById('moduloSelect');
+            const cargarBtn = document.getElementById('cargarBtn');
+            const indicadoresContainer = document.getElementById('indicadoresContainer');
+            const indicadoresList = document.getElementById('indicadoresList');
+
+            cargarBtn.addEventListener('click', function() {
+                const ciclo = cicloSelect.value;
+                const modulo = parseInt(moduloSelect.value);
+
+                if (!ciclo) {
+                    alert('Por favor, seleccione un ciclo.');
+                    return;
+                }
+
+                // Obtener los datos del currículo (solo preescolar por ahora)
+                const moduloData = CURRICULO[ciclo]?.find(m => m.modulo === modulo);
+
+                if (!moduloData) {
+                    indicadoresList.innerHTML = '<p>No hay indicadores para esta combinación.</p>';
+                    indicadoresContainer.style.display = 'block';
+                    return;
+                }
+
+                // Construir el HTML de los indicadores
+                let html = '';
+                moduloData.areas.forEach(area => {
+                    html += `<h3 style="margin-top:1rem; color:#2E7D32;">${area.nombre}</h3>`;
+                    html += '<ul>';
+                    area.indicadores.forEach(ind => {
+                        html += `<li>${ind}</li>`;
+                    });
+                    html += '</ul>';
+                });
+
+                indicadoresList.innerHTML = html;
+                indicadoresContainer.style.display = 'block';
+            });
+        });
+    </script>
 </body>
 </html>
