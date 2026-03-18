@@ -4,39 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Planeamiento · PNFT Articulador</title>
-    <!-- Mismos estilos que el dashboard -->
-    <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <script src="js/curriculum.js" defer></script>
-    <style>
-        /* Ajustes adicionales solo para planning */
-        .selector-group {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1.5rem;
-            margin-bottom: 2rem;
-        }
-        .indicator-list {
-            background: #f9f9f9;
-            padding: 1.5rem;
-            border-radius: 12px;
-            margin: 1.5rem 0;
-            max-height: 300px;
-            overflow-y: auto;
-            border: 1px solid #e0e0e0;
-        }
-        .indicator-item {
-            padding: 0.5rem;
-            border-bottom: 1px dashed #ccc;
-        }
-        .indicator-item:last-child {
-            border-bottom: none;
-        }
-    </style>
+    <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
     <div class="app">
-        <!-- Sidebar (mismo que el index) -->
         <aside class="sidebar">
             <div class="sidebar-header">
                 <div class="logo">PNFT</div>
@@ -44,17 +16,30 @@
                 <p>MEP Costa Rica</p>
             </div>
             <ul class="nav-menu">
-                <li class="nav-item" data-page="dashboard"><i class="fas fa-chart-pie"></i> Dashboard</li>
-                <li class="nav-item active" data-page="planning"><i class="fas fa-clipboard-list"></i> Planeamiento</li>
-                <li class="nav-item" data-page="evaluation"><i class="fas fa-check-circle"></i> Evaluación</li>
-                <li class="nav-item" data-page="logbook"><i class="fas fa-book-open"></i> Bitácora</li>
-                <li class="nav-item" data-page="students"><i class="fas fa-users"></i> Estudiantes</li>
-                <li class="nav-item" data-page="groups"><i class="fas fa-layer-group"></i> Grupos</li>
-                <li class="nav-item" data-page="settings"><i class="fas fa-cog"></i> Configuración</li>
+                <a href="index.html" style="text-decoration: none; color: inherit;">
+                    <li class="nav-item"><i class="fas fa-chart-pie"></i> Tablero</li>
+                </a>
+                <a href="planning.html" style="text-decoration: none; color: inherit;">
+                    <li class="nav-item active"><i class="fas fa-clipboard-list"></i> Planeamiento</li>
+                </a>
+                <a href="evaluation.html" style="text-decoration: none; color: inherit;">
+                    <li class="nav-item"><i class="fas fa-check-circle"></i> Evaluación</li>
+                </a>
+                <a href="logbook.html" style="text-decoration: none; color: inherit;">
+                    <li class="nav-item"><i class="fas fa-book-open"></i> Bitácora</li>
+                </a>
+                <a href="students.html" style="text-decoration: none; color: inherit;">
+                    <li class="nav-item"><i class="fas fa-users"></i> Estudiantes</li>
+                </a>
+                <a href="groups.html" style="text-decoration: none; color: inherit;">
+                    <li class="nav-item"><i class="fas fa-layer-group"></i> Grupos</li>
+                </a>
+                <a href="settings.html" style="text-decoration: none; color: inherit;">
+                    <li class="nav-item"><i class="fas fa-cog"></i> Configuración</li>
+                </a>
             </ul>
         </aside>
 
-        <!-- Contenido principal -->
         <main class="main-content">
             <div class="top-bar">
                 <h1 class="page-title">Planeamiento Didáctico</h1>
@@ -64,185 +49,12 @@
                 </div>
             </div>
 
-            <!-- SECCIÓN 1: SELECCIÓN DE NIVEL Y MÓDULO -->
+            <!-- CONTENIDO DE PLANEAMIENTO (POR AHORA SOLO UN MENSAJE) -->
             <div class="recent-section">
-                <h2><i class="fas fa-search" style="color: #2E7D32;"></i> 1. Seleccionar nivel y módulo</h2>
-                <div class="selector-group">
-                    <div>
-                        <label><strong>Ciclo</strong></label>
-                        <select id="cicloSelect" class="form-control">
-                            <option value="">-- Seleccione ciclo --</option>
-                            <option value="Preescolar">Preescolar</option>
-                            <option value="I Ciclo">I Ciclo</option>
-                            <option value="II Ciclo">II Ciclo</option>
-                            <option value="III Ciclo">III Ciclo</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label><strong>Nivel</strong></label>
-                        <select id="nivelSelect" class="form-control">
-                            <option value="">-- Primero seleccione ciclo --</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label><strong>Módulo</strong></label>
-                        <select id="moduloSelect" class="form-control">
-                            <option value="1">Módulo 1</option>
-                            <option value="2">Módulo 2</option>
-                        </select>
-                    </div>
-                </div>
-                <button id="cargarIndicadoresBtn" class="action-btn" style="border: none; background: #2E7D32; color: white; padding: 0.8rem 2rem;">
-                    <i class="fas fa-download"></i> Cargar indicadores
-                </button>
-            </div>
-
-            <!-- SECCIÓN 2: INDICADORES CARGADOS -->
-            <div id="indicadoresContainer" class="recent-section" style="display: none;">
-                <h2><i class="fas fa-list" style="color: #2E7D32;"></i> 2. Indicadores de logro</h2>
-                <div id="indicadoresList" class="indicator-list">
-                    <!-- Se llenará dinámicamente -->
-                </div>
-            </div>
-
-            <!-- SECCIÓN 3: TABLA DE PLANEAMIENTO (se muestra después) -->
-            <div id="tablaContainer" class="recent-section" style="display: none;">
-                <h2><i class="fas fa-table" style="color: #2E7D32;"></i> 3. Tabla de planeamiento</h2>
-                <table id="tablaPlaneamiento">
-                    <thead>
-                        <tr>
-                            <th>Indicadores de logro</th>
-                            <th>Estrategias de mediación</th>
-                            <th>Indicador de evaluación</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tablaBody">
-                        <!-- Se llenará con los indicadores cargados -->
-                    </tbody>
-                </table>
-                <div style="margin-top: 1rem;">
-                    <button class="action-btn" style="background: #2E7D32; color: white;" onclick="agregarFila()">
-                        <i class="fas fa-plus"></i> Agregar fila
-                    </button>
-                    <button class="action-btn" style="background: #1976D2; color: white;">
-                        <i class="fas fa-save"></i> Guardar planeamiento
-                    </button>
-                </div>
+                <h2>Módulo en construcción</h2>
+                <p>Pronto podrá crear planeamientos aquí.</p>
             </div>
         </main>
     </div>
-
-    <script>
-        // Referencias a elementos del DOM
-        const cicloSelect = document.getElementById('cicloSelect');
-        const nivelSelect = document.getElementById('nivelSelect');
-        const moduloSelect = document.getElementById('moduloSelect');
-        const cargarBtn = document.getElementById('cargarIndicadoresBtn');
-        const indicadoresContainer = document.getElementById('indicadoresContainer');
-        const indicadoresList = document.getElementById('indicadoresList');
-        const tablaContainer = document.getElementById('tablaContainer');
-        const tablaBody = document.getElementById('tablaBody');
-
-        // Mapa de niveles por ciclo (usando getNiveles)
-        const nivelesPorCiclo = {
-            'Preescolar': ['Educación Preescolar'],
-            'I Ciclo': ['Primero', 'Segundo', 'Tercero'],
-            'II Ciclo': ['Cuarto', 'Quinto', 'Sexto'],
-            'III Ciclo': ['Sétimo', 'Octavo', 'Noveno']
-        };
-
-        // Cuando cambia el ciclo, actualizar el select de niveles
-        cicloSelect.addEventListener('change', function() {
-            const ciclo = this.value;
-            nivelSelect.innerHTML = '<option value="">-- Seleccione nivel --</option>';
-            if (ciclo && nivelesPorCiclo[ciclo]) {
-                nivelesPorCiclo[ciclo].forEach(nivel => {
-                    const option = document.createElement('option');
-                    option.value = nivel;
-                    option.textContent = nivel;
-                    nivelSelect.appendChild(option);
-                });
-            }
-        });
-
-        // Botón cargar indicadores
-        cargarBtn.addEventListener('click', function() {
-            const ciclo = cicloSelect.value;
-            const nivel = nivelSelect.value;
-            const modulo = parseInt(moduloSelect.value);
-
-            if (!ciclo || !nivel || !modulo) {
-                alert('Debe seleccionar ciclo, nivel y módulo');
-                return;
-            }
-
-            // Usar la función getModulo del curriculum.js
-            let moduloData;
-            if (ciclo === 'Preescolar') {
-                moduloData = CURRICULO.preescolar.find(m => m.nivel === nivel && m.modulo === modulo);
-            } else if (ciclo === 'I Ciclo' || ciclo === 'II Ciclo') {
-                const nivelKey = nivel.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-                const primaria = CURRICULO.primaria[nivelKey];
-                moduloData = primaria?.find(m => m.modulo === modulo);
-            } else if (ciclo === 'III Ciclo') {
-                const nivelMap = { 'Sétimo':'setimo', 'Octavo':'octavo', 'Noveno':'noveno' };
-                const nivelKey = nivelMap[nivel];
-                if (nivelKey) {
-                    moduloData = CURRICULO.secundaria[nivelKey]?.find(m => m.modulo === modulo);
-                }
-            }
-
-            if (!moduloData) {
-                alert('No se encontraron indicadores para esta combinación');
-                return;
-            }
-
-            // Mostrar los indicadores conceptuales en el contenedor
-            let htmlIndicadores = '';
-            moduloData.areas.forEach(area => {
-                const areaNombre = AREAS_CONOCIMIENTO.find(a => a.id === area.areaId)?.nombre || area.areaId;
-                htmlIndicadores += `<h4 style="margin-top:1rem; color:#2E7D32;">${areaNombre}</h4>`;
-                area.saberesConceptuales.forEach(s => {
-                    htmlIndicadores += `<div class="indicator-item">• <strong>${s.concepto}:</strong> ${s.indicadorLogro}</div>`;
-                });
-            });
-            indicadoresList.innerHTML = htmlIndicadores;
-            indicadoresContainer.style.display = 'block';
-
-            // Crear filas en la tabla (una por cada saber conceptual)
-            tablaBody.innerHTML = '';
-            moduloData.areas.forEach(area => {
-                area.saberesConceptuales.forEach(s => {
-                    const row = tablaBody.insertRow();
-                    row.innerHTML = `
-                        <td><textarea class="indicador-logro" rows="2" style="width:100%;">${s.indicadorLogro}</textarea></td>
-                        <td><textarea class="estrategia" rows="2" style="width:100%;" placeholder="Escriba la estrategia..."></textarea></td>
-                        <td><textarea class="indicador-eval" rows="2" style="width:100%;" placeholder="Acción + Contenido + Condición"></textarea></td>
-                    `;
-                });
-            });
-            tablaContainer.style.display = 'block';
-        });
-
-        // Función para agregar filas adicionales
-        window.agregarFila = function() {
-            const row = tablaBody.insertRow();
-            row.innerHTML = `
-                <td><textarea class="indicador-logro" rows="2" style="width:100%;" placeholder="Nuevo indicador"></textarea></td>
-                <td><textarea class="estrategia" rows="2" style="width:100%;" placeholder="Estrategia..."></textarea></td>
-                <td><textarea class="indicador-eval" rows="2" style="width:100%;" placeholder="Acción + Contenido + Condición"></textarea></td>
-            `;
-        };
-
-        // Navegación: convertir los items del menú en enlaces reales
-        document.querySelectorAll('.nav-item').forEach(item => {
-            item.addEventListener('click', function(e) {
-                const page = this.dataset.page;
-                if (page) {
-                    window.location.href = page + '.html';
-                }
-            });
-        });
-    </script>
 </body>
 </html>
