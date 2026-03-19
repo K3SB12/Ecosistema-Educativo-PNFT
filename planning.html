@@ -14,6 +14,47 @@
             gap: 1rem;
             margin-bottom: 1.5rem;
         }
+        .selector-group select, .selector-group input {
+            width: 100%;
+            padding: 0.6rem;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+        }
+        .metodologia-opciones {
+            display: flex;
+            gap: 2rem;
+            flex-wrap: wrap;
+            margin: 1rem 0;
+            padding: 1rem;
+            background: #f9f9f9;
+            border-radius: 12px;
+        }
+        .metodologia-opciones label {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+            padding: 0.5rem 1rem;
+            border-radius: 30px;
+            background: white;
+            border: 1px solid #ddd;
+            transition: all 0.2s;
+        }
+        .metodologia-opciones label:hover {
+            background: #e8f5e9;
+            border-color: #2E7D32;
+        }
+        .metodologia-opciones input[type="radio"] {
+            accent-color: #2E7D32;
+            width: 18px;
+            height: 18px;
+        }
+        .metodologia-desc {
+            font-size: 0.85rem;
+            color: #666;
+            margin-top: 0.2rem;
+            margin-left: 1.8rem;
+        }
         .indicator-list {
             background: #f9f9f9;
             padding: 1.5rem;
@@ -30,15 +71,38 @@
         .indicator-item:last-child {
             border-bottom: none;
         }
-        .estrategias-box {
-            background: #f0f7f0;
-            padding: 1.5rem;
-            border-radius: 12px;
-            margin: 1.5rem 0;
-            border-left: 4px solid #2E7D32;
+        .tabla-container {
+            overflow-x: auto;
         }
-        .btn-ia {
-            background: #1976D2;
+        #tablaPlaneamiento {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+        #tablaPlaneamiento th {
+            background: #2E7D32;
+            color: white;
+            padding: 10px;
+            text-align: left;
+        }
+        #tablaPlaneamiento td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            vertical-align: top;
+        }
+        #tablaPlaneamiento textarea {
+            width: 100%;
+            border: none;
+            resize: vertical;
+            font-family: inherit;
+            padding: 5px;
+        }
+        #tablaPlaneamiento textarea:focus {
+            outline: 2px solid #2E7D32;
+            border-radius: 4px;
+        }
+        .btn-accion {
+            background: #2E7D32;
             color: white;
             border: none;
             padding: 0.7rem 1.5rem;
@@ -48,13 +112,28 @@
             display: inline-flex;
             align-items: center;
             gap: 0.5rem;
-            transition: background 0.2s;
             margin-right: 0.5rem;
+            margin-bottom: 0.5rem;
+            transition: background 0.2s;
+        }
+        .btn-accion:hover {
+            background: #1e5a20;
+        }
+        .btn-ia {
+            background: #1976D2;
         }
         .btn-ia:hover {
             background: #0d5a9e;
         }
-        /* Reutilizar estilos del modal de progresión */
+        .btn-secundario {
+            background: #f0f0f0;
+            color: #333;
+            border: 1px solid #ccc;
+        }
+        .btn-secundario:hover {
+            background: #e0e0e0;
+        }
+        /* Modal (reutilizado de progresión) */
         .modal {
             display: none;
             position: fixed;
@@ -93,8 +172,9 @@
             margin: 1.5rem 0;
             white-space: pre-wrap;
             font-family: monospace;
-            max-height: 300px;
+            max-height: 400px;
             overflow-y: auto;
+            font-size: 0.9rem;
         }
         .ia-buttons {
             display: flex;
@@ -141,7 +221,7 @@
 </head>
 <body>
     <div class="app">
-        <!-- Sidebar -->
+        <!-- Sidebar con enlace a Progresión -->
         <aside class="sidebar">
             <div class="sidebar-header">
                 <div class="logo">PNFT</div>
@@ -169,13 +249,13 @@
                 </div>
             </div>
 
-            <!-- Selectores -->
+            <!-- SECCIÓN 1: SELECCIÓN DE NIVEL Y MÓDULO -->
             <div class="recent-section">
                 <h2><i class="fas fa-search" style="color:#2E7D32;"></i> 1. Seleccionar nivel y módulo</h2>
                 <div class="selector-group">
                     <div>
                         <label><strong>Ciclo:</strong></label>
-                        <select id="cicloSelect" class="form-control">
+                        <select id="cicloSelect">
                             <option value="">-- Seleccione --</option>
                             <option value="preescolar">Preescolar</option>
                             <option value="primaria">I Ciclo</option>
@@ -185,112 +265,115 @@
                     </div>
                     <div>
                         <label><strong>Nivel:</strong></label>
-                        <select id="nivelSelect" class="form-control">
+                        <select id="nivelSelect">
                             <option value="">-- Primero seleccione ciclo --</option>
                         </select>
                     </div>
                     <div>
                         <label><strong>Módulo:</strong></label>
-                        <select id="moduloSelect" class="form-control">
+                        <select id="moduloSelect">
                             <option value="1">Módulo 1</option>
                             <option value="2">Módulo 2</option>
                         </select>
                     </div>
                 </div>
-                <button id="cargarIndicadoresBtn" class="action-btn" style="background:#2E7D32; color:white; border:none; padding:0.7rem 2rem;">
-                    <i class="fas fa-download"></i> Cargar indicadores
-                </button>
+                <button id="cargarBtn" class="btn-accion"><i class="fas fa-download"></i> Cargar indicadores</button>
             </div>
 
-            <!-- Contenedor de indicadores (inicialmente oculto) -->
-            <div id="indicadoresContainer" class="recent-section" style="display: none;">
-                <h2><i class="fas fa-list" style="color:#2E7D32;"></i> 2. Indicadores de logro</h2>
-                <div id="indicadoresList" class="indicator-list"></div>
-            </div>
-
-            <!-- Metodología activa (aparece después de cargar indicadores) -->
-            <div id="metodologiaContainer" class="recent-section" style="display: none;">
-                <h2><i class="fas fa-gamepad" style="color:#2E7D32;"></i> 3. Metodología activa</h2>
-                <div class="selector-group" style="grid-template-columns:1fr 1fr 1fr;">
-                    <div>
-                        <label><strong>Seleccione la metodología:</strong></label>
-                        <select id="metodologiaSelect" class="form-control">
-                            <option value="ABJ">Aprendizaje Basado en Juegos (ABJ)</option>
-                            <option value="ABR">Aprendizaje Basado en Retos (ABR)</option>
-                            <option value="Design Thinking">Design Thinking</option>
-                        </select>
-                    </div>
-                    <div style="display: flex; align-items: flex-end;">
-                        <button id="generarEstrategiasBtn" class="btn-ia">
-                            <i class="fas fa-robot"></i> Generar estrategias con IA
-                        </button>
-                    </div>
+            <!-- SECCIÓN 2: METODOLOGÍA ACTIVA (aparece después de cargar indicadores) -->
+            <div id="metodologiaSection" class="recent-section" style="display: none;">
+                <h2><i class="fas fa-gamepad" style="color:#2E7D32;"></i> 2. Metodología activa</h2>
+                <div class="metodologia-opciones">
+                    <label>
+                        <input type="radio" name="metodologia" value="ABJ" id="metABJ">
+                        <i class="fas fa-dice" style="color:#FF9800;"></i> ABJ (Aprendizaje Basado en Juegos)
+                    </label>
+                    <label>
+                        <input type="radio" name="metodologia" value="ABR" id="metABR">
+                        <i class="fas fa-tasks" style="color:#9C27B0;"></i> ABR (Aprendizaje Basado en Retos)
+                    </label>
+                    <label>
+                        <input type="radio" name="metodologia" value="Design Thinking" id="metDT">
+                        <i class="fas fa-lightbulb" style="color:#1976D2;"></i> Design Thinking
+                    </label>
+                </div>
+                <div id="metodologiaRecomendada" class="metodologia-desc">
+                    Selecciona una metodología. Según el ciclo, se sugiere: 
+                    <span id="sugerenciaMet"></span>
                 </div>
             </div>
 
-            <!-- Tabla de planeamiento (se muestra después de generar estrategias) -->
+            <!-- SECCIÓN 3: INDICADORES CARGADOS -->
+            <div id="indicadoresContainer" class="recent-section" style="display: none;">
+                <h2><i class="fas fa-list" style="color:#2E7D32;"></i> 3. Indicadores de logro</h2>
+                <div id="indicadoresList" class="indicator-list"></div>
+            </div>
+
+            <!-- SECCIÓN 4: TABLA DE PLANEAMIENTO -->
             <div id="tablaContainer" class="recent-section" style="display: none;">
                 <h2><i class="fas fa-table" style="color:#2E7D32;"></i> 4. Tabla de planeamiento</h2>
-                <table id="tablaPlaneamiento" style="width:100%; border-collapse:collapse;">
-                    <thead>
-                        <tr>
-                            <th>Indicadores de logro</th>
-                            <th>Estrategias de mediación</th>
-                            <th>Indicador de evaluación</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tablaBody">
-                        <!-- Se llenará con los indicadores cargados -->
-                    </tbody>
-                </table>
+                <div class="tabla-container">
+                    <table id="tablaPlaneamiento">
+                        <thead>
+                            <tr>
+                                <th>Indicadores de logro</th>
+                                <th>Estrategias de mediación</th>
+                                <th>Indicador de evaluación</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tablaBody">
+                            <!-- Se llena dinámicamente -->
+                        </tbody>
+                    </table>
+                </div>
                 <div style="margin-top: 1rem;">
-                    <button class="action-btn" style="background: #2E7D32; color: white;" onclick="agregarFila()">
-                        <i class="fas fa-plus"></i> Agregar fila
-                    </button>
-                    <button class="action-btn" style="background: #1976D2; color: white;" onclick="guardarPlaneamiento()">
-                        <i class="fas fa-save"></i> Guardar planeamiento
-                    </button>
+                    <button id="agregarFilaBtn" class="btn-secundario"><i class="fas fa-plus"></i> Agregar fila</button>
+                    <button id="guardarBtn" class="btn-accion"><i class="fas fa-save"></i> Guardar planeamiento</button>
+                    <button id="iaBtn" class="btn-accion btn-ia"><i class="fas fa-robot"></i> Generar prompt para IA</button>
                 </div>
             </div>
         </main>
     </div>
 
-    <!-- Modal para el prompt de IA (reutilizado) -->
+    <!-- Modal para prompt de IA (igual que en progresión) -->
     <div id="modalIA" class="modal">
         <div class="modal-content">
             <span class="close">&times;</span>
             <h2><i class="fas fa-robot" style="color:#2E7D32;"></i> Prompt generado para IA</h2>
-            <p>Este prompt contiene el contexto y los indicadores seleccionados. Cópialo y pégalo en tu IA favorita para obtener estrategias de mediación.</p>
-            <div id="promptTexto" class="prompt-area">
-                Generando prompt...
-            </div>
+            <p>Copia este prompt y pégalo en tu IA favorita para obtener estrategias de mediación.</p>
+            <div id="promptTexto" class="prompt-area">Generando...</div>
             <div class="ia-buttons">
                 <button id="btnChatGPT" class="ia-btn chatgpt"><i class="fab fa-openai"></i> ChatGPT</button>
                 <button id="btnCopilot" class="ia-btn copilot"><i class="fas fa-microsoft"></i> Copilot</button>
                 <button id="btnGemini" class="ia-btn gemini"><i class="fas fa-google"></i> Gemini</button>
             </div>
-            <div style="text-align: center; margin-top: 1.5rem;">
+            <div style="text-align: center;">
                 <button id="btnCopiarPrompt" class="copy-btn"><i class="fas fa-copy"></i> Copiar prompt</button>
             </div>
         </div>
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Referencias a elementos del DOM
+        (function() {
+            if (!window.CURRICULO) {
+                alert('Error: No se encontró window.CURRICULO. Verifique que curriculum.js esté cargado.');
+                return;
+            }
+
+            // Elementos DOM
             const cicloSelect = document.getElementById('cicloSelect');
             const nivelSelect = document.getElementById('nivelSelect');
             const moduloSelect = document.getElementById('moduloSelect');
-            const cargarBtn = document.getElementById('cargarIndicadoresBtn');
+            const cargarBtn = document.getElementById('cargarBtn');
+            const metodologiaSection = document.getElementById('metodologiaSection');
+            const sugerenciaMet = document.getElementById('sugerenciaMet');
             const indicadoresContainer = document.getElementById('indicadoresContainer');
             const indicadoresList = document.getElementById('indicadoresList');
-            const metodologiaContainer = document.getElementById('metodologiaContainer');
             const tablaContainer = document.getElementById('tablaContainer');
             const tablaBody = document.getElementById('tablaBody');
-            const generarBtn = document.getElementById('generarEstrategiasBtn');
-            const metodologiaSelect = document.getElementById('metodologiaSelect');
-            
-            // Modal
+            const agregarFilaBtn = document.getElementById('agregarFilaBtn');
+            const guardarBtn = document.getElementById('guardarBtn');
+            const iaBtn = document.getElementById('iaBtn');
             const modal = document.getElementById('modalIA');
             const spanClose = document.querySelector('.close');
             const promptTexto = document.getElementById('promptTexto');
@@ -299,25 +382,47 @@
             const btnCopilot = document.getElementById('btnCopilot');
             const btnGemini = document.getElementById('btnGemini');
 
-            let moduloDataGlobal = null; // Para guardar los datos del módulo cargado
+            // Variables para almacenar el módulo actual
+            let moduloActual = null;
 
             // Mapa de niveles por ciclo
             const nivelesPorCiclo = {
-                'preescolar': ['Educación Preescolar'],
-                'primaria': ['Primero', 'Segundo', 'Tercero', 'Cuarto', 'Quinto', 'Sexto'],
-                'secundaria': ['Sétimo', 'Octavo', 'Noveno']
+                preescolar: ['Educación Preescolar'],
+                primaria: ['Primero', 'Segundo', 'Tercero', 'Cuarto', 'Quinto', 'Sexto'],
+                secundaria: ['Sétimo', 'Octavo', 'Noveno']
             };
 
+            // Sugerencia de metodología según ciclo
+            function sugerirMetodologia(ciclo) {
+                if (ciclo === 'preescolar' || ciclo === 'primaria' && ['Primero','Segundo','Tercero'].includes(nivelSelect.value)) {
+                    return 'ABJ (Aprendizaje Basado en Juegos)';
+                } else if (ciclo === 'primaria' && ['Cuarto','Quinto','Sexto'].includes(nivelSelect.value)) {
+                    return 'ABR (Aprendizaje Basado en Retos)';
+                } else if (ciclo === 'secundaria') {
+                    return 'Design Thinking';
+                }
+                return '—';
+            }
+
+            // Actualizar niveles al cambiar ciclo
             cicloSelect.addEventListener('change', function() {
                 const ciclo = this.value;
                 nivelSelect.innerHTML = '<option value="">-- Seleccione --</option>';
                 if (ciclo && nivelesPorCiclo[ciclo]) {
                     nivelesPorCiclo[ciclo].forEach(n => {
-                        nivelSelect.innerHTML += `<option value="${n}">${n}</option>`;
+                        const option = document.createElement('option');
+                        option.value = n;
+                        option.textContent = n;
+                        nivelSelect.appendChild(option);
                     });
                 }
+                // Ocultar secciones si cambia ciclo
+                metodologiaSection.style.display = 'none';
+                indicadoresContainer.style.display = 'none';
+                tablaContainer.style.display = 'none';
             });
 
+            // Cargar indicadores
             cargarBtn.addEventListener('click', function() {
                 const ciclo = cicloSelect.value;
                 const nivel = nivelSelect.value;
@@ -328,17 +433,17 @@
                     return;
                 }
 
-                // Buscar módulo en CURRICULO
+                // Buscar módulo en el currículo
                 let moduloData = null;
                 if (ciclo === 'preescolar') {
-                    moduloData = window.CURRICULO?.preescolar?.find(m => m.nivel === nivel && m.modulo === modulo);
+                    moduloData = window.CURRICULO.preescolar?.find(m => m.nivel === nivel && m.modulo === modulo);
                 } else if (ciclo === 'primaria') {
                     const nivelKey = nivel.toLowerCase();
-                    moduloData = window.CURRICULO?.primaria?.[nivelKey]?.find(m => m.modulo === modulo);
+                    moduloData = window.CURRICULO.primaria?.[nivelKey]?.find(m => m.modulo === modulo);
                 } else if (ciclo === 'secundaria') {
-                    const mapa = { 'sétimo':'setimo', 'octavo':'octavo', 'noveno':'noveno' };
-                    const nivelKey = mapa[nivel.toLowerCase()];
-                    moduloData = window.CURRICULO?.secundaria?.[nivelKey]?.find(m => m.modulo === modulo);
+                    const nivelMap = { 'Sétimo':'setimo', 'Octavo':'octavo', 'Noveno':'noveno' };
+                    const nivelKey = nivelMap[nivel];
+                    moduloData = window.CURRICULO.secundaria?.[nivelKey]?.find(m => m.modulo === modulo);
                 }
 
                 if (!moduloData) {
@@ -346,84 +451,162 @@
                     return;
                 }
 
-                moduloDataGlobal = moduloData;
+                moduloActual = moduloData;
 
-                // Mostrar indicadores conceptuales
+                // Mostrar indicadores
                 let htmlIndicadores = '';
                 moduloData.areas.forEach(area => {
                     const areaNombre = window.AREAS_CONOCIMIENTO?.find(a => a.id === area.areaId)?.nombre || area.areaId;
-                    htmlIndicadores += `<h4 style="margin-top:1rem; color:#2E7D32;">${areaNombre}</h4>`;
+                    htmlIndicadores += `<h4 style="margin:1rem 0 0.5rem; color:#2E7D32;">${areaNombre}</h4>`;
                     area.saberesConceptuales.forEach(s => {
                         htmlIndicadores += `<div class="indicator-item">• <strong>${s.concepto}:</strong> ${s.indicadorLogro}</div>`;
                     });
                 });
                 indicadoresList.innerHTML = htmlIndicadores;
                 indicadoresContainer.style.display = 'block';
-                metodologiaContainer.style.display = 'block';
+
+                // Mostrar sección de metodología y sugerir
+                metodologiaSection.style.display = 'block';
+                const sugerencia = sugerirMetodologia(ciclo);
+                sugerenciaMet.textContent = sugerencia;
+                // Preseleccionar según sugerencia
+                if (sugerencia.includes('ABJ')) document.getElementById('metABJ').checked = true;
+                else if (sugerencia.includes('ABR')) document.getElementById('metABR').checked = true;
+                else if (sugerencia.includes('Design')) document.getElementById('metDT').checked = true;
+
+                // Generar filas en la tabla
+                tablaBody.innerHTML = '';
+                moduloData.areas.forEach(area => {
+                    area.saberesConceptuales.forEach(s => {
+                        const row = tablaBody.insertRow();
+                        row.innerHTML = `
+                            <td><textarea class="indicador-logro" rows="2">${s.indicadorLogro}</textarea></td>
+                            <td><textarea class="estrategia" rows="2" placeholder="Estrategia según metodología..."></textarea></td>
+                            <td><textarea class="indicador-eval" rows="2" placeholder="Acción + Contenido + Condición"></textarea></td>
+                        `;
+                    });
+                });
+                tablaContainer.style.display = 'block';
             });
 
-            generarBtn.addEventListener('click', function() {
-                if (!moduloDataGlobal) {
-                    alert('Primero debe cargar los indicadores');
-                    return;
-                }
+            // Agregar fila
+            agregarFilaBtn.addEventListener('click', function() {
+                const row = tablaBody.insertRow();
+                row.innerHTML = `
+                    <td><textarea class="indicador-logro" rows="2" placeholder="Indicador de logro"></textarea></td>
+                    <td><textarea class="estrategia" rows="2" placeholder="Estrategia..."></textarea></td>
+                    <td><textarea class="indicador-eval" rows="2" placeholder="Acción + Contenido + Condición"></textarea></td>
+                `;
+            });
 
-                const metodologia = metodologiaSelect.value;
+            // Guardar (simulado)
+            guardarBtn.addEventListener('click', function() {
+                const plannings = JSON.parse(localStorage.getItem('pnft_plannings') || '[]');
+                const nuevo = {
+                    id: Date.now(),
+                    fecha: new Date().toLocaleDateString('es-CR'),
+                    ciclo: cicloSelect.value,
+                    nivel: nivelSelect.value,
+                    modulo: moduloSelect.value,
+                    metodologia: document.querySelector('input[name="metodologia"]:checked')?.value || '',
+                    filas: []
+                };
+                document.querySelectorAll('#tablaBody tr').forEach(row => {
+                    nuevo.filas.push({
+                        indicador: row.querySelector('.indicador-logro')?.value || '',
+                        estrategia: row.querySelector('.estrategia')?.value || '',
+                        evaluacion: row.querySelector('.indicador-eval')?.value || ''
+                    });
+                });
+                plannings.push(nuevo);
+                localStorage.setItem('pnft_plannings', JSON.stringify(plannings));
+                alert('✅ Planeamiento guardado localmente');
+            });
+
+            // Generar prompt para IA
+            iaBtn.addEventListener('click', function() {
+                if (!moduloActual) return alert('Primero cargue los indicadores');
+                const metodologia = document.querySelector('input[name="metodologia"]:checked')?.value || 'No seleccionada';
                 const ciclo = cicloSelect.value;
                 const nivel = nivelSelect.value;
                 const modulo = moduloSelect.value;
 
+                // Recolectar filas de la tabla
+                const filas = [];
+                document.querySelectorAll('#tablaBody tr').forEach(row => {
+                    filas.push({
+                        indicador: row.querySelector('.indicador-logro')?.value || '',
+                        estrategia: row.querySelector('.estrategia')?.value || '',
+                        evaluacion: row.querySelector('.indicador-eval')?.value || ''
+                    });
+                });
+
                 // Construir prompt
-                let prompt = `**CONTEXTO**: Programa Nacional de Formación Tecnológica (PNFT), Ministerio de Educación Pública de Costa Rica, curso lectivo 2026.\n\n`;
+                let prompt = `**CONTEXTO**: Programa Nacional de Formación Tecnológica (PNFT), MEP Costa Rica, curso lectivo 2026.\n\n`;
                 prompt += `**DATOS DEL PLANEAMIENTO**:\n`;
                 prompt += `- Ciclo: ${ciclo}\n`;
                 prompt += `- Nivel: ${nivel}\n`;
                 prompt += `- Módulo: ${modulo}\n`;
-                prompt += `- Metodología activa seleccionada: ${metodologia}\n\n`;
-                prompt += `**INDICADORES DE LOGRO DEL MÓDULO**:\n`;
+                prompt += `- Metodología seleccionada: ${metodologia}\n\n`;
 
-                moduloDataGlobal.areas.forEach(area => {
+                prompt += `**SABERES E INDICADORES DEL MÓDULO**:\n`;
+                moduloActual.areas.forEach(area => {
                     const areaNombre = window.AREAS_CONOCIMIENTO?.find(a => a.id === area.areaId)?.nombre || area.areaId;
-                    prompt += `\nÁrea: ${areaNombre}\n`;
+                    prompt += `\n### ${areaNombre}\n`;
                     area.saberesConceptuales.forEach(s => {
-                        prompt += `- ${s.indicadorLogro}\n`;
+                        prompt += `- **${s.concepto}**: ${s.indicadorLogro}\n`;
                     });
                 });
 
+                prompt += `\n**FILAS DE LA TABLA ACTUAL** (pueden estar vacías o parcialmente llenas):\n`;
+                filas.forEach((f, i) => {
+                    prompt += `\nFila ${i+1}:\n`;
+                    prompt += `- Indicador: ${f.indicador || '(vacío)'}\n`;
+                    prompt += `- Estrategia actual: ${f.estrategia || '(vacío)'}\n`;
+                    prompt += `- Evaluación actual: ${f.evaluacion || '(vacío)'}\n`;
+                });
+
                 prompt += `\n**INSTRUCCIONES PARA LA IA**:\n`;
-                prompt += `Genera estrategias de mediación para una lección de 40 minutos (inicio 10 min, desarrollo 20 min, cierre 10 min) utilizando la metodología ${metodologia}. `;
-                prompt += `Para cada indicador de logro, propón una actividad concreta y un indicador de evaluación en formato "Acción + Contenido + Condición". `;
-                prompt += `Además, sugiere instrumentos de evaluación (lista de cotejo, rúbrica, escala).\n\n`;
-                prompt += `El formato de respuesta debe ser una tabla con tres columnas: Indicadores de logro, Estrategias de mediación, Indicadores de evaluación.`;
+                prompt += `Actúa como especialista en diseño curricular del PNFT. Con base en la metodología seleccionada (${metodologia}), genera estrategias de mediación para una lección de 40 minutos (inicio 10 min, desarrollo 20 min, cierre 10 min) que integren los saberes del módulo. También sugiere indicadores de evaluación (Acción + Contenido + Condición) coherentes.\n\n`;
+                if (metodologia === 'ABJ') {
+                    prompt += `**ABJ**: Propón actividades lúdicas con reglas claras, retroalimentación inmediata y mecánicas de juego.\n`;
+                } else if (metodologia === 'ABR') {
+                    prompt += `**ABR**: Diseña un reto claro y medible, con producto final tangible y trabajo colaborativo.\n`;
+                } else if (metodologia === 'Design Thinking') {
+                    prompt += `**Design Thinking**: Desarrolla las fases: Empatizar, Definir, Idear, Prototipar y Evaluar.\n`;
+                }
+
+                prompt += `\n**FORMATO DE RESPUESTA ESPERADO**:\n`;
+                prompt += `Devuelve un JSON con la estructura:\n`;
+                prompt += `{\n`;
+                prompt += `  "inicio": "descripción de la actividad de inicio",\n`;
+                prompt += `  "desarrollo": "descripción de la actividad principal",\n`;
+                prompt += `  "cierre": "descripción del cierre",\n`;
+                prompt += `  "evaluaciones": ["indicador de evaluación 1", "indicador 2", ...]\n`;
+                prompt += `}\n\n`;
+                prompt += `**OBJETIVO**: Ayudar al docente a completar su planeamiento con estrategias alineadas al currículo y la metodología.`;
 
                 promptTexto.textContent = prompt;
                 modal.style.display = 'block';
             });
 
-            // Funciones para el modal (copiar, abrir IAs) - igual que en progresión
-            spanClose.onclick = function() { modal.style.display = 'none'; }
-            window.onclick = function(event) { if (event.target == modal) modal.style.display = 'none'; }
+            // Modal: cerrar
+            spanClose.onclick = () => modal.style.display = 'none';
+            window.onclick = (e) => { if (e.target == modal) modal.style.display = 'none'; };
+
+            // Copiar prompt
             btnCopiar.addEventListener('click', function() {
-                navigator.clipboard.writeText(promptTexto.textContent).then(() => alert('✅ Prompt copiado'));
+                navigator.clipboard.writeText(promptTexto.textContent).then(() => {
+                    alert('✅ Prompt copiado');
+                }).catch(() => alert('❌ No se pudo copiar'));
             });
+
+            // Abrir IAs
             btnChatGPT.addEventListener('click', () => window.open('https://chat.openai.com', '_blank'));
             btnCopilot.addEventListener('click', () => window.open('https://copilot.microsoft.com', '_blank'));
             btnGemini.addEventListener('click', () => window.open('https://gemini.google.com', '_blank'));
 
-            // Función para agregar filas a la tabla (opcional)
-            window.agregarFila = function() {
-                const row = tablaBody.insertRow();
-                row.innerHTML = `
-                    <td><textarea rows="2" style="width:100%;" placeholder="Indicador de logro"></textarea></td>
-                    <td><textarea rows="2" style="width:100%;" placeholder="Estrategias de mediación"></textarea></td>
-                    <td><textarea rows="2" style="width:100%;" placeholder="Indicador de evaluación"></textarea></td>
-                `;
-            };
-
-            window.guardarPlaneamiento = function() {
-                alert('Función de guardado en desarrollo. Por ahora, copie el prompt y use la IA.');
-            };
-        });
+        })();
     </script>
 </body>
 </html>
