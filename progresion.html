@@ -71,6 +71,19 @@
             display: inline-block;
             margin-bottom: 0.3rem;
         }
+        .metodologia-badge {
+            background: #1976D2;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            display: inline-block;
+            margin-right: 0.5rem;
+        }
+        .metodologia-abj { background: #FF9800; }
+        .metodologia-abr { background: #9C27B0; }
+        .metodologia-dt { background: #1976D2; }
         .saber-item {
             margin-bottom: 0.5rem;
             padding-left: 0.5rem;
@@ -99,19 +112,6 @@
             font-size: 0.9rem;
             color: #1e5a20;
         }
-        /* Metodología badges */
-        .metodologia-badge {
-            padding: 4px 8px;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            font-weight: 600;
-            display: inline-block;
-            text-align: center;
-            color: white;
-        }
-        .metodologia-abj { background: #FF9800; }  /* Naranja */
-        .metodologia-abr { background: #9C27B0; }  /* Morado */
-        .metodologia-dt { background: #1976D2; }   /* Azul */
         .btn-ia {
             background: #1976D2;
             color: white;
@@ -131,6 +131,17 @@
         }
         .btn-ia i {
             font-size: 1.2rem;
+        }
+        .btn-reset {
+            background: #f0f0f0;
+            border: 1px solid #ccc;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+        .btn-reset:hover {
+            background: #e0e0e0;
         }
         /* Modal */
         .modal {
@@ -171,8 +182,9 @@
             margin: 1.5rem 0;
             white-space: pre-wrap;
             font-family: monospace;
-            max-height: 300px;
+            max-height: 400px;
             overflow-y: auto;
+            font-size: 0.9rem;
         }
         .ia-buttons {
             display: flex;
@@ -219,7 +231,7 @@
 </head>
 <body>
     <div class="app">
-        <!-- Sidebar (con enlace a Progresión activo) -->
+        <!-- Sidebar -->
         <aside class="sidebar">
             <div class="sidebar-header">
                 <div class="logo">PNFT</div>
@@ -290,7 +302,7 @@
                 <button id="btnIA" class="btn-ia"><i class="fas fa-robot"></i> Generar prompt con IA</button>
             </div>
 
-            <!-- Tabla de progresión -->
+            <!-- Tabla de progresión (con 7 columnas) -->
             <div class="table-container">
                 <table id="tablaProgresion">
                     <thead>
@@ -298,8 +310,8 @@
                             <th>Ciclo</th>
                             <th>Nivel</th>
                             <th>Módulo</th>
-                            <th>Metodología</th>
                             <th>Área</th>
+                            <th>Metodología</th>
                             <th>RdA / Saberes</th>
                             <th id="thDiagnostico">Diagnóstico</th>
                         </tr>
@@ -317,7 +329,7 @@
         <div class="modal-content">
             <span class="close">&times;</span>
             <h2><i class="fas fa-robot" style="color:#2E7D32;"></i> Prompt generado para IA</h2>
-            <p>Este prompt contiene el contexto, los saberes seleccionados y la metodología sugerida. Cópialo y pégalo en tu IA favorita.</p>
+            <p>Este prompt contiene el contexto y los saberes seleccionados. Cópialo y pégalo en tu IA favorita.</p>
             <div id="promptTexto" class="prompt-area">
                 Generando prompt...
             </div>
@@ -391,6 +403,19 @@
                 actualizarNiveles(this.value);
             });
 
+            // Función para determinar metodología según ciclo
+            function obtenerMetodologia(cicloTexto) {
+                if (cicloTexto.includes('Preescolar') || cicloTexto.includes('I Ciclo')) {
+                    return { nombre: 'ABJ', clase: 'metodologia-abj' };
+                } else if (cicloTexto.includes('II Ciclo')) {
+                    return { nombre: 'ABR', clase: 'metodologia-abr' };
+                } else if (cicloTexto.includes('III Ciclo') || cicloTexto.includes('Secundaria')) {
+                    return { nombre: 'Design Thinking', clase: 'metodologia-dt' };
+                } else {
+                    return { nombre: '—', clase: '' };
+                }
+            }
+
             // Renderizar tabla
             function renderizarTabla(cicloFiltro, nivelFiltro, moduloFiltro) {
                 let html = '';
@@ -407,24 +432,7 @@
                             if (filtroNivel !== 'todos' && modulo.nivel !== filtroNivel) return;
                             modulo.areas.forEach(area => {
                                 const areaNombre = window.AREAS_CONOCIMIENTO?.find(a => a.id === area.areaId)?.nombre || area.areaId;
-                                
-                                // Determinar metodología según el ciclo
-                                let metodologia = '';
-                                let metodologiaClass = '';
-                                if (cicloTexto.includes('Preescolar') || cicloTexto.includes('I Ciclo') || (cicloTexto === 'Primaria' && modulo.nivel && ['Primero','Segundo','Tercero'].includes(modulo.nivel))) {
-                                    metodologia = 'ABJ';
-                                    metodologiaClass = 'metodologia-abj';
-                                } else if (cicloTexto.includes('II Ciclo') || (cicloTexto === 'Primaria' && modulo.nivel && ['Cuarto','Quinto','Sexto'].includes(modulo.nivel))) {
-                                    metodologia = 'ABR';
-                                    metodologiaClass = 'metodologia-abr';
-                                } else if (cicloTexto.includes('III Ciclo') || cicloTexto === 'Secundaria') {
-                                    metodologia = 'Design Thinking';
-                                    metodologiaClass = 'metodologia-dt';
-                                } else {
-                                    metodologia = 'No definida';
-                                    metodologiaClass = '';
-                                }
-
+                                const metodologia = obtenerMetodologia(cicloTexto);
                                 area.saberesConceptuales.forEach(saber => {
                                     totalSaberes++;
                                     const saberId = `${cicloTexto}-${modulo.nivel}-${modulo.modulo}-${area.areaId}-${saber.concepto}`.replace(/\s/g, '_');
@@ -435,8 +443,8 @@
                                         <td>${cicloTexto}</td>
                                         <td>${modulo.nivel}</td>
                                         <td>${modulo.modulo}</td>
-                                        <td><span class="metodologia-badge ${metodologiaClass}">${metodologia}</span></td>
                                         <td><span class="area-badge">${areaNombre}</span></td>
+                                        <td><span class="metodologia-badge ${metodologia.clase}">${metodologia.nombre}</span></td>
                                         <td>
                                             <div><strong>RdA:</strong> ${area.rda || 'No disponible'}</div>
                                             <div class="saber-item">
@@ -459,24 +467,7 @@
                                 if (filtroNivel !== 'todos' && modulo.nivel !== filtroNivel) return;
                                 modulo.areas.forEach(area => {
                                     const areaNombre = window.AREAS_CONOCIMIENTO?.find(a => a.id === area.areaId)?.nombre || area.areaId;
-                                    
-                                    // Determinar metodología según el ciclo
-                                    let metodologia = '';
-                                    let metodologiaClass = '';
-                                    if (cicloTexto.includes('Preescolar') || cicloTexto.includes('I Ciclo') || (cicloTexto === 'Primaria' && modulo.nivel && ['Primero','Segundo','Tercero'].includes(modulo.nivel))) {
-                                        metodologia = 'ABJ';
-                                        metodologiaClass = 'metodologia-abj';
-                                    } else if (cicloTexto.includes('II Ciclo') || (cicloTexto === 'Primaria' && modulo.nivel && ['Cuarto','Quinto','Sexto'].includes(modulo.nivel))) {
-                                        metodologia = 'ABR';
-                                        metodologiaClass = 'metodologia-abr';
-                                    } else if (cicloTexto.includes('III Ciclo') || cicloTexto === 'Secundaria') {
-                                        metodologia = 'Design Thinking';
-                                        metodologiaClass = 'metodologia-dt';
-                                    } else {
-                                        metodologia = 'No definida';
-                                        metodologiaClass = '';
-                                    }
-
+                                    const metodologia = obtenerMetodologia(cicloTexto);
                                     area.saberesConceptuales.forEach(saber => {
                                         totalSaberes++;
                                         const saberId = `${cicloTexto}-${modulo.nivel}-${modulo.modulo}-${area.areaId}-${saber.concepto}`.replace(/\s/g, '_');
@@ -487,8 +478,8 @@
                                             <td>${cicloTexto}</td>
                                             <td>${modulo.nivel}</td>
                                             <td>${modulo.modulo}</td>
-                                            <td><span class="metodologia-badge ${metodologiaClass}">${metodologia}</span></td>
                                             <td><span class="area-badge">${areaNombre}</span></td>
+                                            <td><span class="metodologia-badge ${metodologia.clase}">${metodologia.nombre}</span></td>
                                             <td>
                                                 <div><strong>RdA:</strong> ${area.rda || 'No disponible'}</div>
                                                 <div class="saber-item">
@@ -574,22 +565,23 @@
                 });
             });
 
-            // Generar prompt para IA
+            // Generar prompt con la estructura solicitada
             function generarPrompt() {
                 const saberesSeleccionados = [];
                 document.querySelectorAll('.diagnostico-checkbox:checked').forEach(cb => {
                     const tr = cb.closest('tr');
                     if (!tr) return;
                     const celdas = tr.querySelectorAll('td');
-                    if (celdas.length < 7) return; // Ahora tenemos 7 columnas
+                    if (celdas.length < 6) return; // Ahora tenemos 6 celdas de datos + check
                     saberesSeleccionados.push({
                         ciclo: celdas[0].textContent.trim(),
                         nivel: celdas[1].textContent.trim(),
                         modulo: celdas[2].textContent.trim(),
-                        metodologia: celdas[3].textContent.trim(),
-                        area: celdas[4].textContent.trim(),
+                        area: celdas[3].textContent.trim(),
+                        metodologia: celdas[4].textContent.trim(),
+                        rda: celdas[5].querySelector('div:first-child strong + span')?.textContent || celdas[5].querySelector('div:first-child')?.textContent.replace('RdA:', '').trim() || '',
                         saber: celdas[5].querySelector('.saber-item strong')?.textContent || '',
-                        indicador: celdas[5].querySelector('.saber-item')?.innerText || ''
+                        indicador: celdas[5].querySelector('.saber-item')?.innerText.replace(/.*?:\s*/, '') || ''
                     });
                 });
 
@@ -598,31 +590,66 @@
                     return null;
                 }
 
-                let prompt = `**CONTEXTO**: Programa Nacional de Formación Tecnológica (PNFT), Ministerio de Educación Pública de Costa Rica, curso lectivo 2026.\n\n`;
+                // Construir prompt detallado
+                let prompt = `**INSTRUCCIONES PARA LA IA**:\n\n`;
+                prompt += `Actúa como especialista en diseño curricular del Programa Nacional de Formación Tecnológica (PNFT) del MEP Costa Rica.\n\n`;
+                prompt += `Con base en los saberes seleccionados por el docente, genera un análisis de progresión curricular que evidencie cómo la metodología (ABJ, ABR o Design Thinking) funciona como eje articulador del aprendizaje y de la construcción de la matriz de saberes.\n\n`;
                 prompt += `**SABERES SELECCIONADOS POR EL DOCENTE** (marcados como "dominados" o en proceso):\n\n`;
+
                 saberesSeleccionados.forEach((s, index) => {
-                    prompt += `${index+1}. **${s.ciclo} - ${s.nivel} (Mód. ${s.modulo})**\n`;
-                    prompt += `   - Metodología sugerida: ${s.metodologia}\n`;
-                    prompt += `   - Área: ${s.area}\n`;
+                    prompt += `${index+1}. **${s.ciclo} - ${s.nivel} (Mód. ${s.modulo}) - ${s.area}**\n`;
+                    prompt += `   - Metodología: ${s.metodologia}\n`;
                     prompt += `   - Concepto: ${s.saber}\n`;
-                    prompt += `   - Indicador: ${s.indicador}\n\n`;
+                    prompt += `   - Indicador de logro: ${s.indicador}\n`;
+                    prompt += `   - RdA asociado: ${s.rda}\n\n`;
                 });
 
-                prompt += `**INSTRUCCIONES PARA LA IA**:\n`;
-                prompt += `Con base en los saberes anteriores, genera un análisis de progresión curricular que incluya:\n`;
-                prompt += `1. **Relaciones entre los saberes**: Explica cómo se conectan unos con otros, identificando posibles prerrequisitos y secuencias lógicas.\n`;
-                prompt += `2. **Proyección por ciclos**: Indica cómo estos saberes contribuyen a los Resultados de Aprendizaje (RdA) de cada ciclo (Preescolar, I Ciclo, II Ciclo, III Ciclo).\n`;
-                prompt += `3. **Recomendaciones didácticas**: Sugiere una ruta de aprendizaje (inicio, desarrollo, cierre) para abordar estos saberes de manera integrada, considerando la metodología activa correspondiente (ABJ, ABR o Design Thinking).\n`;
-                prompt += `4. **Mapa conceptual o tabla**: Si es posible, representa visualmente la progresión (puede ser en formato texto, con viñetas o una tabla).\n\n`;
-                prompt += `5. “Entrega la matriz completa de los saberes del PNFT 2026 desde Preescolar hasta Noveno Año en formato tabla. Cada grado debe ir en una tabla independiente con las columnas: Grado, Módulo, Concepto, Indicador,Metodología, Actividad sugerida y Posible instrumento de evaluación. Al finalizar las tablas, incluye un resumen integrador que muestre la progresión por ciclo (Preescolar, I, II, III) y cómo se articulan las áreas de Apropiación Tecnológica, Programación y Algoritmos, Computación Física y Robótica, y Ciencia de Datos e IA para alcanzar las competencias (RdA).
-Si el docente selecciona únicamente algunos saberes, entrega la matriz solo de esos saberes seleccionados en el mismo formato, manteniendo igualmente la articulación por ciclo y áreas.”\n\n`;
+                prompt += `El análisis debe incluir:\n\n`;
+                prompt += `1. **Relaciones entre los saberes**\n`;
+                prompt += `   Explica cómo se conectan los saberes entre sí, identificando prerrequisitos, secuencias lógicas y niveles de complejidad (de lo concreto a lo abstracto).\n\n`;
+                prompt += `2. **Alineación curricular explícita**\n`;
+                prompt += `   Establece de forma clara la relación:\n`;
+                prompt += `   **saberes → indicadores de logro → actividades de mediación → estrategias e instrumentos de evaluación → Resultados de Aprendizaje (RdA)**.\n`;
+                prompt += `   Debe evidenciarse coherencia, progresión y trazabilidad del aprendizaje.\n\n`;
+                prompt += `3. **Proyección por ciclos**\n`;
+                prompt += `   Indica cómo estos saberes contribuyen al desarrollo de competencias y al logro de los RdA en cada ciclo (Preescolar, I Ciclo, II Ciclo, III Ciclo), mostrando la evolución del pensamiento (reconocer, comprender, aplicar, crear).\n\n`;
+                prompt += `4. **Rol de la metodología como eje articulador**\n`;
+                prompt += `   Explica cómo la metodología:\n`;
+                prompt += `   - Organiza la progresión de los saberes en una ruta o matriz coherente\n`;
+                prompt += `   - Define el tipo de experiencias de aprendizaje según el ciclo\n`;
+                prompt += `   - Permite la transición desde el aprendizaje lúdico (ABJ), hacia la resolución de retos (ABR) y la innovación (Design Thinking)\n`;
+                prompt += `   - Garantiza el desarrollo gradual de competencias\n\n`;
+                prompt += `5. **Recomendaciones didácticas**\n`;
+                prompt += `   Propone una ruta de aprendizaje (inicio, desarrollo, cierre) para abordar los saberes de forma integrada, según la metodología correspondiente.\n\n`;
+                prompt += `6. **Mapa conceptual o representación visual**\n`;
+                prompt += `   Representa la progresión de los saberes mediante un esquema, mapa conceptual o tabla.\n\n`;
+                prompt += `7. **Matriz de saberes**\n`;
+                prompt += `   Entrega la matriz en formato tabla:\n`;
+                prompt += `   Columnas:\n`;
+                prompt += `   Grado | Módulo | Concepto | Indicador | Metodología | Actividad sugerida | Posible instrumento de evaluación\n`;
+                prompt += `   - Cada grado debe presentarse en una tabla independiente.\n`;
+                prompt += `   - Si el docente selecciona solo algunos saberes, entregar únicamente esos saberes en la matriz.\n`;
+                prompt += `   - Mantener la articulación con las áreas:\n`;
+                prompt += `     - Apropiación Tecnológica y Digital\n`;
+                prompt += `     - Programación y Algoritmos\n`;
+                prompt += `     - Computación Física y Robótica\n`;
+                prompt += `     - Ciencia de Datos e IA\n\n`;
+                prompt += `8. **Resumen integrador por ciclo**\n`;
+                prompt += `   Al finalizar, incluir un análisis que evidencie cómo la progresión permite alcanzar las competencias (RdA) por ciclo y cómo se articulan las áreas del PNFT.\n\n`;
+                prompt += `9. **Conclusión pedagógica obligatoria**\n`;
+                prompt += `   Incluir una conclusión donde se argumente que:\n`;
+                prompt += `   la metodología no solo orienta la práctica pedagógica, sino que funciona como un eje articulador que estructura la progresión de los saberes en una matriz coherente, permitiendo la alineación entre indicadores, actividades, evaluación y garantizando el desarrollo gradual de competencias y el logro de los Resultados de Aprendizaje (RdA) por ciclo.\n\n`;
 
                 prompt += `**INSTRUCCIONES ADICIONALES SEGÚN METODOLOGÍA**:\n`;
-                prompt += `- Para saberes de Preescolar y I Ciclo (ABJ), propón actividades lúdicas con reglas claras, retroalimentación inmediata y elementos de juego.\n`;
-                prompt += `- Para II Ciclo (ABR), diseña retos claros y medibles con productos finales tangibles y trabajo colaborativo.\n`;
-                prompt += `- Para III Ciclo (Design Thinking), guía el proceso con las fases: Empatizar, Definir, Idear, Prototipar y Evaluar.\n\n`;
+                prompt += `- Para Preescolar e I Ciclo (ABJ):\n`;
+                prompt += `  Proponer actividades lúdicas con reglas claras, retroalimentación inmediata, roles y mecánicas de juego.\n`;
+                prompt += `- Para II Ciclo (ABR):\n`;
+                prompt += `  Diseñar retos claros, medibles, con productos finales tangibles y trabajo colaborativo.\n`;
+                prompt += `- Para III Ciclo (Design Thinking):\n`;
+                prompt += `  Desarrollar las fases: Empatizar, Definir, Idear, Prototipar y Evaluar.\n\n`;
 
-                prompt += `El objetivo es que el docente tenga una visión clara de cómo los saberes seleccionados se articulan para alcanzar las competencias (RdA) por ciclo y por nivel del PNFT.`;
+                prompt += `**OBJETIVO**:\n`;
+                prompt += `Garantizar que el análisis permita al docente comprender cómo los saberes se organizan en una progresión curricular coherente, alineada con los indicadores de logro y orientada al desarrollo de competencias y al cumplimiento de los Resultados de Aprendizaje (RdA) del PNFT.`;
 
                 return prompt;
             }
