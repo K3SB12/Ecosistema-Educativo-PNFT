@@ -8,13 +8,14 @@
     <link rel="stylesheet" href="css/style.css">
     <script src="js/curriculum.js"></script>
     <style>
+        /* Estilos adicionales para planning */
         .selector-group {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 1rem;
             margin-bottom: 1.5rem;
         }
-        .selector-group select, .selector-group input {
+        .selector-group select {
             width: 100%;
             padding: 0.6rem;
             border-radius: 8px;
@@ -133,7 +134,7 @@
         .btn-secundario:hover {
             background: #e0e0e0;
         }
-        /* Modal (reutilizado de progresión) */
+        /* Modal */
         .modal {
             display: none;
             position: fixed;
@@ -217,6 +218,14 @@
             align-items: center;
             gap: 0.5rem;
         }
+        textarea#iaJsonInput {
+            width: 100%;
+            padding: 0.8rem;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            font-family: monospace;
+            resize: vertical;
+        }
     </style>
 </head>
 <body>
@@ -280,7 +289,7 @@
                 <button id="cargarBtn" class="btn-accion"><i class="fas fa-download"></i> Cargar indicadores</button>
             </div>
 
-            <!-- SECCIÓN 2: METODOLOGÍA ACTIVA (aparece después de cargar indicadores) -->
+            <!-- SECCIÓN 2: METODOLOGÍA ACTIVA -->
             <div id="metodologiaSection" class="recent-section" style="display: none;">
                 <h2><i class="fas fa-gamepad" style="color:#2E7D32;"></i> 2. Metodología activa</h2>
                 <div class="metodologia-opciones">
@@ -298,8 +307,7 @@
                     </label>
                 </div>
                 <div id="metodologiaRecomendada" class="metodologia-desc">
-                    Selecciona una metodología. Según el ciclo, se sugiere: 
-                    <span id="sugerenciaMet"></span>
+                    Según el ciclo, se sugiere: <span id="sugerenciaMet"></span>
                 </div>
             </div>
 
@@ -330,17 +338,18 @@
                     <button id="agregarFilaBtn" class="btn-secundario"><i class="fas fa-plus"></i> Agregar fila</button>
                     <button id="guardarBtn" class="btn-accion"><i class="fas fa-save"></i> Guardar planeamiento</button>
                     <button id="iaBtn" class="btn-accion btn-ia"><i class="fas fa-robot"></i> Generar prompt para IA</button>
+                    <button id="importarIaBtn" class="btn-secundario"><i class="fas fa-upload"></i> Importar desde IA</button>
                 </div>
             </div>
         </main>
     </div>
 
-    <!-- Modal para prompt de IA (igual que en progresión) -->
+    <!-- Modal para prompt de IA -->
     <div id="modalIA" class="modal">
         <div class="modal-content">
-            <span class="close">&times;</span>
+            <span class="close" id="closeModalIA">&times;</span>
             <h2><i class="fas fa-robot" style="color:#2E7D32;"></i> Prompt generado para IA</h2>
-            <p>Copia este prompt y pégalo en tu IA favorita para obtener estrategias de mediación.</p>
+            <p>Copia este prompt y pégalo en tu IA favorita para obtener estrategias de mediación e indicadores de evaluación.</p>
             <div id="promptTexto" class="prompt-area">Generando...</div>
             <div class="ia-buttons">
                 <button id="btnChatGPT" class="ia-btn chatgpt"><i class="fab fa-openai"></i> ChatGPT</button>
@@ -353,6 +362,20 @@
         </div>
     </div>
 
+    <!-- Modal para importar JSON de IA -->
+    <div id="modalImportarIA" class="modal">
+        <div class="modal-content">
+            <span class="close" id="closeImportarModal">&times;</span>
+            <h2><i class="fas fa-upload" style="color:#2E7D32;"></i> Importar respuesta de IA</h2>
+            <p>Pega aquí el JSON generado por la IA (debe contener las estrategias y evaluaciones).</p>
+            <textarea id="iaJsonInput" rows="10" placeholder='Ejemplo: { "inicio": "...", "desarrollo": "...", "cierre": "...", "evaluaciones": [{"indicador": "...", "instrumento": "..."}] }'></textarea>
+            <div style="text-align:center; margin-top:1rem;">
+                <button id="procesarJsonBtn" class="btn-accion"><i class="fas fa-play"></i> Procesar</button>
+                <button id="cancelarImportarBtn" class="btn-secundario">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         (function() {
             if (!window.CURRICULO) {
@@ -360,7 +383,7 @@
                 return;
             }
 
-            // Elementos DOM
+            // ---------- Elementos DOM ----------
             const cicloSelect = document.getElementById('cicloSelect');
             const nivelSelect = document.getElementById('nivelSelect');
             const moduloSelect = document.getElementById('moduloSelect');
@@ -374,15 +397,24 @@
             const agregarFilaBtn = document.getElementById('agregarFilaBtn');
             const guardarBtn = document.getElementById('guardarBtn');
             const iaBtn = document.getElementById('iaBtn');
-            const modal = document.getElementById('modalIA');
-            const spanClose = document.querySelector('.close');
+            const importarIaBtn = document.getElementById('importarIaBtn');
+
+            // Modales
+            const modalIA = document.getElementById('modalIA');
+            const closeModalIA = document.getElementById('closeModalIA');
             const promptTexto = document.getElementById('promptTexto');
             const btnCopiar = document.getElementById('btnCopiarPrompt');
             const btnChatGPT = document.getElementById('btnChatGPT');
             const btnCopilot = document.getElementById('btnCopilot');
             const btnGemini = document.getElementById('btnGemini');
 
-            // Variables para almacenar el módulo actual
+            const modalImportar = document.getElementById('modalImportarIA');
+            const closeImportar = document.getElementById('closeImportarModal');
+            const cancelarImportar = document.getElementById('cancelarImportarBtn');
+            const iaJsonInput = document.getElementById('iaJsonInput');
+            const procesarBtn = document.getElementById('procesarJsonBtn');
+
+            // Variable para almacenar el módulo actual
             let moduloActual = null;
 
             // Mapa de niveles por ciclo
@@ -392,19 +424,18 @@
                 secundaria: ['Sétimo', 'Octavo', 'Noveno']
             };
 
-            // Sugerencia de metodología según ciclo
-            function sugerirMetodologia(ciclo) {
-                if (ciclo === 'preescolar' || ciclo === 'primaria' && ['Primero','Segundo','Tercero'].includes(nivelSelect.value)) {
-                    return 'ABJ (Aprendizaje Basado en Juegos)';
-                } else if (ciclo === 'primaria' && ['Cuarto','Quinto','Sexto'].includes(nivelSelect.value)) {
-                    return 'ABR (Aprendizaje Basado en Retos)';
-                } else if (ciclo === 'secundaria') {
-                    return 'Design Thinking';
+            // ---------- Funciones auxiliares ----------
+            function sugerirMetodologia(ciclo, nivel) {
+                if (ciclo === 'preescolar') return 'ABJ';
+                if (ciclo === 'primaria') {
+                    if (['Primero','Segundo','Tercero'].includes(nivel)) return 'ABJ';
+                    if (['Cuarto','Quinto','Sexto'].includes(nivel)) return 'ABR';
                 }
-                return '—';
+                if (ciclo === 'secundaria') return 'Design Thinking';
+                return '';
             }
 
-            // Actualizar niveles al cambiar ciclo
+            // Actualizar niveles según ciclo
             cicloSelect.addEventListener('change', function() {
                 const ciclo = this.value;
                 nivelSelect.innerHTML = '<option value="">-- Seleccione --</option>';
@@ -467,21 +498,21 @@
 
                 // Mostrar sección de metodología y sugerir
                 metodologiaSection.style.display = 'block';
-                const sugerencia = sugerirMetodologia(ciclo);
+                const sugerencia = sugerirMetodologia(ciclo, nivel);
                 sugerenciaMet.textContent = sugerencia;
                 // Preseleccionar según sugerencia
-                if (sugerencia.includes('ABJ')) document.getElementById('metABJ').checked = true;
-                else if (sugerencia.includes('ABR')) document.getElementById('metABR').checked = true;
-                else if (sugerencia.includes('Design')) document.getElementById('metDT').checked = true;
+                if (sugerencia === 'ABJ') document.getElementById('metABJ').checked = true;
+                else if (sugerencia === 'ABR') document.getElementById('metABR').checked = true;
+                else if (sugerencia === 'Design Thinking') document.getElementById('metDT').checked = true;
 
-                // Generar filas en la tabla
+                // Generar filas en la tabla (una por cada saber conceptual)
                 tablaBody.innerHTML = '';
                 moduloData.areas.forEach(area => {
                     area.saberesConceptuales.forEach(s => {
                         const row = tablaBody.insertRow();
                         row.innerHTML = `
                             <td><textarea class="indicador-logro" rows="2">${s.indicadorLogro}</textarea></td>
-                            <td><textarea class="estrategia" rows="2" placeholder="Estrategia según metodología..."></textarea></td>
+                            <td><textarea class="estrategia" rows="2" placeholder="Escriba la estrategia..."></textarea></td>
                             <td><textarea class="indicador-eval" rows="2" placeholder="Acción + Contenido + Condición"></textarea></td>
                         `;
                     });
@@ -489,7 +520,7 @@
                 tablaContainer.style.display = 'block';
             });
 
-            // Agregar fila
+            // Agregar fila vacía
             agregarFilaBtn.addEventListener('click', function() {
                 const row = tablaBody.insertRow();
                 row.innerHTML = `
@@ -499,9 +530,39 @@
                 `;
             });
 
-            // Guardar (simulado)
-            guardarBtn.addEventListener('click', function() {
-                const plannings = JSON.parse(localStorage.getItem('pnft_plannings') || '[]');
+            // ---------- IndexedDB ----------
+            const DB_NAME = 'PNFT_DB';
+            const DB_VERSION = 1;
+
+            function abrirDB() {
+                return new Promise((resolve, reject) => {
+                    const request = indexedDB.open(DB_NAME, DB_VERSION);
+                    request.onerror = () => reject(request.error);
+                    request.onsuccess = () => resolve(request.result);
+                    request.onupgradeneeded = (event) => {
+                        const db = event.target.result;
+                        if (!db.objectStoreNames.contains('plannings')) {
+                            const store = db.createObjectStore('plannings', { keyPath: 'id' });
+                            store.createIndex('fecha', 'fecha', { unique: false });
+                            store.createIndex('nivel', 'nivel', { unique: false });
+                        }
+                    };
+                });
+            }
+
+            async function guardarPlaneamientoIndexedDB(planeamiento) {
+                const db = await abrirDB();
+                return new Promise((resolve, reject) => {
+                    const transaction = db.transaction(['plannings'], 'readwrite');
+                    const store = transaction.objectStore('plannings');
+                    const request = store.put(planeamiento);
+                    request.onsuccess = () => resolve();
+                    request.onerror = () => reject(request.error);
+                });
+            }
+
+            // Guardar planeamiento
+            guardarBtn.addEventListener('click', async function() {
                 const nuevo = {
                     id: Date.now(),
                     fecha: new Date().toLocaleDateString('es-CR'),
@@ -518,108 +579,161 @@
                         evaluacion: row.querySelector('.indicador-eval')?.value || ''
                     });
                 });
-                plannings.push(nuevo);
-                localStorage.setItem('pnft_plannings', JSON.stringify(plannings));
-                alert('✅ Planeamiento guardado localmente');
+
+                try {
+                    await guardarPlaneamientoIndexedDB(nuevo);
+                    alert('✅ Planeamiento guardado en IndexedDB');
+                } catch (e) {
+                    // Fallback a localStorage
+                    const localPlannings = JSON.parse(localStorage.getItem('pnft_plannings') || '[]');
+                    localPlannings.push(nuevo);
+                    localStorage.setItem('pnft_plannings', JSON.stringify(localPlannings));
+                    alert('✅ Planeamiento guardado en localStorage (IndexedDB falló)');
+                }
             });
-            
-                // Generar prompt para IA (versión mejorada)
-                iaBtn.addEventListener('click', function() {
-                    if (!moduloActual) return alert('Primero cargue los indicadores');
-                    const metodologia = document.querySelector('input[name="metodologia"]:checked')?.value || 'No seleccionada';
-                    const ciclo = cicloSelect.value;
-                    const nivel = nivelSelect.value;
-                    const modulo = moduloSelect.value;
-                
-                    // Recolectar filas de la tabla
-                    const filas = [];
-                    document.querySelectorAll('#tablaBody tr').forEach(row => {
-                        filas.push({
-                            indicador: row.querySelector('.indicador-logro')?.value || '',
-                            estrategia: row.querySelector('.estrategia')?.value || '',
-                            evaluacion: row.querySelector('.indicador-eval')?.value || ''
-                        });
+
+            // ---------- Generar prompt para IA ----------
+            iaBtn.addEventListener('click', function() {
+                if (!moduloActual) return alert('Primero cargue los indicadores');
+                const metodologia = document.querySelector('input[name="metodologia"]:checked')?.value || 'No seleccionada';
+                const ciclo = cicloSelect.value;
+                const nivel = nivelSelect.value;
+                const modulo = moduloSelect.value;
+
+                const filas = [];
+                document.querySelectorAll('#tablaBody tr').forEach(row => {
+                    filas.push({
+                        indicador: row.querySelector('.indicador-logro')?.value || '',
+                        estrategia: row.querySelector('.estrategia')?.value || '',
+                        evaluacion: row.querySelector('.indicador-eval')?.value || ''
                     });
-                
-                    // Construir prompt con énfasis en evaluación
-                    let prompt = `**CONTEXTO**: Programa Nacional de Formación Tecnológica (PNFT), MEP Costa Rica, curso lectivo 2026.\n\n`;
-                    prompt += `**DATOS DEL PLANEAMIENTO**:\n`;
-                    prompt += `- Ciclo: ${ciclo}\n`;
-                    prompt += `- Nivel: ${nivel}\n`;
-                    prompt += `- Módulo: ${modulo}\n`;
-                    prompt += `- Metodología seleccionada: ${metodologia}\n\n`;
-                
-                    prompt += `**SABERES E INDICADORES DEL MÓDULO**:\n`;
-                    moduloActual.areas.forEach(area => {
-                        const areaNombre = window.AREAS_CONOCIMIENTO?.find(a => a.id === area.areaId)?.nombre || area.areaId;
-                        prompt += `\n### ${areaNombre}\n`;
-                        area.saberesConceptuales.forEach(s => {
-                            prompt += `- **${s.concepto}**: ${s.indicadorLogro}\n`;
-                        });
-                    });
-                
-                    prompt += `\n**FILAS DE LA TABLA ACTUAL** (pueden estar vacías o parcialmente llenas):\n`;
-                    filas.forEach((f, i) => {
-                        prompt += `\nFila ${i+1}:\n`;
-                        prompt += `- Indicador de logro: ${f.indicador || '(vacío)'}\n`;
-                        prompt += `- Estrategia actual: ${f.estrategia || '(vacío)'}\n`;
-                        prompt += `- Evaluación actual: ${f.evaluacion || '(vacío)'}\n`;
-                    });
-                
-                    prompt += `\n**INSTRUCCIONES PARA LA IA**:\n`;
-                    prompt += `Actúa como especialista en diseño curricular del PNFT. Con base en la metodología seleccionada (${metodologia}), genera estrategias de mediación para una lección de 40 minutos (inicio 10 min, desarrollo 20 min, cierre 10 min) que integren los saberes del módulo. \n\n`;
-                    prompt += `Además, propón **indicadores de evaluación** que cumplan con los siguientes criterios:\n`;
-                    prompt += `- Redactados en **tercera persona del singular**.\n`;
-                    prompt += `- Usen **verbos de la taxonomía de Bloom** (recordar, comprender, aplicar, analizar, evaluar, crear).\n`;
-                    prompt += `- Sean **medibles y alcanzables**.\n`;
-                    prompt += `- Sigan la estructura: **Acción + Contenido + Condición**.\n`;
-                    prompt += `  Ejemplo: *"Explica la importancia del uso correcto del tiempo, mediante tres ejemplos."*\n\n`;
-                    prompt += `Para cada indicador, sugiere el **instrumento de evaluación** más adecuado: lista de cotejo, rúbrica analítica o escala de desempeño.\n\n`;
-                
-                    if (metodologia === 'ABJ') {
-                        prompt += `**ABJ**: Propón actividades lúdicas con reglas claras, retroalimentación inmediata y mecánicas de juego (puntos, niveles, recompensas).\n`;
-                    } else if (metodologia === 'ABR') {
-                        prompt += `**ABR**: Diseña un reto claro y medible, con producto final tangible y trabajo colaborativo. Incluye criterios de éxito.\n`;
-                    } else if (metodologia === 'Design Thinking') {
-                        prompt += `**Design Thinking**: Desarrolla las fases: Empatizar, Definir, Idear, Prototipar y Evaluar. Asegura que el estudiante pase por todas ellas.\n`;
-                    }
-                
-                    prompt += `\n**FORMATO DE RESPUESTA ESPERADO (JSON)**:\n`;
-                    prompt += `{\n`;
-                    prompt += `  "inicio": "descripción de la actividad de inicio (10 min)",\n`;
-                    prompt += `  "desarrollo": "descripción de la actividad principal (20 min)",\n`;
-                    prompt += `  "cierre": "descripción del cierre (10 min)",\n`;
-                    prompt += `  "evaluaciones": [\n`;
-                    prompt += `    {\n`;
-                    prompt += `      "indicador": "Indicador en tercera persona con verbo Bloom, contenido y condición",\n`;
-                    prompt += `      "instrumento": "lista de cotejo / rúbrica / escala"\n`;
-                    prompt += `    },\n`;
-                    prompt += `    ... (tantos como sean necesarios)\n`;
-                    prompt += `  ]\n`;
-                    prompt += `}\n\n`;
-                
-                    prompt += `**OBJETIVO**: Ayudar al docente a completar su planeamiento con estrategias alineadas al currículo y la metodología, asegurando que los indicadores de evaluación sean de calidad, medibles y coherentes con los aprendizajes esperados.`;
-                
-                    promptTexto.textContent = prompt;
-                    modal.style.display = 'block';
                 });
 
+                let prompt = `**CONTEXTO**: Programa Nacional de Formación Tecnológica (PNFT), MEP Costa Rica, curso lectivo 2026.\n\n`;
+                prompt += `**DATOS DEL PLANEAMIENTO**:\n`;
+                prompt += `- Ciclo: ${ciclo}\n`;
+                prompt += `- Nivel: ${nivel}\n`;
+                prompt += `- Módulo: ${modulo}\n`;
+                prompt += `- Metodología seleccionada: ${metodologia}\n\n`;
 
-            // Modal: cerrar
-            spanClose.onclick = () => modal.style.display = 'none';
-            window.onclick = (e) => { if (e.target == modal) modal.style.display = 'none'; };
+                prompt += `**SABERES E INDICADORES DEL MÓDULO**:\n`;
+                moduloActual.areas.forEach(area => {
+                    const areaNombre = window.AREAS_CONOCIMIENTO?.find(a => a.id === area.areaId)?.nombre || area.areaId;
+                    prompt += `\n### ${areaNombre}\n`;
+                    area.saberesConceptuales.forEach(s => {
+                        prompt += `- **${s.concepto}**: ${s.indicadorLogro}\n`;
+                    });
+                });
 
-            // Copiar prompt
+                prompt += `\n**FILAS DE LA TABLA ACTUAL** (pueden estar vacías):\n`;
+                filas.forEach((f, i) => {
+                    prompt += `\nFila ${i+1}:\n`;
+                    prompt += `- Indicador: ${f.indicador || '(vacío)'}\n`;
+                    prompt += `- Estrategia actual: ${f.estrategia || '(vacío)'}\n`;
+                    prompt += `- Evaluación actual: ${f.evaluacion || '(vacío)'}\n`;
+                });
+
+                prompt += `\n**INSTRUCCIONES PARA LA IA**:\n`;
+                prompt += `Actúa como especialista en diseño curricular del PNFT. Con base en la metodología seleccionada (${metodologia}), genera estrategias de mediación para una lección de 40 minutos (inicio 10 min, desarrollo 20 min, cierre 10 min) que integren los saberes del módulo.\n\n`;
+                prompt += `Además, propón **indicadores de evaluación** que cumplan con:\n`;
+                prompt += `- Redactados en **tercera persona del singular**.\n`;
+                prompt += `- Usen **verbos de la taxonomía de Bloom** (recordar, comprender, aplicar, analizar, evaluar, crear).\n`;
+                prompt += `- Sean **medibles y alcanzables**.\n`;
+                prompt += `- Sigan la estructura: **Acción + Contenido + Condición**.\n`;
+                prompt += `  Ejemplo: *"Explica la importancia del uso correcto del tiempo, mediante tres ejemplos."*\n\n`;
+                prompt += `Para cada indicador, sugiere el **instrumento de evaluación** más adecuado: lista de cotejo, rúbrica analítica o escala de desempeño.\n\n`;
+
+                if (metodologia === 'ABJ') {
+                    prompt += `**ABJ**: Propón actividades lúdicas con reglas claras, retroalimentación inmediata y mecánicas de juego (puntos, niveles, recompensas).\n`;
+                } else if (metodologia === 'ABR') {
+                    prompt += `**ABR**: Diseña un reto claro y medible, con producto final tangible y trabajo colaborativo. Incluye criterios de éxito.\n`;
+                } else if (metodologia === 'Design Thinking') {
+                    prompt += `**Design Thinking**: Desarrolla las fases: Empatizar, Definir, Idear, Prototipar y Evaluar.\n`;
+                }
+
+                prompt += `\n**FORMATO DE RESPUESTA ESPERADO (JSON)**:\n`;
+                prompt += `{\n`;
+                prompt += `  "inicio": "descripción de la actividad de inicio (10 min)",\n`;
+                prompt += `  "desarrollo": "descripción de la actividad principal (20 min)",\n`;
+                prompt += `  "cierre": "descripción del cierre (10 min)",\n`;
+                prompt += `  "evaluaciones": [\n`;
+                prompt += `    {\n`;
+                prompt += `      "indicador": "Indicador en tercera persona con verbo Bloom, contenido y condición",\n`;
+                prompt += `      "instrumento": "lista de cotejo / rúbrica / escala"\n`;
+                prompt += `    }\n`;
+                prompt += `  ]\n`;
+                prompt += `}\n\n`;
+                prompt += `**OBJETIVO**: Ayudar al docente a completar su planeamiento con estrategias alineadas al currículo y la metodología, asegurando que los indicadores de evaluación sean de calidad, medibles y coherentes con los aprendizajes esperados.`;
+
+                promptTexto.textContent = prompt;
+                modalIA.style.display = 'block';
+            });
+
+            // ---------- Modal de prompt ----------
+            closeModalIA.onclick = () => modalIA.style.display = 'none';
+            window.onclick = (e) => { if (e.target == modalIA) modalIA.style.display = 'none'; };
+
             btnCopiar.addEventListener('click', function() {
                 navigator.clipboard.writeText(promptTexto.textContent).then(() => {
-                    alert('✅ Prompt copiado');
+                    alert('✅ Prompt copiado al portapapeles');
                 }).catch(() => alert('❌ No se pudo copiar'));
             });
 
-            // Abrir IAs
             btnChatGPT.addEventListener('click', () => window.open('https://chat.openai.com', '_blank'));
             btnCopilot.addEventListener('click', () => window.open('https://copilot.microsoft.com', '_blank'));
             btnGemini.addEventListener('click', () => window.open('https://gemini.google.com', '_blank'));
+
+            // ---------- Importar desde IA ----------
+            importarIaBtn.addEventListener('click', () => {
+                modalImportar.style.display = 'block';
+                iaJsonInput.value = '';
+            });
+
+            closeImportar.onclick = () => modalImportar.style.display = 'none';
+            cancelarImportar.onclick = () => modalImportar.style.display = 'none';
+            window.onclick = (e) => { if (e.target == modalImportar) modalImportar.style.display = 'none'; };
+
+            procesarBtn.addEventListener('click', () => {
+                try {
+                    const json = JSON.parse(iaJsonInput.value);
+                    if (!json.inicio && !json.desarrollo && !json.cierre && !json.evaluaciones) {
+                        throw new Error('El JSON no tiene la estructura esperada (inicio, desarrollo, cierre o evaluaciones)');
+                    }
+
+                    const filas = document.querySelectorAll('#tablaBody tr');
+                    // Si hay evaluaciones, asegurar que haya suficientes filas
+                    if (json.evaluaciones && json.evaluaciones.length > 0) {
+                        while (filas.length < json.evaluaciones.length) {
+                            agregarFilaBtn.click(); // llama al evento de agregar fila
+                        }
+                        // Actualizar cada fila
+                        json.evaluaciones.forEach((evalObj, index) => {
+                            const row = document.querySelectorAll('#tablaBody tr')[index];
+                            if (row) {
+                                // Si es la primera fila, podemos poner las estrategias combinadas
+                                if (index === 0 && json.inicio && json.desarrollo && json.cierre) {
+                                    row.querySelector('.estrategia').value = 
+                                        `INICIO (10 min): ${json.inicio}\nDESARROLLO (20 min): ${json.desarrollo}\nCIERRE (10 min): ${json.cierre}`;
+                                }
+                                if (evalObj.indicador) {
+                                    row.querySelector('.indicador-eval').value = evalObj.indicador;
+                                }
+                            }
+                        });
+                    } else {
+                        // Si no hay evaluaciones, al menos mostrar las estrategias en la primera fila
+                        if (json.inicio && json.desarrollo && json.cierre && filas.length > 0) {
+                            filas[0].querySelector('.estrategia').value = 
+                                `INICIO (10 min): ${json.inicio}\nDESARROLLO (20 min): ${json.desarrollo}\nCIERRE (10 min): ${json.cierre}`;
+                        }
+                    }
+
+                    alert('✅ Tabla actualizada con la respuesta de la IA');
+                    modalImportar.style.display = 'none';
+                } catch (error) {
+                    alert('❌ Error al procesar el JSON: ' + error.message);
+                }
+            });
 
         })();
     </script>
