@@ -8,13 +8,140 @@
     <link rel="stylesheet" href="css/style.css">
     <script src="js/curriculum.js"></script>
     <style>
-        .selector-group { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem; }
-        .selector-group select { width:100%; padding:0.6rem; border-radius:8px; border:1px solid #ddd; }
-        .indicador-item { padding:0.8rem; margin:0.5rem 0; background:#f9f9f9; border-radius:8px; border-left:4px solid #2E7D32; }
+        .selector-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        .indicator-list {
+            background: #f9f9f9;
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin: 1.5rem 0;
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid #e0e0e0;
+        }
+        .indicator-item {
+            padding: 0.5rem;
+            border-bottom: 1px dashed #ccc;
+        }
+        .indicator-item:last-child {
+            border-bottom: none;
+        }
+        .estrategias-box {
+            background: #f0f7f0;
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin: 1.5rem 0;
+            border-left: 4px solid #2E7D32;
+        }
+        .btn-ia {
+            background: #1976D2;
+            color: white;
+            border: none;
+            padding: 0.7rem 1.5rem;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 1rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: background 0.2s;
+            margin-right: 0.5rem;
+        }
+        .btn-ia:hover {
+            background: #0d5a9e;
+        }
+        /* Reutilizar estilos del modal de progresión */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            overflow: auto;
+        }
+        .modal-content {
+            background-color: white;
+            margin: 5% auto;
+            padding: 2rem;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 800px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+            position: relative;
+        }
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .close:hover {
+            color: black;
+        }
+        .prompt-area {
+            background: #f5f5f5;
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin: 1.5rem 0;
+            white-space: pre-wrap;
+            font-family: monospace;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .ia-buttons {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .ia-btn {
+            flex: 1;
+            min-width: 150px;
+            padding: 1rem;
+            border: none;
+            border-radius: 12px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            transition: transform 0.2s;
+        }
+        .ia-btn:hover {
+            transform: translateY(-3px);
+        }
+        .ia-btn.chatgpt { background: #10a37f; }
+        .ia-btn.copilot { background: #5c2d91; }
+        .ia-btn.gemini { background: #1a73e8; }
+        .ia-btn i { font-size: 1.3rem; }
+        .copy-btn {
+            background: #2E7D32;
+            color: white;
+            border: none;
+            padding: 0.8rem 2rem;
+            border-radius: 30px;
+            font-size: 1rem;
+            cursor: pointer;
+            margin-top: 1rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
     </style>
 </head>
 <body>
     <div class="app">
+        <!-- Sidebar -->
         <aside class="sidebar">
             <div class="sidebar-header">
                 <div class="logo">PNFT</div>
@@ -32,6 +159,7 @@
                 <a href="settings.html"><li class="nav-item"><i class="fas fa-cog"></i> Configuración</li></a>
             </ul>
         </aside>
+
         <main class="main-content">
             <div class="top-bar">
                 <h1 class="page-title">Planeamiento Didáctico</h1>
@@ -40,63 +168,144 @@
                     <span class="user-badge"><i class="fas fa-calendar-alt"></i> 2026</span>
                 </div>
             </div>
+
+            <!-- Selectores -->
             <div class="recent-section">
-                <h2>1. Seleccionar nivel y módulo</h2>
+                <h2><i class="fas fa-search" style="color:#2E7D32;"></i> 1. Seleccionar nivel y módulo</h2>
                 <div class="selector-group">
                     <div>
                         <label><strong>Ciclo:</strong></label>
-                        <select id="cicloSelect">
+                        <select id="cicloSelect" class="form-control">
                             <option value="">-- Seleccione --</option>
                             <option value="preescolar">Preescolar</option>
-                            <option value="primaria_I">I Ciclo</option>
-                            <option value="primaria_II">II Ciclo</option>
+                            <option value="primaria">I Ciclo</option>
+                            <option value="primaria">II Ciclo</option>
                             <option value="secundaria">III Ciclo</option>
                         </select>
                     </div>
                     <div>
                         <label><strong>Nivel:</strong></label>
-                        <select id="nivelSelect">
+                        <select id="nivelSelect" class="form-control">
                             <option value="">-- Primero seleccione ciclo --</option>
                         </select>
                     </div>
                     <div>
                         <label><strong>Módulo:</strong></label>
-                        <select id="moduloSelect">
+                        <select id="moduloSelect" class="form-control">
                             <option value="1">Módulo 1</option>
                             <option value="2">Módulo 2</option>
                         </select>
                     </div>
                 </div>
-                <button id="cargarBtn" style="background:#2E7D32; color:white; padding:0.7rem 2rem; border:none; border-radius:8px; cursor:pointer;">
+                <button id="cargarIndicadoresBtn" class="action-btn" style="background:#2E7D32; color:white; border:none; padding:0.7rem 2rem;">
                     <i class="fas fa-download"></i> Cargar indicadores
                 </button>
             </div>
-            <div id="indicadoresContainer" class="recent-section" style="display:none;">
-                <h2>2. Indicadores de logro</h2>
-                <div id="indicadoresList"></div>
+
+            <!-- Contenedor de indicadores (inicialmente oculto) -->
+            <div id="indicadoresContainer" class="recent-section" style="display: none;">
+                <h2><i class="fas fa-list" style="color:#2E7D32;"></i> 2. Indicadores de logro</h2>
+                <div id="indicadoresList" class="indicator-list"></div>
+            </div>
+
+            <!-- Metodología activa (aparece después de cargar indicadores) -->
+            <div id="metodologiaContainer" class="recent-section" style="display: none;">
+                <h2><i class="fas fa-gamepad" style="color:#2E7D32;"></i> 3. Metodología activa</h2>
+                <div class="selector-group" style="grid-template-columns:1fr 1fr 1fr;">
+                    <div>
+                        <label><strong>Seleccione la metodología:</strong></label>
+                        <select id="metodologiaSelect" class="form-control">
+                            <option value="ABJ">Aprendizaje Basado en Juegos (ABJ)</option>
+                            <option value="ABR">Aprendizaje Basado en Retos (ABR)</option>
+                            <option value="Design Thinking">Design Thinking</option>
+                        </select>
+                    </div>
+                    <div style="display: flex; align-items: flex-end;">
+                        <button id="generarEstrategiasBtn" class="btn-ia">
+                            <i class="fas fa-robot"></i> Generar estrategias con IA
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tabla de planeamiento (se muestra después de generar estrategias) -->
+            <div id="tablaContainer" class="recent-section" style="display: none;">
+                <h2><i class="fas fa-table" style="color:#2E7D32;"></i> 4. Tabla de planeamiento</h2>
+                <table id="tablaPlaneamiento" style="width:100%; border-collapse:collapse;">
+                    <thead>
+                        <tr>
+                            <th>Indicadores de logro</th>
+                            <th>Estrategias de mediación</th>
+                            <th>Indicador de evaluación</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tablaBody">
+                        <!-- Se llenará con los indicadores cargados -->
+                    </tbody>
+                </table>
+                <div style="margin-top: 1rem;">
+                    <button class="action-btn" style="background: #2E7D32; color: white;" onclick="agregarFila()">
+                        <i class="fas fa-plus"></i> Agregar fila
+                    </button>
+                    <button class="action-btn" style="background: #1976D2; color: white;" onclick="guardarPlaneamiento()">
+                        <i class="fas fa-save"></i> Guardar planeamiento
+                    </button>
+                </div>
             </div>
         </main>
     </div>
+
+    <!-- Modal para el prompt de IA (reutilizado) -->
+    <div id="modalIA" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2><i class="fas fa-robot" style="color:#2E7D32;"></i> Prompt generado para IA</h2>
+            <p>Este prompt contiene el contexto y los indicadores seleccionados. Cópialo y pégalo en tu IA favorita para obtener estrategias de mediación.</p>
+            <div id="promptTexto" class="prompt-area">
+                Generando prompt...
+            </div>
+            <div class="ia-buttons">
+                <button id="btnChatGPT" class="ia-btn chatgpt"><i class="fab fa-openai"></i> ChatGPT</button>
+                <button id="btnCopilot" class="ia-btn copilot"><i class="fas fa-microsoft"></i> Copilot</button>
+                <button id="btnGemini" class="ia-btn gemini"><i class="fas fa-google"></i> Gemini</button>
+            </div>
+            <div style="text-align: center; margin-top: 1.5rem;">
+                <button id="btnCopiarPrompt" class="copy-btn"><i class="fas fa-copy"></i> Copiar prompt</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            if (!window.CURRICULO) {
-                alert('ERROR: window.CURRICULO no está definido. Revisa que js/curriculum.js se haya cargado correctamente.');
-                return;
-            }
-
+            // Referencias a elementos del DOM
             const cicloSelect = document.getElementById('cicloSelect');
             const nivelSelect = document.getElementById('nivelSelect');
             const moduloSelect = document.getElementById('moduloSelect');
-            const cargarBtn = document.getElementById('cargarBtn');
-            const container = document.getElementById('indicadoresContainer');
-            const lista = document.getElementById('indicadoresList');
+            const cargarBtn = document.getElementById('cargarIndicadoresBtn');
+            const indicadoresContainer = document.getElementById('indicadoresContainer');
+            const indicadoresList = document.getElementById('indicadoresList');
+            const metodologiaContainer = document.getElementById('metodologiaContainer');
+            const tablaContainer = document.getElementById('tablaContainer');
+            const tablaBody = document.getElementById('tablaBody');
+            const generarBtn = document.getElementById('generarEstrategiasBtn');
+            const metodologiaSelect = document.getElementById('metodologiaSelect');
+            
+            // Modal
+            const modal = document.getElementById('modalIA');
+            const spanClose = document.querySelector('.close');
+            const promptTexto = document.getElementById('promptTexto');
+            const btnCopiar = document.getElementById('btnCopiarPrompt');
+            const btnChatGPT = document.getElementById('btnChatGPT');
+            const btnCopilot = document.getElementById('btnCopilot');
+            const btnGemini = document.getElementById('btnGemini');
 
-            // Definir niveles por ciclo (diferenciando I y II)
+            let moduloDataGlobal = null; // Para guardar los datos del módulo cargado
+
+            // Mapa de niveles por ciclo
             const nivelesPorCiclo = {
-                preescolar: ['Educación Preescolar'],
-                primaria_I: ['Primero', 'Segundo', 'Tercero'],
-                primaria_II: ['Cuarto', 'Quinto', 'Sexto'],
-                secundaria: ['Sétimo', 'Octavo', 'Noveno']
+                'preescolar': ['Educación Preescolar'],
+                'primaria': ['Primero', 'Segundo', 'Tercero', 'Cuarto', 'Quinto', 'Sexto'],
+                'secundaria': ['Sétimo', 'Octavo', 'Noveno']
             };
 
             cicloSelect.addEventListener('change', function() {
@@ -119,37 +328,101 @@
                     return;
                 }
 
+                // Buscar módulo en CURRICULO
                 let moduloData = null;
-
                 if (ciclo === 'preescolar') {
-                    moduloData = window.CURRICULO.preescolar?.find(m => m.nivel === nivel && m.modulo === modulo);
-                } else if (ciclo === 'primaria_I' || ciclo === 'primaria_II') {
-                    // Ambos ciclos usan la misma estructura en CURRICULO.primaria
+                    moduloData = window.CURRICULO?.preescolar?.find(m => m.nivel === nivel && m.modulo === modulo);
+                } else if (ciclo === 'primaria') {
                     const nivelKey = nivel.toLowerCase();
-                    moduloData = window.CURRICULO.primaria?.[nivelKey]?.find(m => m.modulo === modulo);
+                    moduloData = window.CURRICULO?.primaria?.[nivelKey]?.find(m => m.modulo === modulo);
                 } else if (ciclo === 'secundaria') {
                     const mapa = { 'sétimo':'setimo', 'octavo':'octavo', 'noveno':'noveno' };
                     const nivelKey = mapa[nivel.toLowerCase()];
-                    moduloData = window.CURRICULO.secundaria?.[nivelKey]?.find(m => m.modulo === modulo);
+                    moduloData = window.CURRICULO?.secundaria?.[nivelKey]?.find(m => m.modulo === modulo);
                 }
 
                 if (!moduloData) {
-                    lista.innerHTML = '<p style="color:#c62828;">No hay indicadores para esta combinación.</p>';
-                    container.style.display = 'block';
+                    alert('No se encontraron indicadores para esta combinación');
                     return;
                 }
 
-                let html = '';
+                moduloDataGlobal = moduloData;
+
+                // Mostrar indicadores conceptuales
+                let htmlIndicadores = '';
                 moduloData.areas.forEach(area => {
                     const areaNombre = window.AREAS_CONOCIMIENTO?.find(a => a.id === area.areaId)?.nombre || area.areaId;
-                    html += `<h4 style="margin-top:1rem; color:#2E7D32;">${areaNombre}</h4>`;
+                    htmlIndicadores += `<h4 style="margin-top:1rem; color:#2E7D32;">${areaNombre}</h4>`;
                     area.saberesConceptuales.forEach(s => {
-                        html += `<div class="indicador-item"><strong>${s.concepto}:</strong> ${s.indicadorLogro}</div>`;
+                        htmlIndicadores += `<div class="indicator-item">• <strong>${s.concepto}:</strong> ${s.indicadorLogro}</div>`;
                     });
                 });
-                lista.innerHTML = html;
-                container.style.display = 'block';
+                indicadoresList.innerHTML = htmlIndicadores;
+                indicadoresContainer.style.display = 'block';
+                metodologiaContainer.style.display = 'block';
             });
+
+            generarBtn.addEventListener('click', function() {
+                if (!moduloDataGlobal) {
+                    alert('Primero debe cargar los indicadores');
+                    return;
+                }
+
+                const metodologia = metodologiaSelect.value;
+                const ciclo = cicloSelect.value;
+                const nivel = nivelSelect.value;
+                const modulo = moduloSelect.value;
+
+                // Construir prompt
+                let prompt = `**CONTEXTO**: Programa Nacional de Formación Tecnológica (PNFT), Ministerio de Educación Pública de Costa Rica, curso lectivo 2026.\n\n`;
+                prompt += `**DATOS DEL PLANEAMIENTO**:\n`;
+                prompt += `- Ciclo: ${ciclo}\n`;
+                prompt += `- Nivel: ${nivel}\n`;
+                prompt += `- Módulo: ${modulo}\n`;
+                prompt += `- Metodología activa seleccionada: ${metodologia}\n\n`;
+                prompt += `**INDICADORES DE LOGRO DEL MÓDULO**:\n`;
+
+                moduloDataGlobal.areas.forEach(area => {
+                    const areaNombre = window.AREAS_CONOCIMIENTO?.find(a => a.id === area.areaId)?.nombre || area.areaId;
+                    prompt += `\nÁrea: ${areaNombre}\n`;
+                    area.saberesConceptuales.forEach(s => {
+                        prompt += `- ${s.indicadorLogro}\n`;
+                    });
+                });
+
+                prompt += `\n**INSTRUCCIONES PARA LA IA**:\n`;
+                prompt += `Genera estrategias de mediación para una lección de 40 minutos (inicio 10 min, desarrollo 20 min, cierre 10 min) utilizando la metodología ${metodologia}. `;
+                prompt += `Para cada indicador de logro, propón una actividad concreta y un indicador de evaluación en formato "Acción + Contenido + Condición". `;
+                prompt += `Además, sugiere instrumentos de evaluación (lista de cotejo, rúbrica, escala).\n\n`;
+                prompt += `El formato de respuesta debe ser una tabla con tres columnas: Indicadores de logro, Estrategias de mediación, Indicadores de evaluación.`;
+
+                promptTexto.textContent = prompt;
+                modal.style.display = 'block';
+            });
+
+            // Funciones para el modal (copiar, abrir IAs) - igual que en progresión
+            spanClose.onclick = function() { modal.style.display = 'none'; }
+            window.onclick = function(event) { if (event.target == modal) modal.style.display = 'none'; }
+            btnCopiar.addEventListener('click', function() {
+                navigator.clipboard.writeText(promptTexto.textContent).then(() => alert('✅ Prompt copiado'));
+            });
+            btnChatGPT.addEventListener('click', () => window.open('https://chat.openai.com', '_blank'));
+            btnCopilot.addEventListener('click', () => window.open('https://copilot.microsoft.com', '_blank'));
+            btnGemini.addEventListener('click', () => window.open('https://gemini.google.com', '_blank'));
+
+            // Función para agregar filas a la tabla (opcional)
+            window.agregarFila = function() {
+                const row = tablaBody.insertRow();
+                row.innerHTML = `
+                    <td><textarea rows="2" style="width:100%;" placeholder="Indicador de logro"></textarea></td>
+                    <td><textarea rows="2" style="width:100%;" placeholder="Estrategias de mediación"></textarea></td>
+                    <td><textarea rows="2" style="width:100%;" placeholder="Indicador de evaluación"></textarea></td>
+                `;
+            };
+
+            window.guardarPlaneamiento = function() {
+                alert('Función de guardado en desarrollo. Por ahora, copie el prompt y use la IA.');
+            };
         });
     </script>
 </body>
