@@ -522,73 +522,88 @@
                 localStorage.setItem('pnft_plannings', JSON.stringify(plannings));
                 alert('✅ Planeamiento guardado localmente');
             });
-
-            // Generar prompt para IA
-            iaBtn.addEventListener('click', function() {
-                if (!moduloActual) return alert('Primero cargue los indicadores');
-                const metodologia = document.querySelector('input[name="metodologia"]:checked')?.value || 'No seleccionada';
-                const ciclo = cicloSelect.value;
-                const nivel = nivelSelect.value;
-                const modulo = moduloSelect.value;
-
-                // Recolectar filas de la tabla
-                const filas = [];
-                document.querySelectorAll('#tablaBody tr').forEach(row => {
-                    filas.push({
-                        indicador: row.querySelector('.indicador-logro')?.value || '',
-                        estrategia: row.querySelector('.estrategia')?.value || '',
-                        evaluacion: row.querySelector('.indicador-eval')?.value || ''
+            
+                // Generar prompt para IA (versión mejorada)
+                iaBtn.addEventListener('click', function() {
+                    if (!moduloActual) return alert('Primero cargue los indicadores');
+                    const metodologia = document.querySelector('input[name="metodologia"]:checked')?.value || 'No seleccionada';
+                    const ciclo = cicloSelect.value;
+                    const nivel = nivelSelect.value;
+                    const modulo = moduloSelect.value;
+                
+                    // Recolectar filas de la tabla
+                    const filas = [];
+                    document.querySelectorAll('#tablaBody tr').forEach(row => {
+                        filas.push({
+                            indicador: row.querySelector('.indicador-logro')?.value || '',
+                            estrategia: row.querySelector('.estrategia')?.value || '',
+                            evaluacion: row.querySelector('.indicador-eval')?.value || ''
+                        });
                     });
-                });
-
-                // Construir prompt
-                let prompt = `**CONTEXTO**: Programa Nacional de Formación Tecnológica (PNFT), MEP Costa Rica, curso lectivo 2026.\n\n`;
-                prompt += `**DATOS DEL PLANEAMIENTO**:\n`;
-                prompt += `- Ciclo: ${ciclo}\n`;
-                prompt += `- Nivel: ${nivel}\n`;
-                prompt += `- Módulo: ${modulo}\n`;
-                prompt += `- Metodología seleccionada: ${metodologia}\n\n`;
-
-                prompt += `**SABERES E INDICADORES DEL MÓDULO**:\n`;
-                moduloActual.areas.forEach(area => {
-                    const areaNombre = window.AREAS_CONOCIMIENTO?.find(a => a.id === area.areaId)?.nombre || area.areaId;
-                    prompt += `\n### ${areaNombre}\n`;
-                    area.saberesConceptuales.forEach(s => {
-                        prompt += `- **${s.concepto}**: ${s.indicadorLogro}\n`;
+                
+                    // Construir prompt con énfasis en evaluación
+                    let prompt = `**CONTEXTO**: Programa Nacional de Formación Tecnológica (PNFT), MEP Costa Rica, curso lectivo 2026.\n\n`;
+                    prompt += `**DATOS DEL PLANEAMIENTO**:\n`;
+                    prompt += `- Ciclo: ${ciclo}\n`;
+                    prompt += `- Nivel: ${nivel}\n`;
+                    prompt += `- Módulo: ${modulo}\n`;
+                    prompt += `- Metodología seleccionada: ${metodologia}\n\n`;
+                
+                    prompt += `**SABERES E INDICADORES DEL MÓDULO**:\n`;
+                    moduloActual.areas.forEach(area => {
+                        const areaNombre = window.AREAS_CONOCIMIENTO?.find(a => a.id === area.areaId)?.nombre || area.areaId;
+                        prompt += `\n### ${areaNombre}\n`;
+                        area.saberesConceptuales.forEach(s => {
+                            prompt += `- **${s.concepto}**: ${s.indicadorLogro}\n`;
+                        });
                     });
+                
+                    prompt += `\n**FILAS DE LA TABLA ACTUAL** (pueden estar vacías o parcialmente llenas):\n`;
+                    filas.forEach((f, i) => {
+                        prompt += `\nFila ${i+1}:\n`;
+                        prompt += `- Indicador de logro: ${f.indicador || '(vacío)'}\n`;
+                        prompt += `- Estrategia actual: ${f.estrategia || '(vacío)'}\n`;
+                        prompt += `- Evaluación actual: ${f.evaluacion || '(vacío)'}\n`;
+                    });
+                
+                    prompt += `\n**INSTRUCCIONES PARA LA IA**:\n`;
+                    prompt += `Actúa como especialista en diseño curricular del PNFT. Con base en la metodología seleccionada (${metodologia}), genera estrategias de mediación para una lección de 40 minutos (inicio 10 min, desarrollo 20 min, cierre 10 min) que integren los saberes del módulo. \n\n`;
+                    prompt += `Además, propón **indicadores de evaluación** que cumplan con los siguientes criterios:\n`;
+                    prompt += `- Redactados en **tercera persona del singular**.\n`;
+                    prompt += `- Usen **verbos de la taxonomía de Bloom** (recordar, comprender, aplicar, analizar, evaluar, crear).\n`;
+                    prompt += `- Sean **medibles y alcanzables**.\n`;
+                    prompt += `- Sigan la estructura: **Acción + Contenido + Condición**.\n`;
+                    prompt += `  Ejemplo: *"Explica la importancia del uso correcto del tiempo, mediante tres ejemplos."*\n\n`;
+                    prompt += `Para cada indicador, sugiere el **instrumento de evaluación** más adecuado: lista de cotejo, rúbrica analítica o escala de desempeño.\n\n`;
+                
+                    if (metodologia === 'ABJ') {
+                        prompt += `**ABJ**: Propón actividades lúdicas con reglas claras, retroalimentación inmediata y mecánicas de juego (puntos, niveles, recompensas).\n`;
+                    } else if (metodologia === 'ABR') {
+                        prompt += `**ABR**: Diseña un reto claro y medible, con producto final tangible y trabajo colaborativo. Incluye criterios de éxito.\n`;
+                    } else if (metodologia === 'Design Thinking') {
+                        prompt += `**Design Thinking**: Desarrolla las fases: Empatizar, Definir, Idear, Prototipar y Evaluar. Asegura que el estudiante pase por todas ellas.\n`;
+                    }
+                
+                    prompt += `\n**FORMATO DE RESPUESTA ESPERADO (JSON)**:\n`;
+                    prompt += `{\n`;
+                    prompt += `  "inicio": "descripción de la actividad de inicio (10 min)",\n`;
+                    prompt += `  "desarrollo": "descripción de la actividad principal (20 min)",\n`;
+                    prompt += `  "cierre": "descripción del cierre (10 min)",\n`;
+                    prompt += `  "evaluaciones": [\n`;
+                    prompt += `    {\n`;
+                    prompt += `      "indicador": "Indicador en tercera persona con verbo Bloom, contenido y condición",\n`;
+                    prompt += `      "instrumento": "lista de cotejo / rúbrica / escala"\n`;
+                    prompt += `    },\n`;
+                    prompt += `    ... (tantos como sean necesarios)\n`;
+                    prompt += `  ]\n`;
+                    prompt += `}\n\n`;
+                
+                    prompt += `**OBJETIVO**: Ayudar al docente a completar su planeamiento con estrategias alineadas al currículo y la metodología, asegurando que los indicadores de evaluación sean de calidad, medibles y coherentes con los aprendizajes esperados.`;
+                
+                    promptTexto.textContent = prompt;
+                    modal.style.display = 'block';
                 });
 
-                prompt += `\n**FILAS DE LA TABLA ACTUAL** (pueden estar vacías o parcialmente llenas):\n`;
-                filas.forEach((f, i) => {
-                    prompt += `\nFila ${i+1}:\n`;
-                    prompt += `- Indicador: ${f.indicador || '(vacío)'}\n`;
-                    prompt += `- Estrategia actual: ${f.estrategia || '(vacío)'}\n`;
-                    prompt += `- Evaluación actual: ${f.evaluacion || '(vacío)'}\n`;
-                });
-
-                prompt += `\n**INSTRUCCIONES PARA LA IA**:\n`;
-                prompt += `Actúa como especialista en diseño curricular del PNFT. Con base en la metodología seleccionada (${metodologia}), genera estrategias de mediación para una lección de 40 minutos (inicio 10 min, desarrollo 20 min, cierre 10 min) que integren los saberes del módulo. También sugiere indicadores de evaluación (Acción + Contenido + Condición) coherentes.\n\n`;
-                if (metodologia === 'ABJ') {
-                    prompt += `**ABJ**: Propón actividades lúdicas con reglas claras, retroalimentación inmediata y mecánicas de juego.\n`;
-                } else if (metodologia === 'ABR') {
-                    prompt += `**ABR**: Diseña un reto claro y medible, con producto final tangible y trabajo colaborativo.\n`;
-                } else if (metodologia === 'Design Thinking') {
-                    prompt += `**Design Thinking**: Desarrolla las fases: Empatizar, Definir, Idear, Prototipar y Evaluar.\n`;
-                }
-
-                prompt += `\n**FORMATO DE RESPUESTA ESPERADO**:\n`;
-                prompt += `Devuelve un JSON con la estructura:\n`;
-                prompt += `{\n`;
-                prompt += `  "inicio": "descripción de la actividad de inicio",\n`;
-                prompt += `  "desarrollo": "descripción de la actividad principal",\n`;
-                prompt += `  "cierre": "descripción del cierre",\n`;
-                prompt += `  "evaluaciones": ["indicador de evaluación 1", "indicador 2", ...]\n`;
-                prompt += `}\n\n`;
-                prompt += `**OBJETIVO**: Ayudar al docente a completar su planeamiento con estrategias alineadas al currículo y la metodología.`;
-
-                promptTexto.textContent = prompt;
-                modal.style.display = 'block';
-            });
 
             // Modal: cerrar
             spanClose.onclick = () => modal.style.display = 'none';
