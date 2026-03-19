@@ -8,99 +8,62 @@
     <link rel="stylesheet" href="css/style.css">
     <script src="js/curriculum.js"></script>
     <style>
-        /* Estilos adicionales para planning */
-        .selector-group {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1rem;
-            margin-bottom: 1.5rem;
-        }
-        .selector-group select {
-            width: 100%;
-            padding: 0.6rem;
-            border-radius: 8px;
-            border: 1px solid #ddd;
-        }
-        .metodologia-opciones {
-            display: flex;
-            gap: 2rem;
-            flex-wrap: wrap;
-            margin: 1rem 0;
-            padding: 1rem;
-            background: #f9f9f9;
-            border-radius: 12px;
-        }
-        .metodologia-opciones label {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            cursor: pointer;
-            padding: 0.5rem 1rem;
-            border-radius: 30px;
-            background: white;
-            border: 1px solid #ddd;
-            transition: all 0.2s;
-        }
-        .metodologia-opciones label:hover {
-            background: #e8f5e9;
-            border-color: #2E7D32;
-        }
-        .metodologia-opciones input[type="radio"] {
-            accent-color: #2E7D32;
-            width: 18px;
-            height: 18px;
-        }
-        .metodologia-desc {
-            font-size: 0.85rem;
-            color: #666;
-            margin-top: 0.2rem;
-            margin-left: 1.8rem;
-        }
-        .indicator-list {
-            background: #f9f9f9;
-            padding: 1.5rem;
-            border-radius: 12px;
-            margin: 1.5rem 0;
-            max-height: 300px;
-            overflow-y: auto;
-            border: 1px solid #e0e0e0;
-        }
-        .indicator-item {
-            padding: 0.5rem;
-            border-bottom: 1px dashed #ccc;
-        }
-        .indicator-item:last-child {
-            border-bottom: none;
-        }
-        .tabla-container {
-            overflow-x: auto;
-        }
-        #tablaPlaneamiento {
+        /* Estilos específicos para la plantilla */
+        .form-table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 1rem;
+            margin-bottom: 1.5rem;
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
         }
-        #tablaPlaneamiento th {
-            background: #2E7D32;
-            color: white;
-            padding: 10px;
-            text-align: left;
-        }
-        #tablaPlaneamiento td {
-            border: 1px solid #ddd;
-            padding: 8px;
+        .form-table td, .form-table th {
+            padding: 0.8rem 1rem;
+            border: 1px solid #e0e0e0;
             vertical-align: top;
         }
-        #tablaPlaneamiento textarea {
-            width: 100%;
-            border: none;
-            resize: vertical;
-            font-family: inherit;
-            padding: 5px;
+        .form-table th {
+            background-color: #2E7D32;
+            color: white;
+            font-weight: 600;
+            text-align: left;
         }
-        #tablaPlaneamiento textarea:focus {
-            outline: 2px solid #2E7D32;
-            border-radius: 4px;
+        .form-table input[type="text"], 
+        .form-table input[type="number"], 
+        .form-table select, 
+        .form-table textarea {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 0.95rem;
+        }
+        .checkbox-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.8rem;
+            margin-top: 0.3rem;
+        }
+        .checkbox-group label {
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+            font-size: 0.9rem;
+            background: #f5f5f5;
+            padding: 0.3rem 0.6rem;
+            border-radius: 20px;
+        }
+        .saberes-columna {
+            display: flex;
+            flex-direction: column;
+            gap: 0.3rem;
+        }
+        .saberes-columna label {
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+            font-size: 0.9rem;
         }
         .btn-accion {
             background: #2E7D32;
@@ -134,7 +97,33 @@
         .btn-secundario:hover {
             background: #e0e0e0;
         }
-        /* Modal */
+        #tablaPlaneamiento {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+        #tablaPlaneamiento th {
+            background: #2E7D32;
+            color: white;
+            padding: 10px;
+            text-align: left;
+        }
+        #tablaPlaneamiento td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            vertical-align: top;
+        }
+        #tablaPlaneamiento textarea {
+            width: 100%;
+            border: none;
+            resize: vertical;
+            font-family: inherit;
+            padding: 5px;
+        }
+        #tablaPlaneamiento textarea:focus {
+            outline: 2px solid #2E7D32;
+            border-radius: 4px;
+        }
         .modal {
             display: none;
             position: fixed;
@@ -218,19 +207,11 @@
             align-items: center;
             gap: 0.5rem;
         }
-        textarea#iaJsonInput {
-            width: 100%;
-            padding: 0.8rem;
-            border: 1px solid #ccc;
-            border-radius: 8px;
-            font-family: monospace;
-            resize: vertical;
-        }
     </style>
 </head>
 <body>
     <div class="app">
-        <!-- Sidebar con enlace a Progresión -->
+        <!-- Sidebar -->
         <aside class="sidebar">
             <div class="sidebar-header">
                 <div class="logo">PNFT</div>
@@ -258,98 +239,205 @@
                 </div>
             </div>
 
-            <!-- SECCIÓN 1: SELECCIÓN DE NIVEL Y MÓDULO -->
-            <div class="recent-section">
-                <h2><i class="fas fa-search" style="color:#2E7D32;"></i> 1. Seleccionar nivel y módulo</h2>
-                <div class="selector-group">
-                    <div>
-                        <label><strong>Ciclo:</strong></label>
-                        <select id="cicloSelect">
+            <!-- ================= SECCIÓN 1: DATOS ADMINISTRATIVOS ================= -->
+            <table class="form-table">
+                <tr>
+                    <td><strong>Dirección Regional de Educación:</strong><br><input type="text" id="region" placeholder="Ej: San José Central"></td>
+                    <td><strong>Centro educativo:</strong><br><input type="text" id="centro" placeholder="Ej: Liceo de Costa Rica"></td>
+                    <td><strong>Código:</strong><br><input type="text" id="codigo" placeholder="Ej: 12345"></td>
+                </tr>
+                <tr>
+                    <td><strong>Nombre de la persona docente:</strong><br><input type="text" id="docente"></td>
+                    <td><strong>Asignatura:</strong><br>
+                        <select id="asignatura">
+                            <option value="Formación Tecnológica">Formación Tecnológica</option>
+                            <option value="Informática Educativa">Informática Educativa</option>
+                        </select>
+                    </td>
+                    <td><strong>Curso lectivo:</strong><br><input type="number" id="curso" value="2026"></td>
+                </tr>
+                <tr>
+                    <td><strong>Ciclo:</strong><br>
+                        <select id="ciclo">
                             <option value="">-- Seleccione --</option>
                             <option value="preescolar">Preescolar</option>
                             <option value="primaria">I Ciclo</option>
                             <option value="primaria">II Ciclo</option>
                             <option value="secundaria">III Ciclo</option>
                         </select>
-                    </div>
-                    <div>
-                        <label><strong>Nivel:</strong></label>
-                        <select id="nivelSelect">
+                    </td>
+                    <td><strong>Nivel:</strong><br>
+                        <select id="nivel">
                             <option value="">-- Primero seleccione ciclo --</option>
                         </select>
-                    </div>
-                    <div>
-                        <label><strong>Módulo:</strong></label>
-                        <select id="moduloSelect">
+                    </td>
+                    <td><strong>Módulo:</strong><br>
+                        <select id="modulo">
                             <option value="1">Módulo 1</option>
                             <option value="2">Módulo 2</option>
                         </select>
-                    </div>
-                </div>
-                <button id="cargarBtn" class="btn-accion"><i class="fas fa-download"></i> Cargar indicadores</button>
-            </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td><strong>Lecciones planificadas:</strong><br><input type="number" id="lecciones" value="40"></td>
+                    <td><strong>Mes inicio:</strong><br><input type="text" id="mesInicio" placeholder="Ej: Febrero"></td>
+                    <td><strong>Mes final:</strong><br><input type="text" id="mesFinal" placeholder="Ej: Marzo"></td>
+                </tr>
+                <tr>
+                    <td colspan="3"><strong>Periodicidad:</strong><br>
+                        <label><input type="radio" name="periodicidad" value="mes"> mes</label>
+                        <label><input type="radio" name="periodicidad" value="bimestre"> bimestre</label>
+                        <label><input type="radio" name="periodicidad" value="trimestre"> trimestre</label>
+                        <label><input type="radio" name="periodicidad" value="semestre"> semestre</label>
+                    </td>
+                </tr>
+            </table>
 
-            <!-- SECCIÓN 2: METODOLOGÍA ACTIVA -->
-            <div id="metodologiaSection" class="recent-section" style="display: none;">
-                <h2><i class="fas fa-gamepad" style="color:#2E7D32;"></i> 2. Metodología activa</h2>
-                <div class="metodologia-opciones">
-                    <label>
-                        <input type="radio" name="metodologia" value="ABJ" id="metABJ">
-                        <i class="fas fa-dice" style="color:#FF9800;"></i> ABJ (Aprendizaje Basado en Juegos)
-                    </label>
-                    <label>
-                        <input type="radio" name="metodologia" value="ABR" id="metABR">
-                        <i class="fas fa-tasks" style="color:#9C27B0;"></i> ABR (Aprendizaje Basado en Retos)
-                    </label>
-                    <label>
-                        <input type="radio" name="metodologia" value="Design Thinking" id="metDT">
-                        <i class="fas fa-lightbulb" style="color:#1976D2;"></i> Design Thinking
-                    </label>
-                </div>
-                <div id="metodologiaRecomendada" class="metodologia-desc">
-                    Según el ciclo, se sugiere: <span id="sugerenciaMet"></span>
-                </div>
-            </div>
+            <!-- ================= SECCIÓN 2: EJES TRANSVERSALES ================= -->
+            <table class="form-table">
+                <tr>
+                    <th>Ciudadanía y ética digital</th>
+                    <th>Pensamiento computacional para la resolución de problemas</th>
+                    <th>Emprendimiento e Innovación</th>
+                </tr>
+                <tr>
+                    <td style="text-align: center;">
+                        <label><input type="checkbox" id="ejeCiudadania"> Competencias para la ciudadanía responsable y solidaria</label>
+                    </td>
+                    <td style="text-align: center;">
+                        <label><input type="checkbox" id="ejePensamiento"> Competencias para la vida: Sociales, emocionales y de aprendizaje</label>
+                    </td>
+                    <td style="text-align: center;">
+                        <label><input type="checkbox" id="ejeEmprendimiento"> Competencias para el empleo digno y emprendimiento</label>
+                    </td>
+                </tr>
+            </table>
 
-            <!-- SECCIÓN 3: INDICADORES CARGADOS -->
-            <div id="indicadoresContainer" class="recent-section" style="display: none;">
-                <h2><i class="fas fa-list" style="color:#2E7D32;"></i> 3. Indicadores de logro</h2>
-                <div id="indicadoresList" class="indicator-list"></div>
-            </div>
+            <!-- ================= SECCIÓN 3: METODOLOGÍA ACTIVA ================= -->
+            <table class="form-table">
+                <tr>
+                    <th colspan="3">Metodología activa:</th>
+                </tr>
+                <tr>
+                    <td style="text-align: center;">
+                        <label><input type="radio" name="metodologia" value="ABJ"> Aprendizaje Basado en Juegos (ABJ)</label>
+                    </td>
+                    <td style="text-align: center;">
+                        <label><input type="radio" name="metodologia" value="ABR"> Aprendizaje Basado en Retos (ABR)</label>
+                    </td>
+                    <td style="text-align: center;">
+                        <label><input type="radio" name="metodologia" value="Design Thinking"> Design Thinking</label>
+                    </td>
+                </tr>
+            </table>
 
-            <!-- SECCIÓN 4: TABLA DE PLANEAMIENTO -->
-            <div id="tablaContainer" class="recent-section" style="display: none;">
-                <h2><i class="fas fa-table" style="color:#2E7D32;"></i> 4. Tabla de planeamiento</h2>
-                <div class="tabla-container">
+            <!-- ================= SECCIÓN 4: ÁREAS DE CONOCIMIENTO + RdA ================= -->
+            <table class="form-table" id="tablaAreas">
+                <tr>
+                    <th>Área de conocimiento</th>
+                    <th>RdA</th>
+                </tr>
+                <tr>
+                    <td>Apropiación Tecnológica y Digital</td>
+                    <td><div id="rdaApropiacion">(seleccione un módulo)</div></td>
+                </tr>
+                <tr>
+                    <td>Programación y Algoritmos</td>
+                    <td><div id="rdaProgramacion">(seleccione un módulo)</div></td>
+                </tr>
+                <tr>
+                    <td>Computación Física y Robótica</td>
+                    <td><div id="rdaComputacion">(seleccione un módulo)</div></td>
+                </tr>
+                <tr>
+                    <td>Ciencia de Datos e Inteligencia Artificial</td>
+                    <td><div id="rdaCienciaDatos">(seleccione un módulo)</div></td>
+                </tr>
+            </table>
+
+            <!-- ================= SECCIÓN 5: SABERES ================= -->
+            <table class="form-table">
+                <tr>
+                    <th>Saberes conceptuales (saber)</th>
+                    <th colspan="2">Saberes procedimentales (saber hacer)</th>
+                    <th>Saberes actitudinales (saber ser)</th>
+                </tr>
+                <tr>
+                    <td><div id="conceptualesContainer" class="saberes-columna"></div></td>
+                    <td colspan="2">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                            <div class="saberes-columna" id="procCol1"></div>
+                            <div class="saberes-columna" id="procCol2"></div>
+                        </div>
+                    </td>
+                    <td><div id="actitudinalesContainer" class="saberes-columna"></div></td>
+                </tr>
+            </table>
+
+            <!-- ================= SECCIÓN 6: TABLA DE PLANEAMIENTO ================= -->
+            <div class="recent-section">
+                <h2>Tabla de planeamiento</h2>
+                <div style="overflow-x: auto;">
                     <table id="tablaPlaneamiento">
                         <thead>
                             <tr>
                                 <th>Indicadores de logro</th>
-                                <th>Estrategias de mediación</th>
+                                <th>Estrategias de Mediación (integrar saberes)</th>
                                 <th>Indicador de evaluación</th>
                             </tr>
                         </thead>
-                        <tbody id="tablaBody">
-                            <!-- Se llena dinámicamente -->
-                        </tbody>
+                        <tbody id="tablaBody"></tbody>
                     </table>
                 </div>
                 <div style="margin-top: 1rem;">
                     <button id="agregarFilaBtn" class="btn-secundario"><i class="fas fa-plus"></i> Agregar fila</button>
-                    <button id="guardarBtn" class="btn-accion"><i class="fas fa-save"></i> Guardar planeamiento</button>
                     <button id="iaBtn" class="btn-accion btn-ia"><i class="fas fa-robot"></i> Generar prompt para IA</button>
                     <button id="importarIaBtn" class="btn-secundario"><i class="fas fa-upload"></i> Importar desde IA</button>
                 </div>
             </div>
+
+            <!-- ================= SECCIÓN 7: REFLEXIONES DOCENTES ================= -->
+            <table class="form-table">
+                <tr>
+                    <th>¿Qué funcionó?</th>
+                    <th>¿Qué no funcionó?</th>
+                    <th>¿Qué puedo mejorar?</th>
+                </tr>
+                <tr>
+                    <td><textarea id="refFunciono" rows="3" style="width:100%;"></textarea></td>
+                    <td><textarea id="refNoFunciono" rows="3" style="width:100%;"></textarea></td>
+                    <td><textarea id="refMejorar" rows="3" style="width:100%;"></textarea></td>
+                </tr>
+            </table>
+
+            <!-- ================= OBSERVACIONES ================= -->
+            <table class="form-table">
+                <tr>
+                    <th>Observaciones y/o recomendaciones didácticas por nivel</th>
+                </tr>
+                <tr>
+                    <td>
+                        <textarea id="observaciones" rows="4" style="width:100%;" placeholder="Observaciones: En este apartado la persona docente podrá realizar los apuntes que considere necesarios: antes, durante y después de la aplicación del planeamiento didáctico. Por ejemplo: las observaciones sobre los avances en el proceso de recuperación académica, el desarrollo de los saberes disciplinares, las habilidades, las competencias y el contexto, las valoraciones sobre las particularidades del estudiantado, los aprendizajes esperados que quedaron pendientes o se deban retomar, entre otros."></textarea>
+                    </td>
+                </tr>
+            </table>
+
+            <!-- Botones de acción final -->
+            <div style="margin-top: 2rem; text-align: center;">
+                <button id="guardarBtn" class="btn-accion"><i class="fas fa-save"></i> Guardar planeamiento</button>
+                <button id="exportarWordBtn" class="btn-accion"><i class="fas fa-file-word"></i> Exportar a Word</button>
+                <button id="exportarPDFBtn" class="btn-accion"><i class="fas fa-file-pdf"></i> Exportar PDF</button>
+                <button id="exportarExcelBtn" class="btn-accion"><i class="fas fa-file-excel"></i> Exportar Excel</button>
+            </div>
         </main>
     </div>
 
-    <!-- Modal para prompt de IA -->
+    <!-- Modales -->
     <div id="modalIA" class="modal">
         <div class="modal-content">
             <span class="close" id="closeModalIA">&times;</span>
             <h2><i class="fas fa-robot" style="color:#2E7D32;"></i> Prompt generado para IA</h2>
-            <p>Copia este prompt y pégalo en tu IA favorita para obtener estrategias de mediación e indicadores de evaluación.</p>
+            <p>Copia este prompt y pégalo en tu IA favorita.</p>
             <div id="promptTexto" class="prompt-area">Generando...</div>
             <div class="ia-buttons">
                 <button id="btnChatGPT" class="ia-btn chatgpt"><i class="fab fa-openai"></i> ChatGPT</button>
@@ -362,13 +450,12 @@
         </div>
     </div>
 
-    <!-- Modal para importar JSON de IA -->
     <div id="modalImportarIA" class="modal">
         <div class="modal-content">
             <span class="close" id="closeImportarModal">&times;</span>
             <h2><i class="fas fa-upload" style="color:#2E7D32;"></i> Importar respuesta de IA</h2>
             <p>Pega aquí el JSON generado por la IA (debe contener las estrategias y evaluaciones).</p>
-            <textarea id="iaJsonInput" rows="10" placeholder='Ejemplo: { "inicio": "...", "desarrollo": "...", "cierre": "...", "evaluaciones": [{"indicador": "...", "instrumento": "..."}] }'></textarea>
+            <textarea id="iaJsonInput" rows="10" style="width:100%; font-family:monospace;"></textarea>
             <div style="text-align:center; margin-top:1rem;">
                 <button id="procesarJsonBtn" class="btn-accion"><i class="fas fa-play"></i> Procesar</button>
                 <button id="cancelarImportarBtn" class="btn-secundario">Cancelar</button>
@@ -384,22 +471,18 @@
             }
 
             // ---------- Elementos DOM ----------
-            const cicloSelect = document.getElementById('cicloSelect');
-            const nivelSelect = document.getElementById('nivelSelect');
-            const moduloSelect = document.getElementById('moduloSelect');
-            const cargarBtn = document.getElementById('cargarBtn');
-            const metodologiaSection = document.getElementById('metodologiaSection');
-            const sugerenciaMet = document.getElementById('sugerenciaMet');
-            const indicadoresContainer = document.getElementById('indicadoresContainer');
-            const indicadoresList = document.getElementById('indicadoresList');
-            const tablaContainer = document.getElementById('tablaContainer');
+            const cicloSelect = document.getElementById('ciclo');
+            const nivelSelect = document.getElementById('nivel');
+            const moduloSelect = document.getElementById('modulo');
+            const leccionesInput = document.getElementById('lecciones');
             const tablaBody = document.getElementById('tablaBody');
             const agregarFilaBtn = document.getElementById('agregarFilaBtn');
             const guardarBtn = document.getElementById('guardarBtn');
             const iaBtn = document.getElementById('iaBtn');
             const importarIaBtn = document.getElementById('importarIaBtn');
-
-            // Modales
+            const procesarJsonBtn = document.getElementById('procesarJsonBtn');
+            const iaJsonInput = document.getElementById('iaJsonInput');
+            const cancelarImportar = document.getElementById('cancelarImportarBtn');
             const modalIA = document.getElementById('modalIA');
             const closeModalIA = document.getElementById('closeModalIA');
             const promptTexto = document.getElementById('promptTexto');
@@ -407,35 +490,54 @@
             const btnChatGPT = document.getElementById('btnChatGPT');
             const btnCopilot = document.getElementById('btnCopilot');
             const btnGemini = document.getElementById('btnGemini');
-
             const modalImportar = document.getElementById('modalImportarIA');
             const closeImportar = document.getElementById('closeImportarModal');
-            const cancelarImportar = document.getElementById('cancelarImportarBtn');
-            const iaJsonInput = document.getElementById('iaJsonInput');
-            const procesarBtn = document.getElementById('procesarJsonBtn');
 
-            // Variable para almacenar el módulo actual
-            let moduloActual = null;
+            // Elementos de RdA
+            const rdaApropiacion = document.getElementById('rdaApropiacion');
+            const rdaProgramacion = document.getElementById('rdaProgramacion');
+            const rdaComputacion = document.getElementById('rdaComputacion');
+            const rdaCienciaDatos = document.getElementById('rdaCienciaDatos');
 
-            // Mapa de niveles por ciclo
+            // Contenedores de saberes
+            const conceptualesContainer = document.getElementById('conceptualesContainer');
+            const procCol1 = document.getElementById('procCol1');
+            const procCol2 = document.getElementById('procCol2');
+            const actitudinalesContainer = document.getElementById('actitudinalesContainer');
+
+            // ---------- Datos de prácticas y actitudes ----------
+            const practicas = window.PRACTICAS_PENSADOR_COMPUTACIONAL || [];
+            const actitudes = window.ACTITUDES_PENSADOR_COMPUTACIONAL || [];
+
+            // Dividir prácticas en dos columnas
+            const mitad = Math.ceil(practicas.length / 2);
+            const practicasCol1 = practicas.slice(0, mitad);
+            const practicasCol2 = practicas.slice(mitad);
+
+            // Llenar saberes procedimentales y actitudinales (fijos)
+            function llenarSaberesFijos() {
+                // Procedimentales columna 1
+                procCol1.innerHTML = practicasCol1.map(p => 
+                    `<label><input type="checkbox" class="saber-procedimental" value="${p.id}"> ${p.nombre}</label>`
+                ).join('');
+                // Procedimentales columna 2
+                procCol2.innerHTML = practicasCol2.map(p => 
+                    `<label><input type="checkbox" class="saber-procedimental" value="${p.id}"> ${p.nombre}</label>`
+                ).join('');
+                // Actitudinales
+                actitudinalesContainer.innerHTML = actitudes.map(a => 
+                    `<label><input type="checkbox" class="saber-actitudinal" value="${a.id}"> ${a.nombre}</label>`
+                ).join('');
+            }
+            llenarSaberesFijos();
+
+            // ---------- Actualizar niveles según ciclo ----------
             const nivelesPorCiclo = {
                 preescolar: ['Educación Preescolar'],
                 primaria: ['Primero', 'Segundo', 'Tercero', 'Cuarto', 'Quinto', 'Sexto'],
                 secundaria: ['Sétimo', 'Octavo', 'Noveno']
             };
 
-            // ---------- Funciones auxiliares ----------
-            function sugerirMetodologia(ciclo, nivel) {
-                if (ciclo === 'preescolar') return 'ABJ';
-                if (ciclo === 'primaria') {
-                    if (['Primero','Segundo','Tercero'].includes(nivel)) return 'ABJ';
-                    if (['Cuarto','Quinto','Sexto'].includes(nivel)) return 'ABR';
-                }
-                if (ciclo === 'secundaria') return 'Design Thinking';
-                return '';
-            }
-
-            // Actualizar niveles según ciclo
             cicloSelect.addEventListener('change', function() {
                 const ciclo = this.value;
                 nivelSelect.innerHTML = '<option value="">-- Seleccione --</option>';
@@ -447,24 +549,23 @@
                         nivelSelect.appendChild(option);
                     });
                 }
-                // Ocultar secciones si cambia ciclo
-                metodologiaSection.style.display = 'none';
-                indicadoresContainer.style.display = 'none';
-                tablaContainer.style.display = 'none';
+                // Limpiar áreas y saberes conceptuales
+                rdaApropiacion.innerText = '(seleccione un módulo)';
+                rdaProgramacion.innerText = '(seleccione un módulo)';
+                rdaComputacion.innerText = '(seleccione un módulo)';
+                rdaCienciaDatos.innerText = '(seleccione un módulo)';
+                conceptualesContainer.innerHTML = '';
+                tablaBody.innerHTML = '';
             });
 
-            // Cargar indicadores
-            cargarBtn.addEventListener('click', function() {
+            // ---------- Cargar datos del módulo al cambiar nivel o módulo ----------
+            function cargarDatosModulo() {
                 const ciclo = cicloSelect.value;
                 const nivel = nivelSelect.value;
                 const modulo = parseInt(moduloSelect.value);
 
-                if (!ciclo || !nivel) {
-                    alert('Seleccione ciclo y nivel');
-                    return;
-                }
+                if (!ciclo || !nivel) return;
 
-                // Buscar módulo en el currículo
                 let moduloData = null;
                 if (ciclo === 'preescolar') {
                     moduloData = window.CURRICULO.preescolar?.find(m => m.nivel === nivel && m.modulo === modulo);
@@ -477,33 +578,27 @@
                     moduloData = window.CURRICULO.secundaria?.[nivelKey]?.find(m => m.modulo === modulo);
                 }
 
-                if (!moduloData) {
-                    alert('No se encontraron indicadores para esta combinación');
-                    return;
-                }
+                if (!moduloData) return;
 
-                moduloActual = moduloData;
-
-                // Mostrar indicadores
-                let htmlIndicadores = '';
+                // Actualizar RdA por área
                 moduloData.areas.forEach(area => {
-                    const areaNombre = window.AREAS_CONOCIMIENTO?.find(a => a.id === area.areaId)?.nombre || area.areaId;
-                    htmlIndicadores += `<h4 style="margin:1rem 0 0.5rem; color:#2E7D32;">${areaNombre}</h4>`;
+                    const rdaElement = {
+                        apropiacion: rdaApropiacion,
+                        programacion: rdaProgramacion,
+                        computacion_fisica: rdaComputacion,
+                        ciencia_datos: rdaCienciaDatos
+                    }[area.areaId];
+                    if (rdaElement) rdaElement.innerText = area.rda || 'No disponible';
+                });
+
+                // Actualizar saberes conceptuales
+                let conceptualesHtml = '';
+                moduloData.areas.forEach(area => {
                     area.saberesConceptuales.forEach(s => {
-                        htmlIndicadores += `<div class="indicator-item">• <strong>${s.concepto}:</strong> ${s.indicadorLogro}</div>`;
+                        conceptualesHtml += `<label><input type="checkbox" class="saber-conceptual" value="${s.concepto}"> ${s.concepto}: ${s.indicadorLogro}</label>`;
                     });
                 });
-                indicadoresList.innerHTML = htmlIndicadores;
-                indicadoresContainer.style.display = 'block';
-
-                // Mostrar sección de metodología y sugerir
-                metodologiaSection.style.display = 'block';
-                const sugerencia = sugerirMetodologia(ciclo, nivel);
-                sugerenciaMet.textContent = sugerencia;
-                // Preseleccionar según sugerencia
-                if (sugerencia === 'ABJ') document.getElementById('metABJ').checked = true;
-                else if (sugerencia === 'ABR') document.getElementById('metABR').checked = true;
-                else if (sugerencia === 'Design Thinking') document.getElementById('metDT').checked = true;
+                conceptualesContainer.innerHTML = conceptualesHtml;
 
                 // Generar filas en la tabla (una por cada saber conceptual)
                 tablaBody.innerHTML = '';
@@ -517,10 +612,12 @@
                         `;
                     });
                 });
-                tablaContainer.style.display = 'block';
-            });
+            }
 
-            // Agregar fila vacía
+            nivelSelect.addEventListener('change', cargarDatosModulo);
+            moduloSelect.addEventListener('change', cargarDatosModulo);
+
+            // ---------- Agregar fila a la tabla ----------
             agregarFilaBtn.addEventListener('click', function() {
                 const row = tablaBody.insertRow();
                 row.innerHTML = `
@@ -530,7 +627,7 @@
                 `;
             });
 
-            // ---------- IndexedDB ----------
+            // ---------- Guardar en IndexedDB ----------
             const DB_NAME = 'PNFT_DB';
             const DB_VERSION = 1;
 
@@ -542,9 +639,7 @@
                     request.onupgradeneeded = (event) => {
                         const db = event.target.result;
                         if (!db.objectStoreNames.contains('plannings')) {
-                            const store = db.createObjectStore('plannings', { keyPath: 'id' });
-                            store.createIndex('fecha', 'fecha', { unique: false });
-                            store.createIndex('nivel', 'nivel', { unique: false });
+                            db.createObjectStore('plannings', { keyPath: 'id' });
                         }
                     };
                 });
@@ -561,19 +656,49 @@
                 });
             }
 
-            // Guardar planeamiento
             guardarBtn.addEventListener('click', async function() {
-                const nuevo = {
+                // Recoger datos del formulario
+                const planeamiento = {
                     id: Date.now(),
-                    fecha: new Date().toLocaleDateString('es-CR'),
-                    ciclo: cicloSelect.value,
-                    nivel: nivelSelect.value,
-                    modulo: moduloSelect.value,
+                    fecha: new Date().toISOString(),
+                    datosAdministrativos: {
+                        region: document.getElementById('region').value,
+                        centro: document.getElementById('centro').value,
+                        codigo: document.getElementById('codigo').value,
+                        docente: document.getElementById('docente').value,
+                        asignatura: document.getElementById('asignatura').value,
+                        curso: document.getElementById('curso').value,
+                        ciclo: cicloSelect.value,
+                        nivel: nivelSelect.value,
+                        modulo: moduloSelect.value,
+                        lecciones: leccionesInput.value,
+                        mesInicio: document.getElementById('mesInicio').value,
+                        mesFinal: document.getElementById('mesFinal').value,
+                        periodicidad: document.querySelector('input[name="periodicidad"]:checked')?.value || ''
+                    },
+                    ejes: {
+                        ciudadania: document.getElementById('ejeCiudadania').checked,
+                        pensamiento: document.getElementById('ejePensamiento').checked,
+                        emprendimiento: document.getElementById('ejeEmprendimiento').checked
+                    },
                     metodologia: document.querySelector('input[name="metodologia"]:checked')?.value || '',
-                    filas: []
+                    saberes: {
+                        conceptuales: Array.from(document.querySelectorAll('.saber-conceptual:checked')).map(c => c.value),
+                        procedimentales: Array.from(document.querySelectorAll('.saber-procedimental:checked')).map(c => c.value),
+                        actitudinales: Array.from(document.querySelectorAll('.saber-actitudinal:checked')).map(c => c.value)
+                    },
+                    tabla: [],
+                    reflexiones: {
+                        funciono: document.getElementById('refFunciono').value,
+                        noFunciono: document.getElementById('refNoFunciono').value,
+                        mejorar: document.getElementById('refMejorar').value,
+                        observaciones: document.getElementById('observaciones').value
+                    }
                 };
+
+                // Recoger filas de la tabla
                 document.querySelectorAll('#tablaBody tr').forEach(row => {
-                    nuevo.filas.push({
+                    planeamiento.tabla.push({
                         indicador: row.querySelector('.indicador-logro')?.value || '',
                         estrategia: row.querySelector('.estrategia')?.value || '',
                         evaluacion: row.querySelector('.indicador-eval')?.value || ''
@@ -581,12 +706,12 @@
                 });
 
                 try {
-                    await guardarPlaneamientoIndexedDB(nuevo);
+                    await guardarPlaneamientoIndexedDB(planeamiento);
                     alert('✅ Planeamiento guardado en IndexedDB');
                 } catch (e) {
                     // Fallback a localStorage
                     const localPlannings = JSON.parse(localStorage.getItem('pnft_plannings') || '[]');
-                    localPlannings.push(nuevo);
+                    localPlannings.push(planeamiento);
                     localStorage.setItem('pnft_plannings', JSON.stringify(localPlannings));
                     alert('✅ Planeamiento guardado en localStorage (IndexedDB falló)');
                 }
@@ -594,12 +719,18 @@
 
             // ---------- Generar prompt para IA ----------
             iaBtn.addEventListener('click', function() {
-                if (!moduloActual) return alert('Primero cargue los indicadores');
-                const metodologia = document.querySelector('input[name="metodologia"]:checked')?.value || 'No seleccionada';
                 const ciclo = cicloSelect.value;
                 const nivel = nivelSelect.value;
                 const modulo = moduloSelect.value;
+                const metodologia = document.querySelector('input[name="metodologia"]:checked')?.value || 'No seleccionada';
+                const lecciones = leccionesInput.value || '40';
 
+                if (!ciclo || !nivel) {
+                    alert('Seleccione ciclo y nivel');
+                    return;
+                }
+
+                // Recoger indicadores de la tabla
                 const filas = [];
                 document.querySelectorAll('#tablaBody tr').forEach(row => {
                     filas.push({
@@ -611,79 +742,24 @@
 
                 let prompt = `**CONTEXTO**: Programa Nacional de Formación Tecnológica (PNFT), MEP Costa Rica, curso lectivo 2026.\n\n`;
                 prompt += `**DATOS DEL PLANEAMIENTO**:\n`;
-                prompt += `- Ciclo: ${ciclo}\n`;
-                prompt += `- Nivel: ${nivel}\n`;
-                prompt += `- Módulo: ${modulo}\n`;
-                prompt += `- Metodología seleccionada: ${metodologia}\n\n`;
-
+                prompt += `- Ciclo: ${ciclo}\n- Nivel: ${nivel}\n- Módulo: ${modulo}\n- Metodología: ${metodologia}\n- Total de lecciones: ${lecciones}\n\n`;
                 prompt += `**SABERES E INDICADORES DEL MÓDULO**:\n`;
-                moduloActual.areas.forEach(area => {
-                    const areaNombre = window.AREAS_CONOCIMIENTO?.find(a => a.id === area.areaId)?.nombre || area.areaId;
-                    prompt += `\n### ${areaNombre}\n`;
-                    area.saberesConceptuales.forEach(s => {
-                        prompt += `- **${s.concepto}**: ${s.indicadorLogro}\n`;
-                    });
-                });
-
-                prompt += `\n**FILAS DE LA TABLA ACTUAL** (pueden estar vacías):\n`;
+                // (Se podrían incluir aquí los saberes conceptuales, pero para no alargar, se omite, la IA ya los conoce por contexto)
+                prompt += `**FILAS DE LA TABLA ACTUAL** (pueden estar vacías):\n`;
                 filas.forEach((f, i) => {
-                    prompt += `\nFila ${i+1}:\n`;
-                    prompt += `- Indicador: ${f.indicador || '(vacío)'}\n`;
-                    prompt += `- Estrategia actual: ${f.estrategia || '(vacío)'}\n`;
-                    prompt += `- Evaluación actual: ${f.evaluacion || '(vacío)'}\n`;
+                    prompt += `\nFila ${i+1}:\n- Indicador: ${f.indicador || '(vacío)'}\n- Estrategia: ${f.estrategia || '(vacío)'}\n- Evaluación: ${f.evaluacion || '(vacío)'}\n`;
                 });
 
-                prompt += `\n**INSTRUCCIONES PARA LA IA**:\n`;
-                prompt += `Actúa como especialista en diseño curricular del PNFT. Con base en la metodología seleccionada (${metodologia}), genera estrategias de mediación para una lección de 40 minutos (inicio 10 min, desarrollo 20 min, cierre 10 min) que integren los saberes del módulo.\n\n`;
-                prompt += `Además, propón **indicadores de evaluación** que cumplan con:\n`;
-                prompt += `- Redactados en **tercera persona del singular**.\n`;
-                prompt += `- Usen **verbos de la taxonomía de Bloom** (recordar, comprender, aplicar, analizar, evaluar, crear).\n`;
-                prompt += `- Sean **medibles y alcanzables**.\n`;
-                prompt += `- Sigan la estructura: **Acción + Contenido + Condición**.\n`;
-                prompt += `  Ejemplo: *"Explica la importancia del uso correcto del tiempo, mediante tres ejemplos."*\n\n`;
-                prompt += `Para cada indicador, sugiere el **instrumento de evaluación** más adecuado: lista de cotejo, rúbrica analítica o escala de desempeño.\n\n`;
-
-                if (metodologia === 'ABJ') {
-                    prompt += `**ABJ**: Propón actividades lúdicas con reglas claras, retroalimentación inmediata y mecánicas de juego (puntos, niveles, recompensas).\n`;
-                } else if (metodologia === 'ABR') {
-                    prompt += `**ABR**: Diseña un reto claro y medible, con producto final tangible y trabajo colaborativo. Incluye criterios de éxito.\n`;
-                } else if (metodologia === 'Design Thinking') {
-                    prompt += `**Design Thinking**: Desarrolla las fases: Empatizar, Definir, Idear, Prototipar y Evaluar.\n`;
-                }
-
-                prompt += `\n**FORMATO DE RESPUESTA ESPERADO (JSON)**:\n`;
-                prompt += `{\n`;
-                prompt += `  "inicio": "descripción de la actividad de inicio (10 min)",\n`;
-                prompt += `  "desarrollo": "descripción de la actividad principal (20 min)",\n`;
-                prompt += `  "cierre": "descripción del cierre (10 min)",\n`;
-                prompt += `  "evaluaciones": [\n`;
-                prompt += `    {\n`;
-                prompt += `      "indicador": "Indicador en tercera persona con verbo Bloom, contenido y condición",\n`;
-                prompt += `      "instrumento": "lista de cotejo / rúbrica / escala"\n`;
-                prompt += `    }\n`;
-                prompt += `  ]\n`;
-                prompt += `}\n\n`;
-                prompt += `**OBJETIVO**: Ayudar al docente a completar su planeamiento con estrategias alineadas al currículo y la metodología, asegurando que los indicadores de evaluación sean de calidad, medibles y coherentes con los aprendizajes esperados.`;
+                prompt += `\n**INSTRUCCIONES**:\n`;
+                prompt += `Actúa como especialista en diseño curricular del PNFT. Con base en la metodología seleccionada (${metodologia}), genera estrategias de mediación para cada lección del módulo (total ${lecciones} lecciones de 40 min). Las estrategias deben integrar los saberes del módulo y estar organizadas en una secuencia didáctica (inicio, desarrollo, cierre por lección). Además, propón indicadores de evaluación en tercera persona del singular, con verbos de Bloom, estructura Acción+Contenido+Condición, y sugiere el instrumento de evaluación adecuado.\n\n`;
+                prompt += `Formato de respuesta deseado (JSON):\n`;
+                prompt += `{\n  "lecciones": [\n    {\n      "numero": 1,\n      "inicio": "...",\n      "desarrollo": "...",\n      "cierre": "...",\n      "evaluaciones": [{"indicador": "...", "instrumento": "..."}]\n    },\n    ...\n  ]\n}\n`;
 
                 promptTexto.textContent = prompt;
                 modalIA.style.display = 'block';
             });
 
-            // ---------- Modal de prompt ----------
-            closeModalIA.onclick = () => modalIA.style.display = 'none';
-            window.onclick = (e) => { if (e.target == modalIA) modalIA.style.display = 'none'; };
-
-            btnCopiar.addEventListener('click', function() {
-                navigator.clipboard.writeText(promptTexto.textContent).then(() => {
-                    alert('✅ Prompt copiado al portapapeles');
-                }).catch(() => alert('❌ No se pudo copiar'));
-            });
-
-            btnChatGPT.addEventListener('click', () => window.open('https://chat.openai.com', '_blank'));
-            btnCopilot.addEventListener('click', () => window.open('https://copilot.microsoft.com', '_blank'));
-            btnGemini.addEventListener('click', () => window.open('https://gemini.google.com', '_blank'));
-
-            // ---------- Importar desde IA ----------
+            // ---------- Importar JSON de IA ----------
             importarIaBtn.addEventListener('click', () => {
                 modalImportar.style.display = 'block';
                 iaJsonInput.value = '';
@@ -693,48 +769,49 @@
             cancelarImportar.onclick = () => modalImportar.style.display = 'none';
             window.onclick = (e) => { if (e.target == modalImportar) modalImportar.style.display = 'none'; };
 
-            procesarBtn.addEventListener('click', () => {
+            procesarJsonBtn.addEventListener('click', () => {
                 try {
                     const json = JSON.parse(iaJsonInput.value);
-                    if (!json.inicio && !json.desarrollo && !json.cierre && !json.evaluaciones) {
-                        throw new Error('El JSON no tiene la estructura esperada (inicio, desarrollo, cierre o evaluaciones)');
+                    if (!json.lecciones || !Array.isArray(json.lecciones)) {
+                        throw new Error('El JSON debe contener un array "lecciones"');
                     }
-
-                    const filas = document.querySelectorAll('#tablaBody tr');
-                    // Si hay evaluaciones, asegurar que haya suficientes filas
-                    if (json.evaluaciones && json.evaluaciones.length > 0) {
-                        while (filas.length < json.evaluaciones.length) {
-                            agregarFilaBtn.click(); // llama al evento de agregar fila
-                        }
-                        // Actualizar cada fila
-                        json.evaluaciones.forEach((evalObj, index) => {
-                            const row = document.querySelectorAll('#tablaBody tr')[index];
-                            if (row) {
-                                // Si es la primera fila, podemos poner las estrategias combinadas
-                                if (index === 0 && json.inicio && json.desarrollo && json.cierre) {
-                                    row.querySelector('.estrategia').value = 
-                                        `INICIO (10 min): ${json.inicio}\nDESARROLLO (20 min): ${json.desarrollo}\nCIERRE (10 min): ${json.cierre}`;
-                                }
-                                if (evalObj.indicador) {
-                                    row.querySelector('.indicador-eval').value = evalObj.indicador;
-                                }
-                            }
-                        });
-                    } else {
-                        // Si no hay evaluaciones, al menos mostrar las estrategias en la primera fila
-                        if (json.inicio && json.desarrollo && json.cierre && filas.length > 0) {
-                            filas[0].querySelector('.estrategia').value = 
-                                `INICIO (10 min): ${json.inicio}\nDESARROLLO (20 min): ${json.desarrollo}\nCIERRE (10 min): ${json.cierre}`;
-                        }
-                    }
-
-                    alert('✅ Tabla actualizada con la respuesta de la IA');
+                    // Limpiar tabla actual y generar filas según las lecciones
+                    tablaBody.innerHTML = '';
+                    json.lecciones.forEach(leccion => {
+                        const row = tablaBody.insertRow();
+                        // En la columna de indicadores podemos poner algo genérico o combinar los indicadores de la lección
+                        const indicadoresTexto = leccion.evaluaciones?.map(e => e.indicador).join('\n') || '';
+                        row.innerHTML = `
+                            <td><textarea class="indicador-logro" rows="2">Indicadores de la lección ${leccion.numero}</textarea></td>
+                            <td><textarea class="estrategia" rows="4">INICIO: ${leccion.inicio || ''}\nDESARROLLO: ${leccion.desarrollo || ''}\nCIERRE: ${leccion.cierre || ''}</textarea></td>
+                            <td><textarea class="indicador-eval" rows="2">${indicadoresTexto}</textarea></td>
+                        `;
+                    });
+                    alert('✅ Tabla actualizada con las lecciones importadas');
                     modalImportar.style.display = 'none';
                 } catch (error) {
                     alert('❌ Error al procesar el JSON: ' + error.message);
                 }
             });
 
+            // ---------- Cerrar modales ----------
+            closeModalIA.onclick = () => modalIA.style.display = 'none';
+            window.onclick = (e) => { if (e.target == modalIA) modalIA.style.display = 'none'; };
+
+            btnCopiar.addEventListener('click', () => {
+                navigator.clipboard.writeText(promptTexto.textContent).then(() => {
+                    alert('✅ Prompt copiado');
+                }).catch(() => alert('❌ No se pudo copiar'));
+            });
+
+            btnChatGPT.addEventListener('click', () => window.open('https://chat.openai.com', '_blank'));
+            btnCopilot.addEventListener('click', () => window.open('https://copilot.microsoft.com', '_blank'));
+            btnGemini.addEventListener('click', () => window.open('https://gemini.google.com', '_blank'));
+
+            // Exportación (simulada por ahora)
+            document.getElementById('exportarWordBtn').addEventListener('click', () => alert('Función de exportación a Word en desarrollo'));
+            document.getElementById('exportarPDFBtn').addEventListener('click', () => alert('Función de exportación a PDF en desarrollo'));
+            document.getElementById('exportarExcelBtn').addEventListener('click', () => alert('Función de exportación a Excel en desarrollo'));
         })();
     </script>
 </body>
