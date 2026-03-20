@@ -16,319 +16,60 @@
     <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
     <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
     <style>
-        /* ========== ESTILOS BASE ========== */
-        .form-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 1.5rem;
-            background: white;
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-        }
-        .form-table td, .form-table th {
-            padding: 0.8rem 1rem;
-            border: 1px solid #e0e0e0;
-            vertical-align: top;
-        }
-        .form-table th {
-            background-color: #2E7D32;
-            color: white;
-            font-weight: 600;
-            text-align: left;
-        }
-        .form-table input[type="text"], 
-        .form-table input[type="number"], 
-        .form-table select, 
-        .form-table textarea {
-            width: 100%;
-            padding: 0.5rem;
-            border: 1px solid #ccc;
-            border-radius: 6px;
-            font-size: 0.95rem;
-        }
-        .saberes-columna {
-            display: flex;
-            flex-direction: column;
-            gap: 0.3rem;
-        }
-        .saberes-columna label {
-            display: flex;
-            align-items: center;
-            gap: 0.3rem;
-            font-size: 0.9rem;
-        }
-        .btn-accion {
-            background: #2E7D32;
-            color: white;
-            border: none;
-            padding: 0.7rem 1.5rem;
-            border-radius: 30px;
-            cursor: pointer;
-            font-size: 1rem;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            margin-right: 0.5rem;
-            margin-bottom: 0.5rem;
-            transition: background 0.2s;
-        }
-        .btn-accion:hover {
-            background: #1e5a20;
-        }
-        .btn-ia {
-            background: #1976D2;
-        }
-        .btn-ia:hover {
-            background: #0d5a9e;
-        }
-        .btn-secundario {
-            background: #f0f0f0;
-            color: #333;
-            border: 1px solid #ccc;
-        }
-        .btn-secundario:hover {
-            background: #e0e0e0;
-        }
-        #tablaPlaneamiento {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 1rem;
-        }
-        #tablaPlaneamiento th {
-            background: #2E7D32;
-            color: white;
-            padding: 10px;
-            text-align: left;
-        }
-        #tablaPlaneamiento td {
-            border: 1px solid #ddd;
-            padding: 8px;
-            vertical-align: top;
-            position: relative;
-        }
-        /* Contenedores editables */
-        .rich-editor {
-            width: 100%;
-            min-height: 80px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            padding: 8px;
-            font-family: inherit;
-            font-size: 0.9rem;
-            background: white;
-            overflow-y: auto;
-            white-space: pre-wrap;
-        }
-        .rich-editor:focus {
-            outline: 2px solid #2E7D32;
-        }
-        /* Barra de herramientas para Quill */
-        .quill-toolbar {
-            display: none;
-            background: #f9f9f9;
-            border: 1px solid #ddd;
-            border-bottom: none;
-            padding: 5px;
-            border-radius: 4px 4px 0 0;
-            margin-bottom: -1px;
-        }
-        .quill-toolbar.visible {
-            display: block;
-        }
-        .ql-editor {
-            min-height: 100px;
-        }
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0,0,0,0.5);
-            overflow: auto;
-        }
-        .modal-content {
-            background-color: white;
-            margin: 5% auto;
-            padding: 2rem;
-            border-radius: 20px;
-            width: 90%;
-            max-width: 800px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
-            position: relative;
-        }
-        .close {
-            color: #aaa;
-            float: right;
-            font-size: 28px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-        .close:hover {
-            color: black;
-        }
-        .prompt-area {
-            background: #f5f5f5;
-            padding: 1.5rem;
-            border-radius: 12px;
-            margin: 1.5rem 0;
-            white-space: pre-wrap;
-            font-family: monospace;
-            max-height: 400px;
-            overflow-y: auto;
-            font-size: 0.9rem;
-        }
-        .ia-buttons {
-            display: flex;
-            gap: 1rem;
-            flex-wrap: wrap;
-            justify-content: center;
-        }
-        .ia-btn {
-            flex: 1;
-            min-width: 150px;
-            padding: 1rem;
-            border: none;
-            border-radius: 12px;
-            color: white;
-            font-weight: 600;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-            transition: transform 0.2s;
-        }
-        .ia-btn:hover {
-            transform: translateY(-3px);
-        }
+        /* Estilos iguales al anterior (se mantienen) */
+        .form-table { width: 100%; border-collapse: collapse; margin-bottom: 1.5rem; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+        .form-table td, .form-table th { padding: 0.8rem 1rem; border: 1px solid #e0e0e0; vertical-align: top; }
+        .form-table th { background-color: #2E7D32; color: white; font-weight: 600; text-align: left; }
+        .form-table input[type="text"], .form-table input[type="number"], .form-table select, .form-table textarea { width: 100%; padding: 0.5rem; border: 1px solid #ccc; border-radius: 6px; font-size: 0.95rem; }
+        .saberes-columna { display: flex; flex-direction: column; gap: 0.3rem; }
+        .saberes-columna label { display: flex; align-items: center; gap: 0.3rem; font-size: 0.9rem; }
+        .btn-accion { background: #2E7D32; color: white; border: none; padding: 0.7rem 1.5rem; border-radius: 30px; cursor: pointer; font-size: 1rem; display: inline-flex; align-items: center; gap: 0.5rem; margin-right: 0.5rem; margin-bottom: 0.5rem; transition: background 0.2s; }
+        .btn-accion:hover { background: #1e5a20; }
+        .btn-ia { background: #1976D2; }
+        .btn-ia:hover { background: #0d5a9e; }
+        .btn-secundario { background: #f0f0f0; color: #333; border: 1px solid #ccc; }
+        .btn-secundario:hover { background: #e0e0e0; }
+        #tablaPlaneamiento { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+        #tablaPlaneamiento th { background: #2E7D32; color: white; padding: 10px; text-align: left; }
+        #tablaPlaneamiento td { border: 1px solid #ddd; padding: 8px; vertical-align: top; position: relative; }
+        .rich-editor { width: 100%; min-height: 80px; border: 1px solid #ccc; border-radius: 4px; padding: 8px; font-family: inherit; font-size: 0.9rem; background: white; overflow-y: auto; white-space: pre-wrap; }
+        .rich-editor:focus { outline: 2px solid #2E7D32; }
+        .quill-toolbar { display: none; background: #f9f9f9; border: 1px solid #ddd; border-bottom: none; padding: 5px; border-radius: 4px 4px 0 0; margin-bottom: -1px; }
+        .quill-toolbar.visible { display: block; }
+        .ql-editor { min-height: 100px; }
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); overflow: auto; }
+        .modal-content { background-color: white; margin: 5% auto; padding: 2rem; border-radius: 20px; width: 90%; max-width: 800px; box-shadow: 0 20px 40px rgba(0,0,0,0.2); position: relative; }
+        .close { color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer; }
+        .close:hover { color: black; }
+        .prompt-area { background: #f5f5f5; padding: 1.5rem; border-radius: 12px; margin: 1.5rem 0; white-space: pre-wrap; font-family: monospace; max-height: 400px; overflow-y: auto; font-size: 0.9rem; }
+        .ia-buttons { display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center; }
+        .ia-btn { flex: 1; min-width: 150px; padding: 1rem; border: none; border-radius: 12px; color: white; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem; transition: transform 0.2s; }
+        .ia-btn:hover { transform: translateY(-3px); }
         .ia-btn.chatgpt { background: #10a37f; }
         .ia-btn.copilot { background: #5c2d91; }
         .ia-btn.gemini { background: #1a73e8; }
-        .copy-btn {
-            background: #2E7D32;
-            color: white;
-            border: none;
-            padding: 0.8rem 2rem;
-            border-radius: 30px;
-            font-size: 1rem;
-            cursor: pointer;
-            margin-top: 1rem;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-        .escudo-preview {
-            max-width: 80px;
-            max-height: 80px;
-            margin-top: 5px;
-        }
-        .profile-img {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            object-fit: cover;
-            cursor: pointer;
-        }
-        .top-bar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 2rem;
-            background: white;
-            padding: 1rem 2rem;
-            border-radius: 20px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.02);
-        }
-        .user-info {
-            display: flex;
-            align-items: center;
-            gap: 1.5rem;
-        }
-        .user-badge {
-            background: #e8f5e9;
-            color: #2E7D32;
-            padding: 0.5rem 1.2rem;
-            border-radius: 40px;
-            font-weight: 600;
-            font-size: 0.9rem;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            cursor: pointer;
-        }
-        .escudo-lema {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            margin-bottom: 1rem;
-            background: white;
-            padding: 1rem;
-            border-radius: 12px;
-        }
-        .delete-row-btn {
-            background: #c62828;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            padding: 4px 6px;
-            cursor: pointer;
-            font-size: 0.7rem;
-            display: inline-flex;
-            align-items: center;
-            gap: 3px;
-        }
-        .delete-row-btn:hover {
-            background: #b71c1c;
-        }
-        .calendar-container {
-            max-height: 500px;
-            overflow-y: auto;
-        }
-        .month-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 1rem;
-        }
-        .month-table th {
-            background: #2E7D32;
-            color: white;
-            padding: 5px;
-            text-align: center;
-        }
-        .month-table td {
-            border: 1px solid #ddd;
-            text-align: center;
-            padding: 5px;
-            font-size: 0.8rem;
-        }
-        .festivo {
-            background-color: #ffebee;
-            color: #c62828;
-            font-weight: bold;
-        }
-        .vacaciones {
-            background-color: #fff3e0;
-            color: #e65100;
-        }
-        .evento {
-            background-color: #e8f0fe;
-            color: #0b5e7e;
-        }
+        .copy-btn { background: #2E7D32; color: white; border: none; padding: 0.8rem 2rem; border-radius: 30px; font-size: 1rem; cursor: pointer; margin-top: 1rem; display: inline-flex; align-items: center; gap: 0.5rem; }
+        .escudo-preview { max-width: 80px; max-height: 80px; margin-top: 5px; }
+        .profile-img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; cursor: pointer; }
+        .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; background: white; padding: 1rem 2rem; border-radius: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.02); }
+        .user-info { display: flex; align-items: center; gap: 1.5rem; }
+        .user-badge { background: #e8f5e9; color: #2E7D32; padding: 0.5rem 1.2rem; border-radius: 40px; font-weight: 600; font-size: 0.9rem; display: inline-flex; align-items: center; gap: 0.5rem; cursor: pointer; }
+        .escudo-lema { display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem; background: white; padding: 1rem; border-radius: 12px; }
+        .delete-row-btn { background: #c62828; color: white; border: none; border-radius: 4px; padding: 4px 6px; cursor: pointer; font-size: 0.7rem; display: inline-flex; align-items: center; gap: 3px; }
+        .delete-row-btn:hover { background: #b71c1c; }
+        .calendar-container { max-height: 500px; overflow-y: auto; }
+        .month-table { width: 100%; border-collapse: collapse; margin-bottom: 1rem; }
+        .month-table th { background: #2E7D32; color: white; padding: 5px; text-align: center; }
+        .month-table td { border: 1px solid #ddd; text-align: center; padding: 5px; font-size: 0.8rem; }
+        .festivo { background-color: #ffebee; color: #c62828; font-weight: bold; }
+        .vacaciones { background-color: #fff3e0; color: #e65100; }
+        .evento { background-color: #e8f0fe; color: #0b5e7e; }
     </style>
 </head>
 <body>
     <div class="app">
-        <!-- Sidebar -->
         <aside class="sidebar">
-            <div class="sidebar-header">
-                <div class="logo">PNFT</div>
-                <h2>Articulador 2026</h2>
-                <p>MEP Costa Rica</p>
-            </div>
+            <div class="sidebar-header"><div class="logo">PNFT</div><h2>Articulador 2026</h2><p>MEP Costa Rica</p></div>
             <ul class="nav-menu">
                 <a href="index.html"><li class="nav-item"><i class="fas fa-chart-pie"></i> Tablero</li></a>
                 <a href="planning.html"><li class="nav-item active"><i class="fas fa-clipboard-list"></i> Planeamiento</li></a>
@@ -340,101 +81,55 @@
                 <a href="settings.html"><li class="nav-item"><i class="fas fa-cog"></i> Configuración</li></a>
             </ul>
         </aside>
-
         <main class="main-content">
             <div class="top-bar">
                 <h1 class="page-title">Planeamiento Didáctico</h1>
                 <div class="user-info">
                     <span class="user-badge" id="docenteNombre"><i class="fas fa-user-graduate"></i> <span id="docenteNombreText">Docente</span></span>
-                    <img id="profileImg" class="profile-img" src="" alt="Foto perfil" style="display: none;">
+                    <img id="profileImg" class="profile-img" src="" style="display: none;">
                     <span class="user-badge"><i class="fas fa-calendar-alt"></i> 2026</span>
                     <button id="calendarBtn" class="btn-secundario" style="padding:0.3rem 0.8rem;"><i class="fas fa-calendar-week"></i> Calendario</button>
                 </div>
             </div>
-
-            <!-- Escudo y lema -->
             <div class="escudo-lema">
                 <div id="escudoPreview"></div>
                 <input type="text" id="nombreEscuela" placeholder="Nombre o lema del centro educativo" style="flex:1;">
                 <input type="file" id="escudoFile" accept="image/*" style="width:auto;">
             </div>
 
-            <!-- ================= SECCIÓN 1: DATOS ADMINISTRATIVOS ================= -->
-            <table class="form-table">
-                 <tr>
-                    <td><strong>Dirección Regional de Educación:</strong><br><input type="text" id="region" placeholder="Ej: San José Central"></td>
-                    <td><strong>Centro educativo:</strong><br><input type="text" id="centro" placeholder="Ej: Liceo de Costa Rica"></td>
-                    <td><strong>Código:</strong><br><input type="text" id="codigo" placeholder="Ej: 12345"></td>
-                </tr>
-                <tr>
-                    <td><strong>Nombre de la persona docente:</strong><br><input type="text" id="docente"></td>
-                    <td><strong>Asignatura:</strong><br><select id="asignatura"><option value="Formación Tecnológica">Formación Tecnológica</option><option value="Informática Educativa">Informática Educativa</option></select></td>
-                    <td><strong>Curso lectivo:</strong><br><input type="number" id="curso" value="2026"></td>
-                </tr>
-                <tr>
-                    <td><strong>Ciclo:</strong><br><select id="ciclo"><option value="">-- Seleccione --</option><option value="preescolar">Preescolar</option><option value="primaria">I Ciclo</option><option value="primaria">II Ciclo</option><option value="secundaria">III Ciclo</option></select></td>
-                    <td><strong>Nivel:</strong><br><select id="nivel"><option value="">-- Primero seleccione ciclo --</option></select></td>
-                    <td><strong>Módulo:</strong><br><select id="modulo"><option value="1">Módulo 1</option><option value="2">Módulo 2</option><option value="ambos">Ambos módulos</option></select></td>
-                </tr>
-                <tr>
-                    <td><strong>Lecciones planificadas:</strong><br><input type="number" id="lecciones" value="40"></td>
-                    <td><strong>Mes inicio:</strong><br><input type="text" id="mesInicio" placeholder="Ej: Febrero"></td>
-                    <td><strong>Mes final:</strong><br><input type="text" id="mesFinal" placeholder="Ej: Marzo"></td>
-                </tr>
-                <tr>
-                    <td colspan="3"><strong>Periodicidad:</strong><br>
-                        <label><input type="radio" name="periodicidad" value="mes"> mes</label>
-                        <label><input type="radio" name="periodicidad" value="bimestre"> bimestre</label>
-                        <label><input type="radio" name="periodicidad" value="trimestre"> trimestre</label>
-                        <label><input type="radio" name="periodicidad" value="semestre"> semestre</label>
-                    </td>
-                </tr>
-            </table>
+            <!-- Datos administrativos (tabla) -->
+            <table class="form-table"><tr><td><strong>Dirección Regional de Educación:</strong><br><input type="text" id="region" placeholder="Ej: San José Central"></td><td><strong>Centro educativo:</strong><br><input type="text" id="centro" placeholder="Ej: Liceo de Costa Rica"></td><td><strong>Código:</strong><br><input type="text" id="codigo" placeholder="Ej: 12345"></td></tr>
+            <tr><td><strong>Nombre de la persona docente:</strong><br><input type="text" id="docente"></td><td><strong>Asignatura:</strong><br><select id="asignatura"><option value="Formación Tecnológica">Formación Tecnológica</option><option value="Informática Educativa">Informática Educativa</option></select></td><td><strong>Curso lectivo:</strong><br><input type="number" id="curso" value="2026"></td></tr>
+            <tr><td><strong>Ciclo:</strong><br><select id="ciclo"><option value="">-- Seleccione --</option><option value="preescolar">Preescolar</option><option value="primaria">I Ciclo</option><option value="primaria">II Ciclo</option><option value="secundaria">III Ciclo</option></select></td><td><strong>Nivel:</strong><br><select id="nivel"><option value="">-- Primero seleccione ciclo --</option></select></td><td><strong>Módulo:</strong><br><select id="modulo"><option value="1">Módulo 1</option><option value="2">Módulo 2</option><option value="ambos">Ambos módulos</option></select></td></tr>
+            <tr><td><strong>Lecciones planificadas:</strong><br><input type="number" id="lecciones" value="40"></td><td><strong>Mes inicio:</strong><br><input type="text" id="mesInicio" placeholder="Ej: Febrero"></td><td><strong>Mes final:</strong><br><input type="text" id="mesFinal" placeholder="Ej: Marzo"></td></tr>
+            <tr><td colspan="3"><strong>Periodicidad:</strong><br><label><input type="radio" name="periodicidad" value="mes"> mes</label> <label><input type="radio" name="periodicidad" value="bimestre"> bimestre</label> <label><input type="radio" name="periodicidad" value="trimestre"> trimestre</label> <label><input type="radio" name="periodicidad" value="semestre"> semestre</label></td></tr></table>
 
-            <!-- ================= SECCIÓN 2: EJES TRANSVERSALES ================= -->
-            <table class="form-table">
-                <tr><th>Ciudadanía y ética digital</th><th>Pensamiento computacional para la resolución de problemas</th><th>Emprendimiento e Innovación</th></tr>
-                <tr>
-                    <td style="text-align: center;"><label><input type="checkbox" id="ejeCiudadania"> Competencias para la ciudadanía responsable y solidaria</label></td>
-                    <td style="text-align: center;"><label><input type="checkbox" id="ejePensamiento"> Competencias para la vida: Sociales, emocionales y de aprendizaje</label></td>
-                    <td style="text-align: center;"><label><input type="checkbox" id="ejeEmprendimiento"> Competencias para el empleo digno y emprendimiento</label></td>
-                </tr>
-            </table>
+            <!-- Ejes transversales -->
+            <table class="form-table"><tr><th>Ciudadanía y ética digital</th><th>Pensamiento computacional para la resolución de problemas</th><th>Emprendimiento e Innovación</th></tr>
+            <tr><td style="text-align:center;"><label><input type="checkbox" id="ejeCiudadania"> Competencias para la ciudadanía responsable y solidaria</label></td>
+                <td style="text-align:center;"><label><input type="checkbox" id="ejePensamiento"> Competencias para la vida: Sociales, emocionales y de aprendizaje</label></td>
+                <td style="text-align:center;"><label><input type="checkbox" id="ejeEmprendimiento"> Competencias para el empleo digno y emprendimiento</label></td></tr></table>
 
-            <!-- ================= SECCIÓN 3: METODOLOGÍA ACTIVA ================= -->
-            <table class="form-table">
-                <tr><th colspan="3">Metodología activa:</th></tr>
-                <tr>
-                    <td style="text-align: center;"><label><input type="radio" name="metodologia" value="ABJ"> Aprendizaje Basado en Juegos (ABJ)</label></td>
-                    <td style="text-align: center;"><label><input type="radio" name="metodologia" value="ABR"> Aprendizaje Basado en Retos (ABR)</label></td>
-                    <td style="text-align: center;"><label><input type="radio" name="metodologia" value="Design Thinking"> Design Thinking</label></td>
-                </tr>
-            </table>
+            <!-- Metodología activa -->
+            <table class="form-table"><tr><th colspan="3">Metodología activa:</th></tr>
+            <tr><td style="text-align:center;"><label><input type="radio" name="metodologia" value="ABJ"> Aprendizaje Basado en Juegos (ABJ)</label></td>
+                <td style="text-align:center;"><label><input type="radio" name="metodologia" value="ABR"> Aprendizaje Basado en Retos (ABR)</label></td>
+                <td style="text-align:center;"><label><input type="radio" name="metodologia" value="Design Thinking"> Design Thinking</label></td></tr></table>
 
-            <!-- ================= SECCIÓN 4: ÁREAS DE CONOCIMIENTO + RdA ================= -->
-            <table class="form-table" id="tablaAreas">
-                <tr><th>Área de conocimiento</th><th>RdA</th></tr>
-                <tr><td>Apropiación Tecnológica y Digital</td><td><div id="rdaApropiacion">(seleccione un módulo)</div></td></tr>
-                <tr><td>Programación y Algoritmos</td><td><div id="rdaProgramacion">(seleccione un módulo)</div></td></tr>
-                <tr><td>Computación Física y Robótica</td><td><div id="rdaComputacion">(seleccione un módulo)</div></td></tr>
-                <tr><td>Ciencia de Datos e Inteligencia Artificial</td><td><div id="rdaCienciaDatos">(seleccione un módulo)</div></td></tr>
-            </table>
+            <!-- Áreas de conocimiento + RdA -->
+            <table class="form-table" id="tablaAreas"><tr><th>Área de conocimiento</th><th>RdA</th></tr>
+            <tr><td>Apropiación Tecnológica y Digital</td><td><div id="rdaApropiacion">(seleccione un módulo)</div></td></tr>
+            <tr><td>Programación y Algoritmos</td><td><div id="rdaProgramacion">(seleccione un módulo)</div></td></tr>
+            <tr><td>Computación Física y Robótica</td><td><div id="rdaComputacion">(seleccione un módulo)</div></td></tr>
+            <tr><td>Ciencia de Datos e Inteligencia Artificial</td><td><div id="rdaCienciaDatos">(seleccione un módulo)</div></td></tr></table>
 
-            <!-- ================= SECCIÓN 5: SABERES ================= -->
-            <table class="form-table">
-                <tr>
-                    <th>Saberes conceptuales (saber)</th>
-                    <th colspan="2">Saberes procedimentales (saber hacer)</th>
-                    <th>Saberes actitudinales (saber ser)</th>
-                </tr>
-                <tr>
-                    <td><div id="conceptualesContainer" class="saberes-columna"></div></td>
-                    <td colspan="2"><div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;"><div class="saberes-columna" id="procCol1"></div><div class="saberes-columna" id="procCol2"></div></div></td>
-                    <td><div id="actitudinalesContainer" class="saberes-columna"></div></td>
-                </tr>
-            </table>
+            <!-- Saberes -->
+            <table class="form-table"><tr><th>Saberes conceptuales (saber)</th><th colspan="2">Saberes procedimentales (saber hacer)</th><th>Saberes actitudinales (saber ser)</th></tr>
+            <tr><td><div id="conceptualesContainer" class="saberes-columna"></div></td>
+                <td colspan="2"><div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;"><div class="saberes-columna" id="procCol1"></div><div class="saberes-columna" id="procCol2"></div></div></td>
+                <td><div id="actitudinalesContainer" class="saberes-columna"></div></td></tr></table>
 
-            <!-- ================= SECCIÓN 6: TABLA DE PLANEAMIENTO ================= -->
+            <!-- Tabla de planeamiento -->
             <div class="recent-section">
                 <h2>Tabla de planeamiento</h2>
                 <div style="margin-bottom: 10px;">
@@ -463,23 +158,17 @@
                 </div>
             </div>
 
-            <!-- ================= SECCIÓN 7: REFLEXIONES DOCENTES ================= -->
-            <table class="form-table">
-                <tr><th>¿Qué funcionó?</th><th>¿Qué no funcionó?</th><th>¿Qué puedo mejorar?</th></tr>
-                <tr>
-                    <td><textarea id="refFunciono" rows="3" style="width:100%;" placeholder="Describa los aspectos positivos de la lección..."></textarea></td>
-                    <td><textarea id="refNoFunciono" rows="3" style="width:100%;" placeholder="Describa las dificultades encontradas..."></textarea></td>
-                    <td><textarea id="refMejorar" rows="3" style="width:100%;" placeholder="Proponga ajustes para futuras lecciones..."></textarea></td>
-                </tr>
-            </table>
-            <table class="form-table">
-                <tr><th>Observaciones y/o recomendaciones didácticas por nivel</th></tr>
-                <tr><td><textarea id="observaciones" rows="4" style="width:100%;" placeholder="Observaciones: En este apartado la persona docente podrá realizar los apuntes que considere necesarios..."></textarea></td></tr>
-            </table>
+            <!-- Reflexiones -->
+            <table class="form-table"><tr><th>¿Qué funcionó?</th><th>¿Qué no funcionó?</th><th>¿Qué puedo mejorar?</th></tr>
+            <tr><td><textarea id="refFunciono" rows="3" style="width:100%;" placeholder="Describa los aspectos positivos..."></textarea></td>
+                <td><textarea id="refNoFunciono" rows="3" style="width:100%;" placeholder="Describa las dificultades..."></textarea></td>
+                <td><textarea id="refMejorar" rows="3" style="width:100%;" placeholder="Proponga ajustes..."></textarea></td></tr></table>
+            <table class="form-table"><tr><th>Observaciones y/o recomendaciones didácticas por nivel</th></tr>
+            <tr><td><textarea id="observaciones" rows="4" style="width:100%;" placeholder="Observaciones..."></textarea></td></tr></table>
         </main>
     </div>
 
-    <!-- Modales (simplificados) -->
+    <!-- Modales (con IDs correctos) -->
     <div id="modalIA" class="modal"><div class="modal-content"><span class="close" id="closeModalIA">&times;</span><h2><i class="fas fa-robot"></i> Prompt generado para IA</h2><div id="promptTexto" class="prompt-area">Generando...</div><div class="ia-buttons"><button id="btnChatGPT" class="ia-btn chatgpt"><i class="fab fa-openai"></i> ChatGPT</button><button id="btnCopilot" class="ia-btn copilot"><i class="fas fa-microsoft"></i> Copilot</button><button id="btnGemini" class="ia-btn gemini"><i class="fas fa-google"></i> Gemini</button></div><div style="text-align:center;"><button id="btnCopiarPrompt" class="copy-btn"><i class="fas fa-copy"></i> Copiar prompt</button></div></div></div>
     <div id="modalImportarIA" class="modal"><div class="modal-content"><span class="close" id="closeImportarModal">&times;</span><h2><i class="fas fa-upload"></i> Importar respuesta de IA</h2><textarea id="iaJsonInput" rows="10" style="width:100%; font-family:monospace;"></textarea><div style="text-align:center; margin-top:1rem;"><button id="procesarJsonBtn" class="btn-accion"><i class="fas fa-play"></i> Procesar</button><button id="cancelarImportarBtn" class="btn-secundario">Cancelar</button></div></div></div>
     <div id="modalAbrir" class="modal"><div class="modal-content"><span class="close" id="closeAbrirModal">&times;</span><h2><i class="fas fa-folder-open"></i> Cargar planeamiento guardado</h2><select id="listaPlaneamientos" style="width:100%; padding:0.5rem;"></select><div style="margin-top:1rem;"><button id="cargarSeleccionadoBtn" class="btn-accion">Cargar</button></div></div></div>
@@ -492,7 +181,7 @@
                 return;
             }
 
-            // ---------- Elementos DOM ----------
+            // Elementos DOM
             const cicloSelect = document.getElementById('ciclo');
             const nivelSelect = document.getElementById('nivel');
             const moduloSelect = document.getElementById('modulo');
@@ -526,7 +215,7 @@
             const calendarBtn = document.getElementById('calendarBtn');
             const calendarioContainer = document.getElementById('calendarioContainer');
 
-            // Elementos de RdA y saberes
+            // RdA y saberes
             const rdaApropiacion = document.getElementById('rdaApropiacion');
             const rdaProgramacion = document.getElementById('rdaProgramacion');
             const rdaComputacion = document.getElementById('rdaComputacion');
@@ -535,17 +224,16 @@
             const procCol1 = document.getElementById('procCol1');
             const procCol2 = document.getElementById('procCol2');
             const actitudinalesContainer = document.getElementById('actitudinalesContainer');
-
             const practicas = window.PRACTICAS_PENSADOR_COMPUTACIONAL || [];
             const actitudes = window.ACTITUDES_PENSADOR_COMPUTACIONAL || [];
 
-            // Variables para editor enriquecido con Quill
+            // Editor Quill
             let quillInstances = [];
             let formatoActivo = false;
             const toggleBtn = document.getElementById('toggleFormatBtn');
             const disableBtn = document.getElementById('disableFormatBtn');
 
-            // ---------- IndexedDB ----------
+            // IndexedDB
             const DB_NAME = 'PNFT_DB';
             const DB_VERSION = 2;
             let db = null;
@@ -557,72 +245,18 @@
                     request.onsuccess = () => { db = request.result; resolve(db); };
                     request.onupgradeneeded = (event) => {
                         const db = event.target.result;
-                        if (!db.objectStoreNames.contains('plannings')) {
-                            db.createObjectStore('plannings', { keyPath: 'id' });
-                        }
-                        if (!db.objectStoreNames.contains('profile')) {
-                            db.createObjectStore('profile', { keyPath: 'key' });
-                        }
+                        if (!db.objectStoreNames.contains('plannings')) db.createObjectStore('plannings', { keyPath: 'id' });
+                        if (!db.objectStoreNames.contains('profile')) db.createObjectStore('profile', { keyPath: 'key' });
                     };
                 });
             }
+            async function guardarPlaneamiento(planeamiento) { if (!db) await abrirDB(); return new Promise((resolve, reject) => { const tx = db.transaction(['plannings'], 'readwrite'); const store = tx.objectStore('plannings'); const req = store.put(planeamiento); req.onsuccess = () => resolve(); req.onerror = () => reject(req.error); }); }
+            async function cargarPlaneamientos() { if (!db) await abrirDB(); return new Promise((resolve, reject) => { const tx = db.transaction(['plannings'], 'readonly'); const store = tx.objectStore('plannings'); const req = store.getAll(); req.onsuccess = () => resolve(req.result); req.onerror = () => reject(req.error); }); }
+            async function cargarPlaneamientoPorId(id) { if (!db) await abrirDB(); return new Promise((resolve, reject) => { const tx = db.transaction(['plannings'], 'readonly'); const store = tx.objectStore('plannings'); const req = store.get(id); req.onsuccess = () => resolve(req.result); req.onerror = () => reject(req.error); }); }
+            async function guardarPerfil(key, value) { if (!db) await abrirDB(); return new Promise((resolve, reject) => { const tx = db.transaction(['profile'], 'readwrite'); const store = tx.objectStore('profile'); const req = store.put({ key, value }); req.onsuccess = () => resolve(); req.onerror = () => reject(req.error); }); }
+            async function cargarPerfil(key) { if (!db) await abrirDB(); return new Promise((resolve, reject) => { const tx = db.transaction(['profile'], 'readonly'); const store = tx.objectStore('profile'); const req = store.get(key); req.onsuccess = () => resolve(req.result ? req.result.value : null); req.onerror = () => reject(req.error); }); }
 
-            async function guardarPlaneamiento(planeamiento) {
-                if (!db) await abrirDB();
-                return new Promise((resolve, reject) => {
-                    const tx = db.transaction(['plannings'], 'readwrite');
-                    const store = tx.objectStore('plannings');
-                    const req = store.put(planeamiento);
-                    req.onsuccess = () => resolve();
-                    req.onerror = () => reject(req.error);
-                });
-            }
-
-            async function cargarPlaneamientos() {
-                if (!db) await abrirDB();
-                return new Promise((resolve, reject) => {
-                    const tx = db.transaction(['plannings'], 'readonly');
-                    const store = tx.objectStore('plannings');
-                    const req = store.getAll();
-                    req.onsuccess = () => resolve(req.result);
-                    req.onerror = () => reject(req.error);
-                });
-            }
-
-            async function cargarPlaneamientoPorId(id) {
-                if (!db) await abrirDB();
-                return new Promise((resolve, reject) => {
-                    const tx = db.transaction(['plannings'], 'readonly');
-                    const store = tx.objectStore('plannings');
-                    const req = store.get(id);
-                    req.onsuccess = () => resolve(req.result);
-                    req.onerror = () => reject(req.error);
-                });
-            }
-
-            async function guardarPerfil(key, value) {
-                if (!db) await abrirDB();
-                return new Promise((resolve, reject) => {
-                    const tx = db.transaction(['profile'], 'readwrite');
-                    const store = tx.objectStore('profile');
-                    const req = store.put({ key, value });
-                    req.onsuccess = () => resolve();
-                    req.onerror = () => reject(req.error);
-                });
-            }
-
-            async function cargarPerfil(key) {
-                if (!db) await abrirDB();
-                return new Promise((resolve, reject) => {
-                    const tx = db.transaction(['profile'], 'readonly');
-                    const store = tx.objectStore('profile');
-                    const req = store.get(key);
-                    req.onsuccess = () => resolve(req.result ? req.result.value : null);
-                    req.onerror = () => reject(req.error);
-                });
-            }
-
-            // ---------- Funciones auxiliares ----------
+            // Funciones auxiliares
             function llenarSaberesFijos() {
                 const mitad = Math.ceil(practicas.length / 2);
                 const practicasCol1 = practicas.slice(0, mitad);
@@ -635,11 +269,7 @@
             function actualizarNiveles() {
                 const ciclo = cicloSelect.value;
                 nivelSelect.innerHTML = '<option value="">-- Seleccione --</option>';
-                const niveles = {
-                    preescolar: ['Educación Preescolar'],
-                    primaria: ['Primero', 'Segundo', 'Tercero', 'Cuarto', 'Quinto', 'Sexto'],
-                    secundaria: ['Sétimo', 'Octavo', 'Noveno']
-                }[ciclo] || [];
+                const niveles = { preescolar: ['Educación Preescolar'], primaria: ['Primero','Segundo','Tercero','Cuarto','Quinto','Sexto'], secundaria: ['Sétimo','Octavo','Noveno'] }[ciclo] || [];
                 niveles.forEach(n => nivelSelect.add(new Option(n, n)));
             }
 
@@ -649,27 +279,17 @@
                 const moduloVal = moduloSelect.value;
                 if (!ciclo || !nivel) return;
 
-                let modulos = [];
-                if (moduloVal === 'ambos') {
-                    modulos = [1, 2];
-                } else {
-                    modulos = [parseInt(moduloVal)];
-                }
-
+                let modulos = (moduloVal === 'ambos') ? [1,2] : [parseInt(moduloVal)];
                 let rdas = { apropiacion: '', programacion: '', computacion_fisica: '', ciencia_datos: '' };
                 let conceptuales = [];
 
                 modulos.forEach(mod => {
                     let moduloData = null;
-                    if (ciclo === 'preescolar') {
-                        moduloData = window.CURRICULO.preescolar?.find(m => m.nivel === nivel && m.modulo === mod);
-                    } else if (ciclo === 'primaria') {
-                        const nivelKey = nivel.toLowerCase();
-                        moduloData = window.CURRICULO.primaria?.[nivelKey]?.find(m => m.modulo === mod);
-                    } else if (ciclo === 'secundaria') {
+                    if (ciclo === 'preescolar') moduloData = window.CURRICULO.preescolar?.find(m => m.nivel === nivel && m.modulo === mod);
+                    else if (ciclo === 'primaria') moduloData = window.CURRICULO.primaria?.[nivel.toLowerCase()]?.find(m => m.modulo === mod);
+                    else if (ciclo === 'secundaria') {
                         const nivelMap = { 'Sétimo':'setimo', 'Octavo':'octavo', 'Noveno':'noveno' };
-                        const nivelKey = nivelMap[nivel];
-                        moduloData = window.CURRICULO.secundaria?.[nivelKey]?.find(m => m.modulo === mod);
+                        moduloData = window.CURRICULO.secundaria?.[nivelMap[nivel]]?.find(m => m.modulo === mod);
                     }
                     if (moduloData) {
                         moduloData.areas.forEach(area => {
@@ -687,38 +307,23 @@
 
                 conceptualesContainer.innerHTML = conceptuales.map(s => `<label><input type="checkbox" class="saber-conceptual" value="${s.concepto}"> ${s.concepto}: ${s.indicadorLogro}</label>`).join('');
 
-                // Generar filas de tabla con contenteditable (simple)
                 tablaBody.innerHTML = '';
-                conceptuales.forEach((s, idx) => {
+                conceptuales.forEach(s => {
                     const row = tablaBody.insertRow();
-                    row.innerHTML = `
-                        <td><div class="rich-editor" contenteditable="true">${s.indicadorLogro}</div></td>
-                        <td><div class="rich-editor" contenteditable="true"></div></td>
-                        <td><div class="rich-editor" contenteditable="true"></div></td>
-                        <td style="text-align:center;"><button class="delete-row-btn"><i class="fas fa-trash-alt"></i> Eliminar</button></td>
-                    `;
+                    row.innerHTML = `<td><div class="rich-editor" contenteditable="true">${s.indicadorLogro}</div></td><td><div class="rich-editor" contenteditable="true"></div></td><td><div class="rich-editor" contenteditable="true"></div></td><td style="text-align:center;"><button class="delete-row-btn"><i class="fas fa-trash-alt"></i> Eliminar</button></td>`;
                 });
                 attachDeleteEvents();
             }
 
             function attachDeleteEvents() {
-                document.querySelectorAll('.delete-row-btn').forEach(btn => {
-                    btn.addEventListener('click', (e) => {
-                        const row = btn.closest('tr');
-                        if (row && confirm('¿Eliminar esta fila?')) {
-                            row.remove();
-                        }
-                    });
-                });
+                document.querySelectorAll('.delete-row-btn').forEach(btn => btn.addEventListener('click', (e) => { const row = btn.closest('tr'); if(row && confirm('¿Eliminar esta fila?')) row.remove(); }));
             }
 
-            // ---------- Editor enriquecido con Quill ----------
+            // Quill
             function activarQuill() {
                 if (formatoActivo) return;
-                // Guardar contenido actual de los editores
                 const cells = document.querySelectorAll('#tablaBody .rich-editor');
                 const contenidos = Array.from(cells).map(el => el.innerHTML);
-                // Reemplazar cada .rich-editor por un contenedor para Quill
                 cells.forEach((el, idx) => {
                     const wrapper = document.createElement('div');
                     wrapper.className = 'quill-wrapper';
@@ -726,31 +331,17 @@
                     editorDiv.style.height = '150px';
                     wrapper.appendChild(editorDiv);
                     el.parentNode.replaceChild(wrapper, el);
-                    const quill = new Quill(editorDiv, {
-                        theme: 'snow',
-                        modules: {
-                            toolbar: [
-                                ['bold', 'italic', 'underline', 'strike'],
-                                [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-                                [{ 'color': [] }, { 'background': [] }],
-                                ['clean']
-                            ]
-                        }
-                    });
+                    const quill = new Quill(editorDiv, { theme: 'snow', modules: { toolbar: [['bold','italic','underline','strike'], [{ 'list': 'ordered'},{ 'list': 'bullet'}], ['clean']] } });
                     quill.root.innerHTML = contenidos[idx] || '';
                     quillInstances.push(quill);
                 });
                 formatoActivo = true;
                 toggleBtn.style.display = 'none';
                 disableBtn.style.display = 'inline-flex';
-                // Añadir barra de herramientas global (ya está incluida por Quill)
             }
-
             function desactivarQuill() {
                 if (!formatoActivo) return;
-                // Guardar contenido de Quill
                 const nuevosContenidos = quillInstances.map(q => q.root.innerHTML);
-                // Reemplazar cada wrapper por un .rich-editor con contenteditable
                 const wrappers = document.querySelectorAll('#tablaBody .quill-wrapper');
                 wrappers.forEach((wrapper, idx) => {
                     const div = document.createElement('div');
@@ -763,66 +354,35 @@
                 formatoActivo = false;
                 toggleBtn.style.display = 'inline-flex';
                 disableBtn.style.display = 'none';
-                attachDeleteEvents(); // reasignar eventos a los botones eliminar
+                attachDeleteEvents();
             }
-
             toggleBtn.addEventListener('click', activarQuill);
             disableBtn.addEventListener('click', desactivarQuill);
 
-            // ---------- Guardar y cargar planeamiento ----------
+            // Obtener datos del formulario
             function obtenerDatosFormulario() {
-                // Si Quill está activo, actualizar los contenidos de los .rich-editor (que ya no existen)
-                // Para simplificar, obtenemos el contenido según el modo activo.
                 let tablaContenido = [];
                 if (formatoActivo) {
-                    tablaContenido = quillInstances.map(q => q.root.innerHTML);
-                    // Agrupar de a 3 (indicador, estrategia, evaluacion)
-                    const agrupado = [];
-                    for (let i = 0; i < tablaContenido.length; i += 3) {
-                        agrupado.push({
-                            indicador: tablaContenido[i] || '',
-                            estrategia: tablaContenido[i+1] || '',
-                            evaluacion: tablaContenido[i+2] || ''
-                        });
-                    }
-                    tablaContenido = agrupado;
+                    const contenido = quillInstances.map(q => q.root.innerHTML);
+                    for (let i = 0; i < contenido.length; i += 3) tablaContenido.push({ indicador: contenido[i] || '', estrategia: contenido[i+1] || '', evaluacion: contenido[i+2] || '' });
                 } else {
-                    const filas = document.querySelectorAll('#tablaBody tr');
-                    tablaContenido = Array.from(filas).map(row => {
+                    document.querySelectorAll('#tablaBody tr').forEach(row => {
                         const cells = row.querySelectorAll('.rich-editor');
-                        return {
-                            indicador: cells[0]?.innerHTML || '',
-                            estrategia: cells[1]?.innerHTML || '',
-                            evaluacion: cells[2]?.innerHTML || ''
-                        };
+                        tablaContenido.push({ indicador: cells[0]?.innerHTML || '', estrategia: cells[1]?.innerHTML || '', evaluacion: cells[2]?.innerHTML || '' });
                     });
                 }
-
-                const planeamiento = {
+                return {
                     id: Date.now(),
                     fecha: new Date().toISOString(),
                     datosAdministrativos: {
-                        region: document.getElementById('region').value,
-                        centro: document.getElementById('centro').value,
-                        codigo: document.getElementById('codigo').value,
-                        docente: document.getElementById('docente').value,
-                        asignatura: document.getElementById('asignatura').value,
-                        curso: document.getElementById('curso').value,
-                        ciclo: cicloSelect.value,
-                        nivel: nivelSelect.value,
-                        modulo: moduloSelect.value,
-                        lecciones: leccionesInput.value,
-                        mesInicio: document.getElementById('mesInicio').value,
-                        mesFinal: document.getElementById('mesFinal').value,
+                        region: document.getElementById('region').value, centro: document.getElementById('centro').value, codigo: document.getElementById('codigo').value,
+                        docente: document.getElementById('docente').value, asignatura: document.getElementById('asignatura').value, curso: document.getElementById('curso').value,
+                        ciclo: cicloSelect.value, nivel: nivelSelect.value, modulo: moduloSelect.value, lecciones: leccionesInput.value,
+                        mesInicio: document.getElementById('mesInicio').value, mesFinal: document.getElementById('mesFinal').value,
                         periodicidad: document.querySelector('input[name="periodicidad"]:checked')?.value || '',
-                        nombreEscuela: document.getElementById('nombreEscuela').value,
-                        escudoBase64: localStorage.getItem('escudoBase64') || ''
+                        nombreEscuela: document.getElementById('nombreEscuela').value, escudoBase64: localStorage.getItem('escudoBase64') || ''
                     },
-                    ejes: {
-                        ciudadania: document.getElementById('ejeCiudadania').checked,
-                        pensamiento: document.getElementById('ejePensamiento').checked,
-                        emprendimiento: document.getElementById('ejeEmprendimiento').checked
-                    },
+                    ejes: { ciudadania: document.getElementById('ejeCiudadania').checked, pensamiento: document.getElementById('ejePensamiento').checked, emprendimiento: document.getElementById('ejeEmprendimiento').checked },
                     metodologia: document.querySelector('input[name="metodologia"]:checked')?.value || '',
                     saberes: {
                         conceptuales: Array.from(document.querySelectorAll('.saber-conceptual:checked')).map(c => c.value),
@@ -831,13 +391,10 @@
                     },
                     tabla: tablaContenido,
                     reflexiones: {
-                        funciono: document.getElementById('refFunciono').value,
-                        noFunciono: document.getElementById('refNoFunciono').value,
-                        mejorar: document.getElementById('refMejorar').value,
-                        observaciones: document.getElementById('observaciones').value
+                        funciono: document.getElementById('refFunciono').value, noFunciono: document.getElementById('refNoFunciono').value,
+                        mejorar: document.getElementById('refMejorar').value, observaciones: document.getElementById('observaciones').value
                     }
                 };
-                return planeamiento;
             }
 
             function cargarDatosEnFormulario(data) {
@@ -854,287 +411,141 @@
                 document.getElementById('lecciones').value = data.datosAdministrativos.lecciones || 40;
                 document.getElementById('mesInicio').value = data.datosAdministrativos.mesInicio || '';
                 document.getElementById('mesFinal').value = data.datosAdministrativos.mesFinal || '';
-                if (data.datosAdministrativos.periodicidad) {
-                    document.querySelector(`input[name="periodicidad"][value="${data.datosAdministrativos.periodicidad}"]`).checked = true;
-                }
+                if (data.datosAdministrativos.periodicidad) document.querySelector(`input[name="periodicidad"][value="${data.datosAdministrativos.periodicidad}"]`).checked = true;
                 document.getElementById('nombreEscuela').value = data.datosAdministrativos.nombreEscuela || '';
-                if (data.datosAdministrativos.escudoBase64) {
-                    document.getElementById('escudoPreview').innerHTML = `<img src="${data.datosAdministrativos.escudoBase64}" class="escudo-preview">`;
-                }
+                if (data.datosAdministrativos.escudoBase64) document.getElementById('escudoPreview').innerHTML = `<img src="${data.datosAdministrativos.escudoBase64}" class="escudo-preview">`;
                 document.getElementById('ejeCiudadania').checked = data.ejes?.ciudadania || false;
                 document.getElementById('ejePensamiento').checked = data.ejes?.pensamiento || false;
                 document.getElementById('ejeEmprendimiento').checked = data.ejes?.emprendimiento || false;
                 if (data.metodologia) document.querySelector(`input[name="metodologia"][value="${data.metodologia}"]`).checked = true;
-                // Checkboxes saberes
                 document.querySelectorAll('.saber-conceptual').forEach(cb => cb.checked = data.saberes?.conceptuales?.includes(cb.value));
                 document.querySelectorAll('.saber-procedimental').forEach(cb => cb.checked = data.saberes?.procedimentales?.includes(cb.value));
                 document.querySelectorAll('.saber-actitudinal').forEach(cb => cb.checked = data.saberes?.actitudinales?.includes(cb.value));
-                // Tabla
+
                 tablaBody.innerHTML = '';
-                data.tabla.forEach((fila, idx) => {
+                data.tabla.forEach(fila => {
                     const row = tablaBody.insertRow();
-                    row.innerHTML = `
-                        <td><div class="rich-editor" contenteditable="true">${fila.indicador || ''}</div></td>
-                        <td><div class="rich-editor" contenteditable="true">${fila.estrategia || ''}</div></td>
-                        <td><div class="rich-editor" contenteditable="true">${fila.evaluacion || ''}</div></td>
-                        <td style="text-align:center;"><button class="delete-row-btn"><i class="fas fa-trash-alt"></i> Eliminar</button></td>
-                    `;
+                    row.innerHTML = `<td><div class="rich-editor" contenteditable="true">${fila.indicador || ''}</div></td><td><div class="rich-editor" contenteditable="true">${fila.estrategia || ''}</div></td><td><div class="rich-editor" contenteditable="true">${fila.evaluacion || ''}</div></td><td style="text-align:center;"><button class="delete-row-btn"><i class="fas fa-trash-alt"></i> Eliminar</button></td>`;
                 });
                 attachDeleteEvents();
+                if (formatoActivo) desactivarQuill();
                 document.getElementById('refFunciono').value = data.reflexiones?.funciono || '';
                 document.getElementById('refNoFunciono').value = data.reflexiones?.noFunciono || '';
                 document.getElementById('refMejorar').value = data.reflexiones?.mejorar || '';
                 document.getElementById('observaciones').value = data.reflexiones?.observaciones || '';
-                // Si estaba activo el formato, lo desactivamos para evitar conflictos
-                if (formatoActivo) desactivarQuill();
             }
 
-            // ---------- Eventos ----------
+            // Eventos básicos
             cicloSelect.addEventListener('change', actualizarNiveles);
             moduloSelect.addEventListener('change', cargarDatosModulo);
             nivelSelect.addEventListener('change', cargarDatosModulo);
-
             agregarFilaBtn.addEventListener('click', () => {
                 const row = tablaBody.insertRow();
-                row.innerHTML = `
-                    <td><div class="rich-editor" contenteditable="true"></div></td>
-                    <td><div class="rich-editor" contenteditable="true"></div></td>
-                    <td><div class="rich-editor" contenteditable="true"></div></td>
-                    <td style="text-align:center;"><button class="delete-row-btn"><i class="fas fa-trash-alt"></i> Eliminar</button></td>
-                `;
+                row.innerHTML = `<td><div class="rich-editor" contenteditable="true"></div></td><td><div class="rich-editor" contenteditable="true"></div></td><td><div class="rich-editor" contenteditable="true"></div></td><td style="text-align:center;"><button class="delete-row-btn"><i class="fas fa-trash-alt"></i> Eliminar</button></td>`;
                 attachDeleteEvents();
                 if (formatoActivo) {
-                    // Si Quill está activo, debemos convertir la nueva fila a Quill
                     const newCells = row.querySelectorAll('.rich-editor');
-                    newCells.forEach((cell, idx) => {
+                    newCells.forEach((cell) => {
                         const wrapper = document.createElement('div');
                         wrapper.className = 'quill-wrapper';
                         const editorDiv = document.createElement('div');
                         editorDiv.style.height = '150px';
                         wrapper.appendChild(editorDiv);
                         cell.parentNode.replaceChild(wrapper, cell);
-                        const quill = new Quill(editorDiv, {
-                            theme: 'snow',
-                            modules: { toolbar: [['bold', 'italic', 'underline', 'strike'], [{ 'list': 'ordered'}, { 'list': 'bullet' }], ['clean']] }
-                        });
+                        const quill = new Quill(editorDiv, { theme: 'snow', modules: { toolbar: [['bold','italic','underline','strike'], [{ 'list': 'ordered'},{ 'list': 'bullet'}], ['clean']] } });
                         quillInstances.push(quill);
                     });
                 }
             });
 
-            guardarBtn.addEventListener('click', async () => {
-                const data = obtenerDatosFormulario();
-                try {
-                    await guardarPlaneamiento(data);
-                    alert('✅ Planeamiento guardado correctamente en el sistema.');
-                } catch (e) {
-                    console.error(e);
-                    alert('❌ Error al guardar. Puede exportar el JSON como respaldo.');
-                }
-            });
-
-            abrirBtn.addEventListener('click', async () => {
-                const plannings = await cargarPlaneamientos();
-                listaPlaneamientos.innerHTML = '';
-                plannings.forEach(p => {
-                    const option = document.createElement('option');
-                    option.value = p.id;
-                    option.textContent = `${p.datosAdministrativos.nivel || 'Sin nivel'} - ${new Date(p.fecha).toLocaleDateString()}`;
-                    listaPlaneamientos.appendChild(option);
-                });
-                modalAbrir.style.display = 'block';
-            });
-
-            cargarSeleccionadoBtn.addEventListener('click', async () => {
-                const id = parseInt(listaPlaneamientos.value);
-                const data = await cargarPlaneamientoPorId(id);
-                if (data) {
-                    cargarDatosEnFormulario(data);
-                    modalAbrir.style.display = 'none';
-                    alert('✅ Planeamiento cargado correctamente.');
-                } else {
-                    alert('❌ No se encontró el planeamiento seleccionado.');
-                }
-            });
-
+            guardarBtn.addEventListener('click', async () => { const data = obtenerDatosFormulario(); try { await guardarPlaneamiento(data); alert('✅ Planeamiento guardado correctamente.'); } catch(e) { console.error(e); alert('❌ Error al guardar. Use Exportar JSON como respaldo.'); } });
+            abrirBtn.addEventListener('click', async () => { const plannings = await cargarPlaneamientos(); listaPlaneamientos.innerHTML = plannings.map(p => `<option value="${p.id}">${p.datosAdministrativos.nivel || 'Sin nivel'} - ${new Date(p.fecha).toLocaleDateString()}</option>`).join(''); modalAbrir.style.display = 'block'; });
+            cargarSeleccionadoBtn.addEventListener('click', async () => { const id = parseInt(listaPlaneamientos.value); const data = await cargarPlaneamientoPorId(id); if (data) { cargarDatosEnFormulario(data); modalAbrir.style.display = 'none'; alert('✅ Planeamiento cargado.'); } else alert('❌ No encontrado.'); });
             nuevoBtn.addEventListener('click', () => location.reload());
+            exportarJsonBtn.addEventListener('click', () => { const data = obtenerDatosFormulario(); const blob = new Blob([JSON.stringify(data, null, 2)], {type:'application/json'}); saveAs(blob, `planeamiento_${data.id}.json`); alert('✅ JSON exportado.'); });
 
-            exportarJsonBtn.addEventListener('click', () => {
-                const data = obtenerDatosFormulario();
-                const jsonStr = JSON.stringify(data, null, 2);
-                const blob = new Blob([jsonStr], {type: 'application/json'});
-                saveAs(blob, `planeamiento_${data.id}.json`);
-                alert('✅ JSON exportado. Guarde este archivo como respaldo.');
-            });
-
-            // ---------- Prompt para IA (igual que antes, con el mismo formato) ----------
-            iaBtn.addEventListener('click', function() {
-                const ciclo = cicloSelect.value;
-                const nivel = nivelSelect.value;
-                const modulo = moduloSelect.value;
-                const metodologia = document.querySelector('input[name="metodologia"]:checked')?.value || 'No seleccionada';
-                const lecciones = leccionesInput.value || '40';
-                if (!ciclo || !nivel) {
-                    alert('Seleccione ciclo y nivel');
-                    return;
-                }
-                const filas = [];
-                if (formatoActivo) {
-                    // Obtener de quillInstances
-                    for (let i = 0; i < quillInstances.length; i += 3) {
-                        filas.push({
-                            indicador: quillInstances[i]?.root.innerText || '',
-                            estrategia: quillInstances[i+1]?.root.innerText || '',
-                            evaluacion: quillInstances[i+2]?.root.innerText || ''
-                        });
-                    }
-                } else {
-                    document.querySelectorAll('#tablaBody tr').forEach(row => {
-                        const cells = row.querySelectorAll('.rich-editor');
-                        filas.push({
-                            indicador: cells[0]?.innerText || '',
-                            estrategia: cells[1]?.innerText || '',
-                            evaluacion: cells[2]?.innerText || ''
-                        });
-                    });
-                }
-                let prompt = `**CONTEXTO**: Programa Nacional de Formación Tecnológica (PNFT), MEP Costa Rica, curso lectivo 2026.\n\n`;
-                prompt += `**DATOS DEL PLANEAMIENTO**:\n- Ciclo: ${ciclo}\n- Nivel: ${nivel}\n- Módulo: ${modulo}\n- Metodología: ${metodologia}\n- Total de lecciones: ${lecciones}\n\n`;
-                prompt += `**FILAS DE LA TABLA ACTUAL** (pueden estar vacías):\n`;
-                filas.forEach((f, i) => {
-                    prompt += `\nFila ${i+1}:\n- Indicador: ${f.indicador || '(vacío)'}\n- Estrategia: ${f.estrategia || '(vacío)'}\n- Evaluación: ${f.evaluacion || '(vacío)'}\n`;
-                });
-                prompt += `\n**INSTRUCCIONES**:\nActúa como especialista en diseño curricular del PNFT. Con base en la metodología seleccionada (${metodologia}), genera estrategias de mediación para cada lección del módulo (total ${lecciones} lecciones de 40 min). Las estrategias deben integrar los saberes del módulo y estar organizadas en una secuencia didáctica (inicio, desarrollo, cierre por lección). Además, propón indicadores de evaluación en tercera persona del singular, con verbos de Bloom, estructura Acción+Contenido+Condición, y sugiere el instrumento de evaluación adecuado.\n\n`;
-                prompt += `Formato de respuesta deseado (JSON):\n{\n  "lecciones": [\n    {\n      "numero": 1,\n      "inicio": "...",\n      "desarrollo": "...",\n      "cierre": "...",\n      "evaluaciones": [{"indicador": "...", "instrumento": "..."}]\n    },\n    ...\n  ]\n}\n`;
+            // Prompt IA (igual que antes)
+            iaBtn.addEventListener('click', () => {
+                const ciclo = cicloSelect.value, nivel = nivelSelect.value, modulo = moduloSelect.value, metodologia = document.querySelector('input[name="metodologia"]:checked')?.value || 'No seleccionada', lecciones = leccionesInput.value || '40';
+                if (!ciclo || !nivel) { alert('Seleccione ciclo y nivel'); return; }
+                let filas = [];
+                if (formatoActivo) for (let i=0; i<quillInstances.length; i+=3) filas.push({ indicador: quillInstances[i]?.root.innerText || '', estrategia: quillInstances[i+1]?.root.innerText || '', evaluacion: quillInstances[i+2]?.root.innerText || '' });
+                else document.querySelectorAll('#tablaBody tr').forEach(row => { const cells = row.querySelectorAll('.rich-editor'); filas.push({ indicador: cells[0]?.innerText || '', estrategia: cells[1]?.innerText || '', evaluacion: cells[2]?.innerText || '' }); });
+                let prompt = `**CONTEXTO**: PNFT, MEP Costa Rica, 2026.\n\n**DATOS**: Ciclo: ${ciclo}, Nivel: ${nivel}, Módulo: ${modulo}, Metodología: ${metodologia}, Lecciones: ${lecciones}\n\n**FILAS**:\n${filas.map((f,i)=>`Fila ${i+1}:\n- Indicador: ${f.indicador||'(vacío)'}\n- Estrategia: ${f.estrategia||'(vacío)'}\n- Evaluación: ${f.evaluacion||'(vacío)'}`).join('\n')}\n\n**INSTRUCCIONES**: Actúa como especialista en diseño curricular del PNFT. Genera estrategias de mediación para cada lección (${lecciones} lecciones de 40 min) con inicio, desarrollo, cierre. Propón indicadores de evaluación en 3ª persona, con verbos de Bloom, estructura Acción+Contenido+Condición, y sugiere instrumento.\nFormato JSON: { "lecciones": [ { "numero": 1, "inicio": "...", "desarrollo": "...", "cierre": "...", "evaluaciones": [{"indicador": "...", "instrumento": "..."}] } ] }`;
                 promptTexto.textContent = prompt;
                 modalIA.style.display = 'block';
             });
 
-            // ---------- Importar IA (versión mejorada que acepta varios formatos) ----------
+            // Importar IA (corregido para abrir modal)
+            importarIaBtn.addEventListener('click', () => { modalImportar.style.display = 'block'; iaJsonInput.value = ''; });
+            closeImportar.onclick = () => modalImportar.style.display = 'none';
+            cancelarImportar.onclick = () => modalImportar.style.display = 'none';
+            window.onclick = (e) => { if (e.target === modalImportar) modalImportar.style.display = 'none'; };
+
             procesarJsonBtn.addEventListener('click', () => {
                 try {
                     const json = JSON.parse(iaJsonInput.value);
-                    // Detectar formato: puede ser con lecciones o con evaluaciones directas
                     if (json.lecciones && Array.isArray(json.lecciones)) {
-                        // Formato con lecciones (el nuevo)
                         tablaBody.innerHTML = '';
-                        json.lecciones.forEach((leccion, idx) => {
-                            const indicadoresTexto = leccion.evaluaciones?.map(e => e.indicador).join('\n') || '';
+                        json.lecciones.forEach(leccion => {
                             const estrategiaTexto = `INICIO: ${leccion.inicio || ''}\nDESARROLLO: ${leccion.desarrollo || ''}\nCIERRE: ${leccion.cierre || ''}`;
+                            const indicadoresTexto = leccion.evaluaciones?.map(e => e.indicador).join('\n') || '';
                             const row = tablaBody.insertRow();
-                            row.innerHTML = `
-                                <td><div class="rich-editor" contenteditable="true">Indicadores de la lección ${leccion.numero}</div></td>
-                                <td><div class="rich-editor" contenteditable="true">${estrategiaTexto}</div></td>
-                                <td><div class="rich-editor" contenteditable="true">${indicadoresTexto}</div></td>
-                                <td style="text-align:center;"><button class="delete-row-btn"><i class="fas fa-trash-alt"></i> Eliminar</button></td>
-                            `;
+                            row.innerHTML = `<td><div class="rich-editor" contenteditable="true">Indicadores de la lección ${leccion.numero}</div></td><td><div class="rich-editor" contenteditable="true">${estrategiaTexto}</div></td><td><div class="rich-editor" contenteditable="true">${indicadoresTexto}</div></td><td style="text-align:center;"><button class="delete-row-btn"><i class="fas fa-trash-alt"></i> Eliminar</button></td>`;
                         });
                         attachDeleteEvents();
-                        alert('✅ Tabla actualizada con las lecciones importadas');
+                        alert('✅ Tabla actualizada.');
                     } else if (json.evaluaciones && Array.isArray(json.evaluaciones)) {
-                        // Formato antiguo (solo evaluaciones)
                         const filas = document.querySelectorAll('#tablaBody tr');
-                        while (filas.length < json.evaluaciones.length) {
-                            agregarFilaBtn.click();
-                        }
+                        while (filas.length < json.evaluaciones.length) agregarFilaBtn.click();
                         json.evaluaciones.forEach((evalObj, index) => {
                             const row = document.querySelectorAll('#tablaBody tr')[index];
-                            if (row) {
-                                if (json.inicio && json.desarrollo && json.cierre) {
-                                    if (index === 0) {
-                                        const estrategiaCell = row.querySelector('.rich-editor:nth-child(2)');
-                                        if (estrategiaCell) {
-                                            estrategiaCell.innerHTML = `INICIO (10 min): ${json.inicio}\nDESARROLLO (20 min): ${json.desarrollo}\nCIERRE (10 min): ${json.cierre}`;
-                                        }
-                                    }
-                                }
-                                if (evalObj.indicador) {
-                                    const evalCell = row.querySelector('.rich-editor:nth-child(3)');
-                                    if (evalCell) evalCell.innerHTML = evalObj.indicador;
-                                }
+                            if (row && evalObj.indicador) {
+                                const evalCell = row.querySelector('.rich-editor:nth-child(3)');
+                                if (evalCell) evalCell.innerHTML = evalObj.indicador;
                             }
                         });
-                        alert('✅ Tabla actualizada con la respuesta de la IA');
-                    } else {
-                        throw new Error('El JSON no tiene el formato esperado (lecciones o evaluaciones)');
-                    }
+                        alert('✅ Evaluaciones importadas.');
+                    } else throw new Error('Formato no reconocido (se espera "lecciones" o "evaluaciones")');
                     modalImportar.style.display = 'none';
-                } catch (error) {
-                    alert('❌ Error al procesar el JSON: ' + error.message);
-                }
+                } catch (error) { alert('❌ Error: ' + error.message); }
             });
 
-            // ---------- Exportaciones ----------
+            // Exportaciones
             function getHtmlForExport() {
-                // Si Quill está activo, convertimos a texto plano para Word (para evitar etiquetas extra)
                 const content = document.querySelector('.main-content').cloneNode(true);
                 content.querySelectorAll('.modal, .toolbar, .btn-accion, .btn-secundario, .btn-ia, .delete-row-btn, .quill-wrapper, .ql-toolbar').forEach(el => el.remove());
-                content.querySelectorAll('.rich-editor, [contenteditable]').forEach(el => {
-                    const span = document.createElement('span');
-                    span.innerHTML = el.innerHTML;
-                    el.parentNode.replaceChild(span, el);
-                });
+                content.querySelectorAll('.rich-editor, [contenteditable]').forEach(el => { const span = document.createElement('span'); span.innerHTML = el.innerHTML; el.parentNode.replaceChild(span, el); });
                 return content.outerHTML;
             }
-
             document.getElementById('exportarWordBtn').addEventListener('click', () => {
                 const html = getHtmlForExport();
                 const blob = new Blob([html], {type: 'application/msword'});
                 saveAs(blob, 'planeamiento.doc');
-                alert('✅ Documento Word generado. Ábralo con Word para ver el formato.');
+                alert('✅ Documento Word generado.');
             });
-
             document.getElementById('exportarPDFBtn').addEventListener('click', () => {
-                const element = document.querySelector('.main-content');
-                html2canvas(element, { scale: 2 }).then(canvas => {
+                html2canvas(document.querySelector('.main-content'), { scale: 2 }).then(canvas => {
                     const imgData = canvas.toDataURL('image/png');
                     const pdf = new jspdf.jsPDF('p', 'mm', 'a4');
-                    const imgWidth = 190;
-                    const pageHeight = 297;
-                    const imgHeight = (canvas.height * imgWidth) / canvas.width;
-                    let heightLeft = imgHeight;
-                    let position = 0;
+                    const imgWidth = 190, pageHeight = 297, imgHeight = (canvas.height * imgWidth) / canvas.width;
+                    let heightLeft = imgHeight, position = 0;
                     pdf.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
                     heightLeft -= pageHeight;
-                    while (heightLeft > 0) {
-                        position = heightLeft - imgHeight;
-                        pdf.addPage();
-                        pdf.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
-                        heightLeft -= pageHeight;
-                    }
+                    while (heightLeft > 0) { position = heightLeft - imgHeight; pdf.addPage(); pdf.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight); heightLeft -= pageHeight; }
                     pdf.save('planeamiento.pdf');
-                    alert('✅ PDF generado correctamente.');
+                    alert('✅ PDF generado.');
                 });
             });
-
             document.getElementById('exportarExcelBtn').addEventListener('click', () => {
                 const wsData = [['Indicadores de logro', 'Estrategias', 'Indicador evaluación']];
-                if (formatoActivo) {
-                    for (let i = 0; i < quillInstances.length; i += 3) {
-                        wsData.push([
-                            quillInstances[i]?.root.innerText || '',
-                            quillInstances[i+1]?.root.innerText || '',
-                            quillInstances[i+2]?.root.innerText || ''
-                        ]);
-                    }
-                } else {
-                    document.querySelectorAll('#tablaBody tr').forEach(row => {
-                        const cells = row.querySelectorAll('.rich-editor');
-                        wsData.push([
-                            cells[0]?.innerText || '',
-                            cells[1]?.innerText || '',
-                            cells[2]?.innerText || ''
-                        ]);
-                    });
-                }
-                const ws = XLSX.utils.aoa_to_sheet(wsData);
-                const wb = XLSX.utils.book_new();
-                XLSX.utils.book_append_sheet(wb, ws, 'Planeamiento');
-                XLSX.writeFile(wb, 'planeamiento.xlsx');
-                alert('✅ Excel exportado correctamente.');
+                if (formatoActivo) for (let i=0; i<quillInstances.length; i+=3) wsData.push([quillInstances[i]?.root.innerText || '', quillInstances[i+1]?.root.innerText || '', quillInstances[i+2]?.root.innerText || '']);
+                else document.querySelectorAll('#tablaBody tr').forEach(row => { const cells = row.querySelectorAll('.rich-editor'); wsData.push([cells[0]?.innerText || '', cells[1]?.innerText || '', cells[2]?.innerText || '']); });
+                const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(wsData), 'Planeamiento'); XLSX.writeFile(wb, 'planeamiento.xlsx');
+                alert('✅ Excel exportado.');
             });
 
-            // ---------- Calendario ----------
+            // Calendario
             const eventos = [
                 { fecha: '2026-02-23', tipo: 'festivo', nombre: 'Inicio de lecciones' },
                 { fecha: '2026-03-29', tipo: 'festivo', nombre: 'Semana Santa (inicio)' },
@@ -1149,24 +560,20 @@
                 { fecha: '2026-12-09', tipo: 'festivo', nombre: 'Cierre del curso lectivo' }
             ];
             function generarCalendario() {
-                const meses = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+                const meses = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
                 let html = '';
-                for (let mes = 0; mes < 12; mes++) {
+                for (let mes=0; mes<12; mes++) {
                     const primerDia = new Date(2026, mes, 1);
-                    const ultimoDia = new Date(2026, mes + 1, 0);
+                    const ultimoDia = new Date(2026, mes+1, 0);
                     const numDias = ultimoDia.getDate();
                     const diaInicio = primerDia.getDay();
                     html += `<table class="month-table"><tr><th colspan="7">${meses[mes]} 2026</th></tr><tr><th>Dom</th><th>Lun</th><th>Mar</th><th>Mié</th><th>Jue</th><th>Vie</th><th>Sáb</th></tr><tr>`;
-                    for (let i = 0; i < diaInicio; i++) html += '<td></td>';
-                    for (let d = 1; d <= numDias; d++) {
+                    for (let i=0; i<diaInicio; i++) html += '<td></td>';
+                    for (let d=1; d<=numDias; d++) {
                         const fechaStr = `2026-${String(mes+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
                         const evento = eventos.find(e => e.fecha === fechaStr);
-                        let clase = '';
-                        let titulo = '';
-                        if (evento) {
-                            clase = evento.tipo;
-                            titulo = evento.nombre;
-                        }
+                        let clase = '', titulo = '';
+                        if (evento) { clase = evento.tipo; titulo = evento.nombre; }
                         html += `<td class="${clase}" title="${titulo}">${d}</td>`;
                         if ((diaInicio + d) % 7 === 0 && d !== numDias) html += '</tr><tr>';
                     }
@@ -1174,50 +581,17 @@
                 }
                 calendarioContainer.innerHTML = html;
             }
-            calendarBtn.addEventListener('click', () => {
-                generarCalendario();
-                modalCalendario.style.display = 'block';
-            });
+            calendarBtn.addEventListener('click', () => { generarCalendario(); modalCalendario.style.display = 'block'; });
             closeCalendario.onclick = () => modalCalendario.style.display = 'none';
 
-            // ---------- Perfil docente y escudo ----------
+            // Perfil y escudo
             const docenteNombreSpan = document.getElementById('docenteNombreText');
             const profileImg = document.getElementById('profileImg');
-            docenteNombreSpan.addEventListener('click', async () => {
-                const nuevo = prompt('Nombre del docente:', docenteNombreSpan.innerText);
-                if (nuevo) {
-                    docenteNombreSpan.innerText = nuevo;
-                    await guardarPerfil('docenteNombre', nuevo);
-                }
-            });
-            profileImg.addEventListener('click', () => {
-                const input = document.createElement('input');
-                input.type = 'file';
-                input.accept = 'image/*';
-                input.onchange = async (e) => {
-                    const file = e.target.files[0];
-                    const reader = new FileReader();
-                    reader.onload = async (ev) => {
-                        profileImg.src = ev.target.result;
-                        profileImg.style.display = 'block';
-                        await guardarPerfil('fotoPerfil', ev.target.result);
-                    };
-                    reader.readAsDataURL(file);
-                };
-                input.click();
-            });
-            document.getElementById('escudoFile').addEventListener('change', (e) => {
-                const file = e.target.files[0];
-                const reader = new FileReader();
-                reader.onload = (ev) => {
-                    const preview = document.getElementById('escudoPreview');
-                    preview.innerHTML = `<img src="${ev.target.result}" class="escudo-preview">`;
-                    localStorage.setItem('escudoBase64', ev.target.result);
-                };
-                reader.readAsDataURL(file);
-            });
+            docenteNombreSpan.addEventListener('click', async () => { const nuevo = prompt('Nombre:', docenteNombreSpan.innerText); if (nuevo) { docenteNombreSpan.innerText = nuevo; await guardarPerfil('docenteNombre', nuevo); } });
+            profileImg.addEventListener('click', () => { const input = document.createElement('input'); input.type = 'file'; input.accept = 'image/*'; input.onchange = async (e) => { const file = e.target.files[0]; const reader = new FileReader(); reader.onload = async (ev) => { profileImg.src = ev.target.result; profileImg.style.display = 'block'; await guardarPerfil('fotoPerfil', ev.target.result); }; reader.readAsDataURL(file); }; input.click(); });
+            document.getElementById('escudoFile').addEventListener('change', (e) => { const file = e.target.files[0]; const reader = new FileReader(); reader.onload = (ev) => { document.getElementById('escudoPreview').innerHTML = `<img src="${ev.target.result}" class="escudo-preview">`; localStorage.setItem('escudoBase64', ev.target.result); }; reader.readAsDataURL(file); });
 
-            // ---------- Inicialización ----------
+            // Inicialización
             (async () => {
                 await abrirDB();
                 llenarSaberesFijos();
@@ -1231,18 +605,9 @@
 
             // Cerrar modales
             closeModalIA.onclick = () => modalIA.style.display = 'none';
-            closeImportar.onclick = () => modalImportar.style.display = 'none';
-            cancelarImportar.onclick = () => modalImportar.style.display = 'none';
             closeAbrirModal.onclick = () => modalAbrir.style.display = 'none';
-            window.onclick = (e) => {
-                if (e.target === modalIA) modalIA.style.display = 'none';
-                if (e.target === modalImportar) modalImportar.style.display = 'none';
-                if (e.target === modalAbrir) modalAbrir.style.display = 'none';
-                if (e.target === modalCalendario) modalCalendario.style.display = 'none';
-            };
-            btnCopiar.addEventListener('click', () => {
-                navigator.clipboard.writeText(promptTexto.textContent).then(() => alert('✅ Prompt copiado'));
-            });
+            window.onclick = (e) => { if (e.target === modalIA) modalIA.style.display = 'none'; if (e.target === modalAbrir) modalAbrir.style.display = 'none'; if (e.target === modalCalendario) modalCalendario.style.display = 'none'; };
+            btnCopiar.addEventListener('click', () => { navigator.clipboard.writeText(promptTexto.textContent).then(() => alert('✅ Prompt copiado')); });
             btnChatGPT.addEventListener('click', () => window.open('https://chat.openai.com'));
             btnCopilot.addEventListener('click', () => window.open('https://copilot.microsoft.com'));
             btnGemini.addEventListener('click', () => window.open('https://gemini.google.com'));
