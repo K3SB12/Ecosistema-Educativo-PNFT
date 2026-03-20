@@ -12,6 +12,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/html-docx-js/dist/html-docx.js"></script>
     <!-- Quill para editor enriquecido -->
     <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
     <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
@@ -313,7 +314,7 @@
 </head>
 <body>
     <div class="app">
-        <!-- Sidebar -->
+        <!-- Sidebar (igual que en index.html) -->
         <aside class="sidebar">
             <div class="sidebar-header">
                 <div class="logo">PNFT</div>
@@ -352,7 +353,7 @@
 
             <!-- ================= SECCIÓN 1: DATOS ADMINISTRATIVOS ================= -->
             <table class="form-table">
-                 <tr>
+                  <tr>
                     <td><strong>Dirección Regional de Educación:</strong><br><input type="text" id="region" placeholder="Ej: San José Central"></td>
                     <td><strong>Centro educativo:</strong><br><input type="text" id="centro" placeholder="Ej: Liceo de Costa Rica"></td>
                     <td><strong>Código:</strong><br><input type="text" id="codigo" placeholder="Ej: 12345"></td>
@@ -387,7 +388,7 @@
                 <tr><th>Ciudadanía y ética digital</th><th>Pensamiento computacional para la resolución de problemas</th><th>Emprendimiento e Innovación</th></tr>
                 <tr>
                     <td style="text-align: center;"><label><input type="checkbox" id="ejeCiudadania"> Competencias para la ciudadanía responsable y solidaria</label></td>
-                    <td style="text-align: center;"><label><input type="checkbox" id="ejePensamiento"> Competencias para diego vida: Sociales, emocionales y de aprendizaje</label></td>
+                    <td style="text-align: center;"><label><input type="checkbox" id="ejePensamiento"> Competencias para la vida: Sociales, emocionales y de aprendizaje</label></td>
                     <td style="text-align: center;"><label><input type="checkbox" id="ejeEmprendimiento"> Competencias para el empleo digno y emprendimiento</label></td>
                 </tr>
             </table>
@@ -706,10 +707,8 @@
             // ---------- Editor enriquecido con Quill ----------
             function activarQuill() {
                 if (formatoActivo) return;
-                // Guardar contenido actual de los editores
                 const cells = document.querySelectorAll('#tablaBody .rich-editor');
                 const contenidos = Array.from(cells).map(el => el.innerHTML);
-                // Reemplazar cada .rich-editor por un contenedor para Quill
                 cells.forEach((el, idx) => {
                     const wrapper = document.createElement('div');
                     wrapper.className = 'quill-wrapper';
@@ -738,9 +737,7 @@
 
             function desactivarQuill() {
                 if (!formatoActivo) return;
-                // Guardar contenido de Quill
                 const nuevosContenidos = quillInstances.map(q => q.root.innerHTML);
-                // Reemplazar cada wrapper por un .rich-editor con contenteditable
                 const wrappers = document.querySelectorAll('#tablaBody .quill-wrapper');
                 wrappers.forEach((wrapper, idx) => {
                     const div = document.createElement('div');
@@ -753,7 +750,7 @@
                 formatoActivo = false;
                 toggleBtn.style.display = 'inline-flex';
                 disableBtn.style.display = 'none';
-                attachDeleteEvents(); // reasignar eventos a los botones eliminar
+                attachDeleteEvents();
             }
 
             toggleBtn.addEventListener('click', activarQuill);
@@ -870,7 +867,6 @@
                 document.getElementById('refNoFunciono').value = data.reflexiones?.noFunciono || '';
                 document.getElementById('refMejorar').value = data.reflexiones?.mejorar || '';
                 document.getElementById('observaciones').value = data.reflexiones?.observaciones || '';
-                // Si estaba activo el formato, lo desactivamos para evitar conflictos
                 if (formatoActivo) desactivarQuill();
             }
 
@@ -889,7 +885,6 @@
                 `;
                 attachDeleteEvents();
                 if (formatoActivo) {
-                    // Convertir la nueva fila a Quill
                     const newCells = row.querySelectorAll('.rich-editor');
                     newCells.forEach((cell, idx) => {
                         const wrapper = document.createElement('div');
@@ -991,7 +986,7 @@
                 modalIA.style.display = 'block';
             });
 
-            // ---------- Importar IA (maneja ambos formatos) ----------
+            // ---------- Importar IA (agrega al final, no reemplaza) ----------
             importarIaBtn.addEventListener('click', () => {
                 modalImportar.style.display = 'block';
                 iaJsonInput.value = '';
@@ -1003,8 +998,7 @@
                 try {
                     const json = JSON.parse(iaJsonInput.value);
                     if (json.lecciones && Array.isArray(json.lecciones)) {
-                        // Formato con lecciones
-                        tablaBody.innerHTML = '';
+                        // Agregar nuevas lecciones al final de la tabla existente
                         json.lecciones.forEach((leccion, idx) => {
                             const indicadoresTexto = leccion.evaluaciones?.map(e => e.indicador).join('\n') || '';
                             const estrategiaTexto = `INICIO: ${leccion.inicio || ''}\nDESARROLLO: ${leccion.desarrollo || ''}\nCIERRE: ${leccion.cierre || ''}`;
@@ -1017,9 +1011,10 @@
                             `;
                         });
                         attachDeleteEvents();
-                        alert('✅ Tabla actualizada con las lecciones importadas');
+                        if (formatoActivo) activarQuill();
+                        alert(`✅ Se agregaron ${json.lecciones.length} lecciones al final.`);
                     } else if (json.evaluaciones && Array.isArray(json.evaluaciones)) {
-                        // Formato antiguo (solo evaluaciones)
+                        // Formato antiguo: agregar evaluaciones a filas existentes o crear nuevas si no hay suficientes
                         const filas = document.querySelectorAll('#tablaBody tr');
                         while (filas.length < json.evaluaciones.length) {
                             agregarFilaBtn.click();
@@ -1063,9 +1058,9 @@
 
             document.getElementById('exportarWordBtn').addEventListener('click', () => {
                 const html = getHtmlForExport();
-                const blob = new Blob([html], {type: 'application/msword'});
-                saveAs(blob, 'planeamiento.doc');
-                alert('✅ Documento Word generado. Ábralo con Word para ver el formato.');
+                const converted = htmlDocx.asBlob(html);
+                saveAs(converted, 'planeamiento.docx');
+                alert('✅ Documento Word generado correctamente.');
             });
 
             document.getElementById('exportarPDFBtn').addEventListener('click', () => {
