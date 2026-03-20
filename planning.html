@@ -17,7 +17,7 @@
     <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
     <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
     <style>
-        /* ========== ESTILOS BASE (igual que en la versión estable) ========== */
+        /* ========== ESTILOS BASE ========== */
         .form-table {
             width: 100%;
             border-collapse: collapse;
@@ -111,7 +111,7 @@
         /* Editor enriquecido (contenteditable básico) */
         .rich-editor {
             width: 100%;
-            min-height: 80px;
+            min-height: 100px;
             border: 1px solid #ccc;
             border-radius: 4px;
             padding: 8px;
@@ -704,7 +704,7 @@
                 });
             }
 
-            // ---------- Editor enriquecido con Quill ----------
+            // ---------- Editor enriquecido con Quill (corregido) ----------
             function activarQuill() {
                 if (formatoActivo) return;
                 const cells = document.querySelectorAll('#tablaBody .rich-editor');
@@ -743,6 +743,7 @@
                     const div = document.createElement('div');
                     div.className = 'rich-editor';
                     div.setAttribute('contenteditable', 'true');
+                    div.style.minHeight = '100px';
                     div.innerHTML = nuevosContenidos[idx] || '';
                     wrapper.parentNode.replaceChild(div, wrapper);
                 });
@@ -750,7 +751,8 @@
                 formatoActivo = false;
                 toggleBtn.style.display = 'inline-flex';
                 disableBtn.style.display = 'none';
-                attachDeleteEvents();
+                // Esperar un momento para que el DOM se actualice y luego reasignar eventos eliminar
+                setTimeout(() => attachDeleteEvents(), 50);
             }
 
             toggleBtn.addEventListener('click', activarQuill);
@@ -986,7 +988,7 @@
                 modalIA.style.display = 'block';
             });
 
-            // ---------- Importar IA (agrega al final, no reemplaza) ----------
+            // ---------- Importar IA (corregido: rellena las filas existentes) ----------
             importarIaBtn.addEventListener('click', () => {
                 modalImportar.style.display = 'block';
                 iaJsonInput.value = '';
@@ -998,39 +1000,53 @@
                 try {
                     const json = JSON.parse(iaJsonInput.value);
                     if (json.lecciones && Array.isArray(json.lecciones)) {
-                        // Agregar nuevas lecciones al final de la tabla existente
+                        // Obtener las filas actuales de la tabla
+                        let filas = Array.from(document.querySelectorAll('#tablaBody tr'));
+                        // Para cada lección, asignar estrategia y evaluación a la fila correspondiente (por índice)
                         json.lecciones.forEach((leccion, idx) => {
-                            const indicadoresTexto = leccion.evaluaciones?.map(e => e.indicador).join('\n') || '';
-                            const estrategiaTexto = `INICIO: ${leccion.inicio || ''}\nDESARROLLO: ${leccion.desarrollo || ''}\nCIERRE: ${leccion.cierre || ''}`;
-                            const row = tablaBody.insertRow();
-                            row.innerHTML = `
-                                <td><div class="rich-editor" contenteditable="true">Indicadores de la lección ${leccion.numero}</div></td>
-                                <td><div class="rich-editor" contenteditable="true">${estrategiaTexto}</div></td>
-                                <td><div class="rich-editor" contenteditable="true">${indicadoresTexto}</div></td>
-                                <td style="text-align:center;"><button class="delete-row-btn"><i class="fas fa-trash-alt"></i> Eliminar</button></td>
-                            `;
-                        });
-                        attachDeleteEvents();
-                        if (formatoActivo) activarQuill();
-                        alert(`✅ Se agregaron ${json.lecciones.length} lecciones al final.`);
-                    } else if (json.evaluaciones && Array.isArray(json.evaluaciones)) {
-                        // Formato antiguo: agregar evaluaciones a filas existentes o crear nuevas si no hay suficientes
-                        const filas = document.querySelectorAll('#tablaBody tr');
-                        while (filas.length < json.evaluaciones.length) {
-                            agregarFilaBtn.click();
-                        }
-                        json.evaluaciones.forEach((evalObj, index) => {
-                            const row = document.querySelectorAll('#tablaBody tr')[index];
-                            if (row) {
-                                if (json.inicio && json.desarrollo && json.cierre && index === 0) {
-                                    const estrategiaCell = row.querySelector('.rich-editor:nth-child(2)');
-                                    if (estrategiaCell) {
-                                        estrategiaCell.innerHTML = `INICIO (10 min): ${json.inicio}\nDESARROLLO (20 min): ${json.desarrollo}\nCIERRE (10 min): ${json.cierre}`;
-                                    }
+                            if (idx < filas.length) {
+                                // Existe fila: actualizar columnas 2 y 3
+                                const cells = filas[idx].querySelectorAll('.rich-editor');
+                                if (cells.length >= 2) {
+                                    const estrategiaTexto = `INICIO: ${leccion.inicio || ''}\nDESARROLLO: ${leccion.desarrollo || ''}\nCIERRE: ${leccion.cierre || ''}`;
+                                    cells[1].innerHTML = estrategiaTexto;
+                                    const indicadoresTexto = leccion.evaluaciones?.map(e => e.indicador).join('\n') || '';
+                                    cells[2].innerHTML = indicadoresTexto;
                                 }
-                                if (evalObj.indicador) {
-                                    const evalCell = row.querySelector('.rich-editor:nth-child(3)');
-                                    if (evalCell) evalCell.innerHTML = evalObj.indicador;
+                            } else {
+                                // No hay suficientes filas, agregar una nueva fila con los indicadores de logro vacíos
+                                const newRow = tablaBody.insertRow();
+                                const indicadoresTexto = leccion.evaluaciones?.map(e => e.indicador).join('\n') || '';
+                                const estrategiaTexto = `INICIO: ${leccion.inicio || ''}\nDESARROLLO: ${leccion.desarrollo || ''}\nCIERRE: ${leccion.cierre || ''}`;
+                                newRow.innerHTML = `
+                                    <td><div class="rich-editor" contenteditable="true">Indicadores de la lección ${leccion.numero}</div></td>
+                                    <td><div class="rich-editor" contenteditable="true">${estrategiaTexto}</div></td>
+                                    <td><div class="rich-editor" contenteditable="true">${indicadoresTexto}</div></td>
+                                    <td style="text-align:center;"><button class="delete-row-btn"><i class="fas fa-trash-alt"></i> Eliminar</button></td>
+                                `;
+                                attachDeleteEvents();
+                            }
+                        });
+                        // Si formato estaba activo, convertir las nuevas celdas a Quill
+                        if (formatoActivo) {
+                            // Forzar reconversión: desactivar y volver a activar Quill
+                            desactivarQuill();
+                            activarQuill();
+                        }
+                        alert(`✅ Se actualizaron ${json.lecciones.length} lecciones en la tabla.`);
+                    } else if (json.evaluaciones && Array.isArray(json.evaluaciones)) {
+                        // Formato antiguo: actualizar solo evaluaciones
+                        const filas = document.querySelectorAll('#tablaBody tr');
+                        json.evaluaciones.forEach((evalObj, index) => {
+                            if (index < filas.length) {
+                                const cells = filas[index].querySelectorAll('.rich-editor');
+                                if (cells.length >= 2) {
+                                    if (json.inicio && json.desarrollo && json.cierre && index === 0) {
+                                        cells[1].innerHTML = `INICIO (10 min): ${json.inicio}\nDESARROLLO (20 min): ${json.desarrollo}\nCIERRE (10 min): ${json.cierre}`;
+                                    }
+                                    if (evalObj.indicador) {
+                                        cells[2].innerHTML = evalObj.indicador;
+                                    }
                                 }
                             }
                         });
@@ -1053,6 +1069,14 @@
                     span.innerHTML = el.innerHTML;
                     el.parentNode.replaceChild(span, el);
                 });
+                // Añadir estilos específicos para Word
+                const style = document.createElement('style');
+                style.textContent = `
+                    table { border-collapse: collapse; width: 100%; }
+                    td, th { border: 1px solid #000; padding: 8px; vertical-align: top; }
+                    .form-table td, .form-table th { border: 1px solid #000; }
+                `;
+                content.prepend(style);
                 return content.outerHTML;
             }
 
