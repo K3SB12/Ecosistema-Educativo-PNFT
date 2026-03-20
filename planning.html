@@ -995,7 +995,7 @@
                 alert('✅ JSON exportado. Guarde este archivo como respaldo.');
             });
 
-            // ---------- PROMPT MEJORADO ----------
+           // ---------- PROMPT MEJORADO (microplanificación detallada) ----------
             iaBtn.addEventListener('click', function() {
                 const ciclo = cicloSelect.value;
                 const nivel = nivelSelect.value;
@@ -1003,6 +1003,7 @@
                 const metodologiaSeleccionada = document.querySelector('input[name="metodologia"]:checked')?.value || 'No seleccionada';
                 const lecciones = parseInt(leccionesInput.value) || 40;
                 
+                // Determinar metodología según ciclo si no se ha seleccionado
                 let metodologia = metodologiaSeleccionada;
                 if (ciclo === 'preescolar' || (ciclo === 'primaria' && ['Primero','Segundo','Tercero'].includes(nivel))) {
                     if (metodologia === 'No seleccionada') metodologia = 'ABJ';
@@ -1011,18 +1012,20 @@
                 } else if (ciclo === 'secundaria') {
                     if (metodologia === 'No seleccionada') metodologia = 'Design Thinking';
                 }
-
+            
                 if (!ciclo || !nivel) {
                     alert('Seleccione ciclo y nivel');
                     return;
                 }
-
+            
+                // Obtener los saberes conceptuales seleccionados
                 const saberesSeleccionados = Array.from(document.querySelectorAll('.saber-conceptual:checked')).map(cb => {
                     const textoCompleto = cb.closest('label')?.innerText || '';
                     return textoCompleto.trim();
                 });
                 const saberesTexto = saberesSeleccionados.length ? saberesSeleccionados.join('\n') : 'No se han seleccionado saberes conceptuales específicos.';
-
+            
+                // Obtener las filas actuales de la tabla (indicadores de logro)
                 const filasActuales = [];
                 if (formatoActivo) {
                     for (let i = 0; i < quillInstances.length; i += 3) {
@@ -1042,41 +1045,153 @@
                         });
                     });
                 }
-
-                let prompt = `**CONTEXTO**: Programa Nacional de Formación Tecnológica (PNFT), MEP Costa Rica, curso lectivo vigente.\n\n`;
-                prompt += `**DATOS DEL PLANEAMIENTO**:\n`;
-                prompt += `- Ciclo: ${ciclo}\n- Nivel: ${nivel}\n- Módulo: ${modulo}\n- Total de lecciones: ${lecciones}\n- Duración por lección: 40 minutos\n\n`;
-                prompt += `**METODOLOGÍA SEGÚN CICLO**:\n`;
-                prompt += `- Preescolar y I Ciclo → Aprendizaje Basado en Juegos (ABJ)\n- II Ciclo → Aprendizaje Basado en Retos (ABR)\n- III Ciclo → Design Thinking (Pensamiento de Diseño)\n\n`;
-                prompt += `Seleccionar y aplicar la metodología correspondiente de forma **transversal y continua durante todo el módulo**, no como actividades aisladas.\n\n`;
-                prompt += `**SABERES E INDICADORES DEL MÓDULO**:\n${saberesTexto}\n\n`;
-                prompt += `**INSTRUCCIONES PARA LA IA**:\n\n`;
-                prompt += `1. **Distribución curricular inteligente**:\n`;
-                prompt += `- Si hay más lecciones que indicadores, distribuir los indicadores pedagógicamente considerando:\n  - Nivel cognitivo (taxonomía de Bloom)\n  - Complejidad del indicador\n  - Tipo de aprendizaje (conceptual, procedimental, aplicado)\n`;
-                prompt += `- Asignar:\n  - 1 lección → indicadores básicos (recordar, reconocer)\n  - 2 lecciones → indicadores intermedios (comprender, aplicar)\n  - 3 o más lecciones → indicadores complejos (analizar, evaluar, crear)\n`;
-                prompt += `- Integrar indicadores cuando sea pertinente, especialmente en proyectos.\n\n`;
-                prompt += `2. **Progresión didáctica del módulo**:\n`;
-                prompt += `Organizar las lecciones en una secuencia coherente:\n- Exploración y activación de conocimientos previos\n- Comprensión guiada\n- Aplicación práctica\n- Resolución de problemas\n- Integración en proyecto (si aplica)\n- Socialización y cierre\n\n`;
-                prompt += `3. **Aplicación de la metodología (CLAVE)**:\n`;
-                if (metodologia === 'ABJ') {
-                    prompt += `- **ABJ (Preescolar y I Ciclo)**: Desarrollar un sistema de juego continuo (narrativa, misiones, niveles, retos). No diseñar juegos aislados por lección. Mantener motivación, participación activa y aprendizaje lúdico progresivo.\n\n`;
-                } else if (metodologia === 'ABR') {
-                    prompt += `- **ABR (II Ciclo)**: Plantear un reto central que evoluciona durante el módulo. Promover investigación, análisis, solución y reflexión.\n\n`;
-                } else if (metodologia === 'Design Thinking') {
-                    prompt += `- **Design Thinking (III Ciclo)**: Integrar las fases: empatizar, definir, idear, prototipar y evaluar. Desarrollar soluciones centradas en el usuario.\n\n`;
+            
+                let prompt = `Actúa como especialista en diseño curricular del PNFT del MEP Costa Rica y experto en mediación pedagógica.
+            
+            Genera la planificación de lecciones con un nivel de detalle ALTO (microplanificación), asegurando que cada lección sea aplicable directamente en el aula.
+            
+            El nivel de detalle debe ser suficiente para que otro docente pueda aplicar la lección sin necesidad de interpretación adicional.
+            
+            ---
+            
+            CONTEXTO:
+            Programa Nacional de Formación Tecnológica (PNFT), curso lectivo vigente.
+            
+            DATOS:
+            - Ciclo: ${ciclo}
+            - Nivel: ${nivel}
+            - Módulo: ${modulo}
+            - Total de lecciones: ${lecciones}
+            - Duración por lección: 40 minutos
+            
+            METODOLOGÍA:
+            - Preescolar y I Ciclo → ABJ
+            - II Ciclo → ABR
+            - III Ciclo → Design Thinking
+            
+            Aplicar la metodología de forma transversal en TODO el módulo.
+            
+            ---
+            
+            SABERES E INDICADORES:
+            ${saberesTexto}
+            
+            ---
+            
+            1. DISTRIBUCIÓN CURRICULAR INTELIGENTE:
+            - Distribuir indicadores según complejidad (Bloom)
+            - Integrar indicadores cuando sea pertinente
+            - Garantizar progresión cognitiva
+            
+            ---
+            
+            2. PROGRESIÓN DIDÁCTICA:
+            - Activación
+            - Comprensión
+            - Aplicación
+            - Resolución
+            - Integración
+            - Cierre
+            
+            ---
+            
+            3. APLICACIÓN METODOLÓGICA (OBLIGATORIO):
+            
+            ${metodologia === 'ABR' ? `
+            ABR:
+            - Plantear un reto central contextualizado
+            - El reto evoluciona en cada lección
+            - Cada lección aporta evidencia para su solución
+            ` : metodologia === 'Design Thinking' ? `
+            Design Thinking:
+            - Integrar las fases: empatizar, definir, idear, prototipar y evaluar.
+            - Desarrollar soluciones centradas en el usuario.
+            ` : metodologia === 'ABJ' ? `
+            ABJ:
+            - Desarrollar un sistema de juego continuo (narrativa, misiones, niveles, retos)
+            - Mantener motivación, participación activa y aprendizaje lúdico progresivo
+            ` : ''}
+            
+            ---
+            
+            4. ESTRATEGIAS DE MEDIACIÓN (DETALLADAS):
+            
+            Cada lección debe incluir:
+            
+            INICIO:
+            - Activación de conocimientos previos
+            - Planteamiento del reto
+            - Preguntas generadoras (escribir ejemplos)
+            - Tiempo estimado
+            
+            DESARROLLO:
+            - Actividades paso a paso
+            - Acciones del docente (modela, guía, pregunta, retroalimenta)
+            - Acciones del estudiante (analiza, construye, experimenta)
+            - Estrategias activas (trabajo colaborativo, retos, estaciones)
+            - Preguntas de pensamiento crítico (ejemplos concretos)
+            - Recursos o materiales
+            - Posibles errores o dificultades y cómo intervenir
+            - Tiempo estimado
+            
+            CIERRE:
+            - Metacognición (qué aprendió, cómo lo logró, para qué sirve)
+            - Socialización
+            - Conexión con la vida cotidiana
+            - Evidencia concreta de aprendizaje
+            - Tiempo estimado
+            
+            ---
+            
+            5. EVALUACIÓN:
+            
+            - Indicadores en tercera persona
+            - Estructura: Acción + Contenido + Condición
+            - Usar verbos de Bloom variados
+            - Incluir:
+              - Evaluación formativa
+              - Evaluación sumativa
+              - Autoevaluación o coevaluación
+            
+            - Incluir instrumento:
+              - Lista de cotejo
+              - Rúbrica
+              - Escala
+            
+            ---
+            
+            6. RESTRICCIONES DE CALIDAD:
+            
+            - NO usar frases genéricas
+            - NO repetir actividades entre lecciones
+            - SIEMPRE detallar cómo se desarrolla cada actividad
+            - Incluir ejemplos concretos
+            - Mantener coherencia entre estrategia, indicador y evaluación
+            
+            ---
+            
+            FORMATO DE SALIDA: JSON
+            
+            {
+              "lecciones": [
+                {
+                  "numero": 1,
+                  "inicio": "...",
+                  "desarrollo": "...",
+                  "cierre": "...",
+                  "evaluaciones": [
+                    {
+                      "indicador": "...",
+                      "instrumento": "..."
+                    }
+                  ]
                 }
-                prompt += `4. **Estrategias de mediación (AMPLIADAS)**:\n`;
-                prompt += `Para cada lección incluir:\n- **Inicio**: Activación de conocimientos previos, planteamiento del reto/misión/problema, preguntas generadoras.\n- **Desarrollo**: Actividades prácticas y colaborativas, uso de roles, retos o dinámicas, andamiaje docente (modelado, ejemplos, preguntas guía), uso de recursos concretos o digitales.\n- **Cierre**: Reflexión y metacognición, socialización de aprendizajes, conexión con la vida cotidiana.\n\n`;
-                prompt += `5. **Evaluación**:\n`;
-                prompt += `- Redactar indicadores en tercera persona singular con estructura: **Acción + Contenido + Condición**.\n- Incluir verbos de la taxonomía de Bloom.\n- Integrar evaluación formativa (durante el proceso) y sumativa (producto o desempeño final).\n- Sugerir instrumentos pertinentes: lista de cotejo, rúbrica (analítica o global), escala de valoración.\n\n`;
-                prompt += `6. **FORMATO DE SALIDA (JSON)**:\n`;
-                prompt += `{\n  "lecciones": [\n    {\n      "numero": 1,\n      "inicio": "...",\n      "desarrollo": "...",\n      "cierre": "...",\n      "evaluaciones": [\n        {\n          "indicador": "...",\n          "instrumento": "..."\n        }\n      ]\n    }\n  ]\n}\n\n`;
-                prompt += `**Nota**: Genera únicamente el JSON, sin texto adicional. La respuesta debe ser válida y parseable directamente.`;
-
+              ]
+            }`;
+            
                 promptTexto.textContent = prompt;
                 modalIA.style.display = 'block';
             });
-
             // ---------- Importar IA ----------
             importarIaBtn.addEventListener('click', () => {
                 modalImportar.style.display = 'block';
