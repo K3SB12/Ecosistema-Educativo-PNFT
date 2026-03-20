@@ -72,10 +72,13 @@
             gap: 0.5rem;
             margin-right: 0.5rem;
             margin-bottom: 0.5rem;
-            transition: background 0.2s;
+            transition: all 0.2s;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
         .btn-accion:hover {
             background: #1e5a20;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
         }
         .btn-ia {
             background: #1976D2;
@@ -90,6 +93,14 @@
         }
         .btn-secundario:hover {
             background: #e0e0e0;
+            transform: translateY(-1px);
+        }
+        .btn-editor {
+            background: #9C27B0;
+            color: white;
+        }
+        .btn-editor:hover {
+            background: #7b1fa2;
         }
         #tablaPlaneamiento {
             width: 100%;
@@ -351,35 +362,35 @@
 
             <!-- ================= SECCIÓN 1: DATOS ADMINISTRATIVOS ================= -->
             <table class="form-table">
-                  <tr>
-                    <td><strong>Dirección Regional de Educación:</strong><br><input type="text" id="region" placeholder="Ej: San José Central">\\
-                     Was<strong>Centro educativo:</strong><br><input type="text" id="centro" placeholder="Ej: Liceo de Costa Rica">\\
-                     Was<strong>Código:</strong><br><input type="text" id="codigo" placeholder="Ej: 12345">\\
+                 <tr>
+                    <td><strong>Dirección Regional de Educación:</strong><br><input type="text" id="region" placeholder="Ej: San José Central"></td>
+                    <td><strong>Centro educativo:</strong><br><input type="text" id="centro" placeholder="Ej: Liceo de Costa Rica"></td>
+                    <td><strong>Código:</strong><br><input type="text" id="codigo" placeholder="Ej: 12345"></td>
                  </tr>
                  <tr>
-                     Was<strong>Nombre de la persona docente:</strong><br><input type="text" id="docente">\\
-                     Was<strong>Asignatura:</strong><br><select id="asignatura"><option value="Formación Tecnológica">Formación Tecnológica</option><option value="Informática Educativa">Informática Educativa</option></select>\\
-                     Was<strong>Curso lectivo:</strong><br><input type="number" id="curso" value="2026">\\
+                    <td><strong>Nombre de la persona docente:</strong><br><input type="text" id="docente"></td>
+                    <td><strong>Asignatura:</strong><br><select id="asignatura"><option value="Formación Tecnológica">Formación Tecnológica</option><option value="Informática Educativa">Informática Educativa</option></select></td>
+                    <td><strong>Curso lectivo:</strong><br><input type="number" id="curso" value="2026"></td>
                  </tr>
                  <tr>
-                     Was<strong>Ciclo:</strong><br><select id="ciclo"><option value="">-- Seleccione --</option><option value="preescolar">Preescolar</option><option value="primaria">I Ciclo</option><option value="primaria">II Ciclo</option><option value="secundaria">III Ciclo</option></select>\\
-                     Was<strong>Nivel:</strong><br><select id="nivel"><option value="">-- Primero seleccione ciclo --</option></select>\\
-                     Was<strong>Módulo:</strong><br><select id="modulo"><option value="1">Módulo 1</option><option value="2">Módulo 2</option><option value="ambos">Ambos módulos</option></select>\\
+                    <td><strong>Ciclo:</strong><br><select id="ciclo"><option value="">-- Seleccione --</option><option value="preescolar">Preescolar</option><option value="primaria">I Ciclo</option><option value="primaria">II Ciclo</option><option value="secundaria">III Ciclo</option></select></td>
+                    <td><strong>Nivel:</strong><br><select id="nivel"><option value="">-- Primero seleccione ciclo --</option></select></td>
+                    <td><strong>Módulo:</strong><br><select id="modulo"><option value="1">Módulo 1</option><option value="2">Módulo 2</option><option value="ambos">Ambos módulos</option></select></td>
                  </tr>
                  <tr>
-                     Was<strong>Lecciones planificadas:</strong><br><input type="number" id="lecciones" value="40">\\
-                     Was<strong>Mes inicio:</strong><br><input type="text" id="mesInicio" placeholder="Ej: Febrero">\\
-                     Was<strong>Mes final:</strong><br><input type="text" id="mesFinal" placeholder="Ej: Marzo">\\
+                    <td><strong>Lecciones planificadas:</strong><br><input type="number" id="lecciones" value="40"></td>
+                    <td><strong>Mes inicio:</strong><br><input type="text" id="mesInicio" placeholder="Ej: Febrero"></td>
+                    <td><strong>Mes final:</strong><br><input type="text" id="mesFinal" placeholder="Ej: Marzo"></td>
                  </tr>
                  <tr>
-                     <td colspan="3"><strong>Periodicidad:</strong><br>
+                    <td colspan="3"><strong>Periodicidad:</strong><br>
                         <label><input type="radio" name="periodicidad" value="mes"> mes</label>
                         <label><input type="radio" name="periodicidad" value="bimestre"> bimestre</label>
                         <label><input type="radio" name="periodicidad" value="trimestre"> trimestre</label>
                         <label><input type="radio" name="periodicidad" value="semestre"> semestre</label>
-                     </td>
+                    </td>
                  </tr>
-             </table>
+            </table>
 
             <!-- ================= SECCIÓN 2: EJES TRANSVERSALES ================= -->
             <table class="form-table">
@@ -389,7 +400,7 @@
                     <td style="text-align: center;"><label><input type="checkbox" id="ejePensamiento"> Competencias para la vida: Sociales, emocionales y de aprendizaje</label></td>
                     <td style="text-align: center;"><label><input type="checkbox" id="ejeEmprendimiento"> Competencias para el empleo digno y emprendimiento</label></td>
                  </tr>
-             </table>
+            </table>
 
             <!-- ================= SECCIÓN 3: METODOLOGÍA ACTIVA ================= -->
             <table class="form-table">
@@ -399,7 +410,7 @@
                     <td style="text-align: center;"><label><input type="radio" name="metodologia" value="ABR"> Aprendizaje Basado en Retos (ABR)</label></td>
                     <td style="text-align: center;"><label><input type="radio" name="metodologia" value="Design Thinking"> Design Thinking</label></td>
                  </tr>
-             </table>
+            </table>
 
             <!-- ================= SECCIÓN 4: ÁREAS DE CONOCIMIENTO + RdA ================= -->
             <table class="form-table" id="tablaAreas">
@@ -408,7 +419,7 @@
                  <tr><td>Programación y Algoritmos</td><td><div id="rdaProgramacion">(seleccione un módulo)</div></td></tr>
                  <tr><td>Computación Física y Robótica</td><td><div id="rdaComputacion">(seleccione un módulo)</div></td></tr>
                  <tr><td>Ciencia de Datos e Inteligencia Artificial</td><td><div id="rdaCienciaDatos">(seleccione un módulo)</div></td></tr>
-             </table>
+            </table>
 
             <!-- ================= SECCIÓN 5: SABERES ================= -->
             <table class="form-table">
@@ -418,22 +429,22 @@
                     <th>Saberes actitudinales (saber ser)</th>
                  </tr>
                  <tr>
-                     <td><div id="conceptualesContainer" class="saberes-columna"></div></td>
+                    <td><div id="conceptualesContainer" class="saberes-columna"></div></td>
                     <td colspan="2"><div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;"><div class="saberes-columna" id="procCol1"></div><div class="saberes-columna" id="procCol2"></div></div></td>
-                     <td><div id="actitudinalesContainer" class="saberes-columna"></div></td>
+                    <td><div id="actitudinalesContainer" class="saberes-columna"></div></td>
                  </tr>
-             </table>
+            </table>
 
             <!-- ================= SECCIÓN 6: TABLA DE PLANEAMIENTO ================= -->
             <div class="recent-section">
                 <h2>Tabla de planeamiento</h2>
                 <div style="margin-bottom: 10px;">
-                    <button id="toggleFormatBtn" class="btn-secundario"><i class="fas fa-edit"></i> Activar editor enriquecido (Quill)</button>
+                    <button id="toggleFormatBtn" class="btn-secundario btn-editor"><i class="fas fa-edit"></i> Editor de texto (Quill)</button>
                     <button id="disableFormatBtn" class="btn-secundario" style="display: none;"><i class="fas fa-undo-alt"></i> Desactivar editor</button>
                 </div>
                 <div style="overflow-x: auto;">
                     <table id="tablaPlaneamiento">
-                        <thead> <tr><th>Indicadores de logro</th><th>Estrategias de Mediación (integrar saberes)</th><th>Indicador de evaluación</th><th style="width:40px;"></th></tr> </thead>
+                        <thead><tr><th>Indicadores de logro</th><th>Estrategias de Mediación (integrar saberes)</th><th>Indicador de evaluación</th><th style="width:40px;"></th></tr></thead>
                         <tbody id="tablaBody"></tbody>
                     </table>
                 </div>
@@ -444,7 +455,7 @@
                     <button id="nuevoBtn" class="btn-accion"><i class="fas fa-file"></i> Nuevo</button>
                     <button id="exportarJsonBtn" class="btn-accion"><i class="fas fa-code"></i> Exportar JSON (respaldo)</button>
                     <button id="iaBtn" class="btn-accion btn-ia"><i class="fas fa-robot"></i> Generar prompt para IA</button>
-                    <button id="importarIaBtn" class="btn-secundario"><i class="fas fa-upload"></i> Importar desde IA</button>
+                    <button id="importarIaBtn" class="btn-accion btn-ia" style="background:#FF9800;"><i class="fas fa-upload"></i> Importar desde IA</button>
                 </div>
                 <div style="margin-top: 1rem;">
                     <button id="exportarWordBtn" class="btn-accion"><i class="fas fa-file-word"></i> Exportar a Word</button>
@@ -457,15 +468,15 @@
             <table class="form-table">
                  <tr><th>¿Qué funcionó?</th><th>¿Qué no funcionó?</th><th>¿Qué puedo mejorar?</th></tr>
                  <tr>
-                     <td><textarea id="refFunciono" rows="3" style="width:100%;" placeholder="Describa los aspectos positivos..."></textarea></td>
-                     <td><textarea id="refNoFunciono" rows="3" style="width:100%;" placeholder="Describa las dificultades..."></textarea></td>
-                     <td><textarea id="refMejorar" rows="3" style="width:100%;" placeholder="Proponga ajustes..."></textarea></td>
+                    <td><textarea id="refFunciono" rows="3" style="width:100%;" placeholder="Describa los aspectos positivos..."></textarea></td>
+                    <td><textarea id="refNoFunciono" rows="3" style="width:100%;" placeholder="Describa las dificultades..."></textarea></td>
+                    <td><textarea id="refMejorar" rows="3" style="width:100%;" placeholder="Proponga ajustes..."></textarea></td>
                  </tr>
-             </table>
+            </table>
             <table class="form-table">
                  <tr><th>Observaciones y/o recomendaciones didácticas por nivel</th></tr>
                  <tr><td><textarea id="observaciones" rows="4" style="width:100%;" placeholder="Observaciones: ..."></textarea></td></tr>
-             </table>
+            </table>
         </main>
     </div>
 
@@ -682,9 +693,9 @@
                 conceptuales.forEach((s, idx) => {
                     const row = tablaBody.insertRow();
                     row.innerHTML = `
-                         <td><div class="rich-editor" contenteditable="true">${s.indicadorLogro}</div></td>
-                         <td><div class="rich-editor" contenteditable="true"></div></td>
-                         <td><div class="rich-editor" contenteditable="true"></div></td>
+                        <td><div class="rich-editor" contenteditable="true">${s.indicadorLogro}</div></td>
+                        <td><div class="rich-editor" contenteditable="true"></div></td>
+                        <td><div class="rich-editor" contenteditable="true"></div></td>
                         <td style="text-align:center;"><button class="delete-row-btn"><i class="fas fa-trash-alt"></i> Eliminar</button></td>
                     `;
                 });
@@ -757,6 +768,7 @@
 
             // ---------- Guardar y cargar planeamiento ----------
             function obtenerDatosFormulario() {
+                // Capturar tabla
                 let tablaContenido = [];
                 if (formatoActivo) {
                     const contenidos = quillInstances.map(q => q.root.innerHTML);
@@ -778,6 +790,13 @@
                         };
                     });
                 }
+
+                // Capturar saberes conceptuales (checkboxes dinámicos)
+                const conceptualesSeleccionados = Array.from(document.querySelectorAll('.saber-conceptual:checked')).map(cb => cb.value);
+
+                // Capturar saberes procedimentales y actitudinales (fijos)
+                const procedimentalesSeleccionados = Array.from(document.querySelectorAll('.saber-procedimental:checked')).map(cb => cb.value);
+                const actitudinalesSeleccionados = Array.from(document.querySelectorAll('.saber-actitudinal:checked')).map(cb => cb.value);
 
                 const planeamiento = {
                     id: Date.now(),
@@ -806,9 +825,9 @@
                     },
                     metodologia: document.querySelector('input[name="metodologia"]:checked')?.value || '',
                     saberes: {
-                        conceptuales: Array.from(document.querySelectorAll('.saber-conceptual:checked')).map(c => c.value),
-                        procedimentales: Array.from(document.querySelectorAll('.saber-procedimental:checked')).map(c => c.value),
-                        actitudinales: Array.from(document.querySelectorAll('.saber-actitudinal:checked')).map(c => c.value)
+                        conceptuales: conceptualesSeleccionados,
+                        procedimentales: procedimentalesSeleccionados,
+                        actitudinales: actitudinalesSeleccionados
                     },
                     tabla: tablaContenido,
                     reflexiones: {
@@ -822,6 +841,7 @@
             }
 
             function cargarDatosEnFormulario(data) {
+                // Restaurar datos administrativos
                 document.getElementById('region').value = data.datosAdministrativos.region || '';
                 document.getElementById('centro').value = data.datosAdministrativos.centro || '';
                 document.getElementById('codigo').value = data.datosAdministrativos.codigo || '';
@@ -842,30 +862,62 @@
                 if (data.datosAdministrativos.escudoBase64) {
                     document.getElementById('escudoPreview').innerHTML = `<img src="${data.datosAdministrativos.escudoBase64}" class="escudo-preview">`;
                 }
+
+                // Ejes
                 document.getElementById('ejeCiudadania').checked = data.ejes?.ciudadania || false;
                 document.getElementById('ejePensamiento').checked = data.ejes?.pensamiento || false;
                 document.getElementById('ejeEmprendimiento').checked = data.ejes?.emprendimiento || false;
-                if (data.metodologia) document.querySelector(`input[name="metodologia"][value="${data.metodologia}"]`).checked = true;
-                // Checkboxes saberes
-                document.querySelectorAll('.saber-conceptual').forEach(cb => cb.checked = data.saberes?.conceptuales?.includes(cb.value));
-                document.querySelectorAll('.saber-procedimental').forEach(cb => cb.checked = data.saberes?.procedimentales?.includes(cb.value));
-                document.querySelectorAll('.saber-actitudinal').forEach(cb => cb.checked = data.saberes?.actitudinales?.includes(cb.value));
+
+                // Metodología
+                if (data.metodologia) {
+                    document.querySelector(`input[name="metodologia"][value="${data.metodologia}"]`).checked = true;
+                }
+
+                // Saberes: actualizar checkboxes (los conceptuales se recargan después de cargar módulo)
+                // Primero recargar el módulo para tener los checkboxes conceptuales
+                // Pero debemos preservar la selección guardada. Lo haremos en setTimeout después de recargar.
+                // Cargamos el módulo actual
+                cicloSelect.value = data.datosAdministrativos.ciclo || '';
+                nivelSelect.value = data.datosAdministrativos.nivel || '';
+                moduloSelect.value = data.datosAdministrativos.modulo || '1';
+                // Forzar carga del módulo
+                cargarDatosModulo();
+
+                // Después de cargar el módulo, restaurar checkboxes de saberes
+                setTimeout(() => {
+                    // Saberes conceptuales
+                    document.querySelectorAll('.saber-conceptual').forEach(cb => {
+                        cb.checked = data.saberes?.conceptuales?.includes(cb.value);
+                    });
+                    // Saberes procedimentales
+                    document.querySelectorAll('.saber-procedimental').forEach(cb => {
+                        cb.checked = data.saberes?.procedimentales?.includes(cb.value);
+                    });
+                    // Saberes actitudinales
+                    document.querySelectorAll('.saber-actitudinal').forEach(cb => {
+                        cb.checked = data.saberes?.actitudinales?.includes(cb.value);
+                    });
+                }, 100);
+
                 // Tabla
                 tablaBody.innerHTML = '';
                 data.tabla.forEach((fila, idx) => {
                     const row = tablaBody.insertRow();
                     row.innerHTML = `
-                         <td><div class="rich-editor" contenteditable="true">${fila.indicador || ''}</div></td>
-                         <td><div class="rich-editor" contenteditable="true">${fila.estrategia || ''}</div></td>
-                         <td><div class="rich-editor" contenteditable="true">${fila.evaluacion || ''}</div></td>
+                        <td><div class="rich-editor" contenteditable="true">${fila.indicador || ''}</div></td>
+                        <td><div class="rich-editor" contenteditable="true">${fila.estrategia || ''}</div></td>
+                        <td><div class="rich-editor" contenteditable="true">${fila.evaluacion || ''}</div></td>
                         <td style="text-align:center;"><button class="delete-row-btn"><i class="fas fa-trash-alt"></i> Eliminar</button></td>
                     `;
                 });
                 attachDeleteEvents();
+
+                // Reflexiones
                 document.getElementById('refFunciono').value = data.reflexiones?.funciono || '';
                 document.getElementById('refNoFunciono').value = data.reflexiones?.noFunciono || '';
                 document.getElementById('refMejorar').value = data.reflexiones?.mejorar || '';
                 document.getElementById('observaciones').value = data.reflexiones?.observaciones || '';
+
                 if (formatoActivo) desactivarQuill();
             }
 
@@ -877,9 +929,9 @@
             agregarFilaBtn.addEventListener('click', () => {
                 const row = tablaBody.insertRow();
                 row.innerHTML = `
-                     <td><div class="rich-editor" contenteditable="true"></div></td>
-                     <td><div class="rich-editor" contenteditable="true"></div></td>
-                     <td><div class="rich-editor" contenteditable="true"></div></td>
+                    <td><div class="rich-editor" contenteditable="true"></div></td>
+                    <td><div class="rich-editor" contenteditable="true"></div></td>
+                    <td><div class="rich-editor" contenteditable="true"></div></td>
                     <td style="text-align:center;"><button class="delete-row-btn"><i class="fas fa-trash-alt"></i> Eliminar</button></td>
                 `;
                 attachDeleteEvents();
@@ -943,7 +995,7 @@
                 alert('✅ JSON exportado. Guarde este archivo como respaldo.');
             });
 
-            // ---------- PROMPT MEJORADO (con distribución curricular y metodología transversal) ----------
+            // ---------- PROMPT MEJORADO ----------
             iaBtn.addEventListener('click', function() {
                 const ciclo = cicloSelect.value;
                 const nivel = nivelSelect.value;
@@ -951,7 +1003,6 @@
                 const metodologiaSeleccionada = document.querySelector('input[name="metodologia"]:checked')?.value || 'No seleccionada';
                 const lecciones = parseInt(leccionesInput.value) || 40;
                 
-                // Determinar metodología según ciclo si no se ha seleccionado
                 let metodologia = metodologiaSeleccionada;
                 if (ciclo === 'preescolar' || (ciclo === 'primaria' && ['Primero','Segundo','Tercero'].includes(nivel))) {
                     if (metodologia === 'No seleccionada') metodologia = 'ABJ';
@@ -966,14 +1017,12 @@
                     return;
                 }
 
-                // Obtener los saberes conceptuales seleccionados
                 const saberesSeleccionados = Array.from(document.querySelectorAll('.saber-conceptual:checked')).map(cb => {
                     const textoCompleto = cb.closest('label')?.innerText || '';
                     return textoCompleto.trim();
                 });
                 const saberesTexto = saberesSeleccionados.length ? saberesSeleccionados.join('\n') : 'No se han seleccionado saberes conceptuales específicos.';
 
-                // Obtener las filas actuales de la tabla (indicadores de logro)
                 const filasActuales = [];
                 if (formatoActivo) {
                     for (let i = 0; i < quillInstances.length; i += 3) {
@@ -994,7 +1043,6 @@
                     });
                 }
 
-                // Construir el prompt
                 let prompt = `**CONTEXTO**: Programa Nacional de Formación Tecnológica (PNFT), MEP Costa Rica, curso lectivo vigente.\n\n`;
                 prompt += `**DATOS DEL PLANEAMIENTO**:\n`;
                 prompt += `- Ciclo: ${ciclo}\n- Nivel: ${nivel}\n- Módulo: ${modulo}\n- Total de lecciones: ${lecciones}\n- Duración por lección: 40 minutos\n\n`;
@@ -1004,13 +1052,11 @@
                 prompt += `**SABERES E INDICADORES DEL MÓDULO**:\n${saberesTexto}\n\n`;
                 prompt += `**INSTRUCCIONES PARA LA IA**:\n\n`;
                 prompt += `1. **Distribución curricular inteligente**:\n`;
-                prompt += `- Si hay más lecciones que indicadores, distribuir los indicadores pedagógicamente considerando:\n`;
-                prompt += `  - Nivel cognitivo (taxonomía de Bloom)\n  - Complejidad del indicador\n  - Tipo de aprendizaje (conceptual, procedimental, aplicado)\n`;
+                prompt += `- Si hay más lecciones que indicadores, distribuir los indicadores pedagógicamente considerando:\n  - Nivel cognitivo (taxonomía de Bloom)\n  - Complejidad del indicador\n  - Tipo de aprendizaje (conceptual, procedimental, aplicado)\n`;
                 prompt += `- Asignar:\n  - 1 lección → indicadores básicos (recordar, reconocer)\n  - 2 lecciones → indicadores intermedios (comprender, aplicar)\n  - 3 o más lecciones → indicadores complejos (analizar, evaluar, crear)\n`;
                 prompt += `- Integrar indicadores cuando sea pertinente, especialmente en proyectos.\n\n`;
                 prompt += `2. **Progresión didáctica del módulo**:\n`;
-                prompt += `Organizar las lecciones en una secuencia coherente:\n`;
-                prompt += `- Exploración y activación de conocimientos previos\n- Comprensión guiada\n- Aplicación práctica\n- Resolución de problemas\n- Integración en proyecto (si aplica)\n- Socialización y cierre\n\n`;
+                prompt += `Organizar las lecciones en una secuencia coherente:\n- Exploración y activación de conocimientos previos\n- Comprensión guiada\n- Aplicación práctica\n- Resolución de problemas\n- Integración en proyecto (si aplica)\n- Socialización y cierre\n\n`;
                 prompt += `3. **Aplicación de la metodología (CLAVE)**:\n`;
                 if (metodologia === 'ABJ') {
                     prompt += `- **ABJ (Preescolar y I Ciclo)**: Desarrollar un sistema de juego continuo (narrativa, misiones, niveles, retos). No diseñar juegos aislados por lección. Mantener motivación, participación activa y aprendizaje lúdico progresivo.\n\n`;
@@ -1020,15 +1066,9 @@
                     prompt += `- **Design Thinking (III Ciclo)**: Integrar las fases: empatizar, definir, idear, prototipar y evaluar. Desarrollar soluciones centradas en el usuario.\n\n`;
                 }
                 prompt += `4. **Estrategias de mediación (AMPLIADAS)**:\n`;
-                prompt += `Para cada lección incluir:\n`;
-                prompt += `- **Inicio**: Activación de conocimientos previos, planteamiento del reto/misión/problema, preguntas generadoras.\n`;
-                prompt += `- **Desarrollo**: Actividades prácticas y colaborativas, uso de roles, retos o dinámicas, andamiaje docente (modelado, ejemplos, preguntas guía), uso de recursos concretos o digitales.\n`;
-                prompt += `- **Cierre**: Reflexión y metacognición, socialización de aprendizajes, conexión con la vida cotidiana.\n\n`;
+                prompt += `Para cada lección incluir:\n- **Inicio**: Activación de conocimientos previos, planteamiento del reto/misión/problema, preguntas generadoras.\n- **Desarrollo**: Actividades prácticas y colaborativas, uso de roles, retos o dinámicas, andamiaje docente (modelado, ejemplos, preguntas guía), uso de recursos concretos o digitales.\n- **Cierre**: Reflexión y metacognición, socialización de aprendizajes, conexión con la vida cotidiana.\n\n`;
                 prompt += `5. **Evaluación**:\n`;
-                prompt += `- Redactar indicadores en tercera persona singular con estructura: **Acción + Contenido + Condición**.\n`;
-                prompt += `- Incluir verbos de la taxonomía de Bloom.\n`;
-                prompt += `- Integrar evaluación formativa (durante el proceso) y sumativa (producto o desempeño final).\n`;
-                prompt += `- Sugerir instrumentos pertinentes: lista de cotejo, rúbrica (analítica o global), escala de valoración.\n\n`;
+                prompt += `- Redactar indicadores en tercera persona singular con estructura: **Acción + Contenido + Condición**.\n- Incluir verbos de la taxonomía de Bloom.\n- Integrar evaluación formativa (durante el proceso) y sumativa (producto o desempeño final).\n- Sugerir instrumentos pertinentes: lista de cotejo, rúbrica (analítica o global), escala de valoración.\n\n`;
                 prompt += `6. **FORMATO DE SALIDA (JSON)**:\n`;
                 prompt += `{\n  "lecciones": [\n    {\n      "numero": 1,\n      "inicio": "...",\n      "desarrollo": "...",\n      "cierre": "...",\n      "evaluaciones": [\n        {\n          "indicador": "...",\n          "instrumento": "..."\n        }\n      ]\n    }\n  ]\n}\n\n`;
                 prompt += `**Nota**: Genera únicamente el JSON, sin texto adicional. La respuesta debe ser válida y parseable directamente.`;
@@ -1037,7 +1077,7 @@
                 modalIA.style.display = 'block';
             });
 
-            // ---------- Importar IA (actualizado) ----------
+            // ---------- Importar IA ----------
             importarIaBtn.addEventListener('click', () => {
                 modalImportar.style.display = 'block';
                 iaJsonInput.value = '';
@@ -1049,12 +1089,9 @@
                 try {
                     const json = JSON.parse(iaJsonInput.value);
                     if (json.lecciones && Array.isArray(json.lecciones)) {
-                        // Obtener las filas actuales de la tabla
                         let filas = Array.from(document.querySelectorAll('#tablaBody tr'));
-                        // Para cada lección, asignar estrategia y evaluación a la fila correspondiente (por índice)
                         json.lecciones.forEach((leccion, idx) => {
                             if (idx < filas.length) {
-                                // Existe fila: actualizar columnas 2 y 3
                                 const cells = filas[idx].querySelectorAll('.rich-editor');
                                 if (cells.length >= 2) {
                                     const estrategiaTexto = `INICIO: ${leccion.inicio || ''}\nDESARROLLO: ${leccion.desarrollo || ''}\nCIERRE: ${leccion.cierre || ''}`;
@@ -1063,7 +1100,6 @@
                                     cells[2].innerHTML = indicadoresTexto;
                                 }
                             } else {
-                                // No hay suficientes filas, agregar una nueva fila con los indicadores de logro vacíos
                                 const newRow = tablaBody.insertRow();
                                 const indicadoresTexto = leccion.evaluaciones?.map(e => e.indicador).join('\n') || '';
                                 const estrategiaTexto = `INICIO: ${leccion.inicio || ''}\nDESARROLLO: ${leccion.desarrollo || ''}\nCIERRE: ${leccion.cierre || ''}`;
@@ -1076,14 +1112,12 @@
                                 attachDeleteEvents();
                             }
                         });
-                        // Si formato estaba activo, convertir las nuevas celdas a Quill
                         if (formatoActivo) {
                             desactivarQuill();
                             activarQuill();
                         }
                         alert(`✅ Se actualizaron ${json.lecciones.length} lecciones en la tabla.`);
                     } else if (json.evaluaciones && Array.isArray(json.evaluaciones)) {
-                        // Formato antiguo: actualizar solo evaluaciones
                         const filas = document.querySelectorAll('#tablaBody tr');
                         json.evaluaciones.forEach((evalObj, index) => {
                             if (index < filas.length) {
@@ -1117,7 +1151,6 @@
                     span.innerHTML = el.innerHTML;
                     el.parentNode.replaceChild(span, el);
                 });
-                // Añadir estilos específicos para Word
                 const style = document.createElement('style');
                 style.textContent = `
                     table { border-collapse: collapse; width: 100%; }
