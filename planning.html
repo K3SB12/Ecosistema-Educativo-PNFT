@@ -7,8 +7,15 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="css/style.css">
     <script src="js/curriculum.js"></script>
+    <!-- Librerías para exportación -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/docxtemplater@3.46.0/build/docxtemplater.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/pizzip@3.1.4/dist/pizzip.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
     <style>
-        /* Estilos específicos para la plantilla */
+        /* Estilos base (se mantienen los originales, se añaden nuevos) */
         .form-table {
             width: 100%;
             border-collapse: collapse;
@@ -113,16 +120,50 @@
             padding: 8px;
             vertical-align: top;
         }
-        #tablaPlaneamiento textarea {
+        /* Estilos para editor enriquecido */
+        .rich-editor {
             width: 100%;
-            border: none;
-            resize: vertical;
-            font-family: inherit;
-            padding: 5px;
-        }
-        #tablaPlaneamiento textarea:focus {
-            outline: 2px solid #2E7D32;
+            min-height: 80px;
+            border: 1px solid #ccc;
             border-radius: 4px;
+            padding: 8px;
+            font-family: inherit;
+            font-size: 0.9rem;
+            background: white;
+            overflow-y: auto;
+        }
+        .rich-editor:focus {
+            outline: 2px solid #2E7D32;
+        }
+        .toolbar {
+            display: none;
+            background: #f9f9f9;
+            border: 1px solid #ddd;
+            border-bottom: none;
+            padding: 5px;
+            border-radius: 4px 4px 0 0;
+            margin-bottom: -1px;
+        }
+        .toolbar.visible {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            align-items: center;
+        }
+        .toolbar button {
+            background: white;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            padding: 4px 8px;
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+        .toolbar button:hover {
+            background: #e0e0e0;
+        }
+        .toolbar select {
+            padding: 4px;
+            font-size: 0.8rem;
         }
         .modal {
             display: none;
@@ -207,6 +248,60 @@
             align-items: center;
             gap: 0.5rem;
         }
+        .escudo-preview {
+            max-width: 80px;
+            max-height: 80px;
+            margin-top: 5px;
+        }
+        .profile-img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            cursor: pointer;
+        }
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            background: white;
+            padding: 1rem 2rem;
+            border-radius: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.02);
+        }
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+        .user-badge {
+            background: #e8f5e9;
+            color: #2E7D32;
+            padding: 0.5rem 1.2rem;
+            border-radius: 40px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+        }
+        .escudo-lema {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            background: white;
+            padding: 1rem;
+            border-radius: 12px;
+        }
+        .escudo-lema img {
+            max-height: 60px;
+        }
+        .escudo-lema input {
+            flex: 1;
+        }
     </style>
 </head>
 <body>
@@ -234,9 +329,18 @@
             <div class="top-bar">
                 <h1 class="page-title">Planeamiento Didáctico</h1>
                 <div class="user-info">
-                    <span class="user-badge"><i class="fas fa-user-graduate"></i> Docente</span>
+                    <span class="user-badge" id="docenteNombre"><i class="fas fa-user-graduate"></i> <span id="docenteNombreText">Docente</span></span>
+                    <img id="profileImg" class="profile-img" src="" alt="Foto perfil" style="display: none;">
                     <span class="user-badge"><i class="fas fa-calendar-alt"></i> 2026</span>
+                    <button id="calendarBtn" class="btn-secundario" style="padding:0.3rem 0.8rem;"><i class="fas fa-calendar-week"></i> Calendario</button>
                 </div>
+            </div>
+
+            <!-- Escudo y lema (ARRIBA COMPLETAMENTE) -->
+            <div class="escudo-lema">
+                <div id="escudoPreview"></div>
+                <input type="text" id="nombreEscuela" placeholder="Nombre o lema del centro educativo" style="flex:1;">
+                <input type="file" id="escudoFile" accept="image/*" style="width:auto;">
             </div>
 
             <!-- ================= SECCIÓN 1: DATOS ADMINISTRATIVOS ================= -->
@@ -248,35 +352,13 @@
                 </tr>
                 <tr>
                     <td><strong>Nombre de la persona docente:</strong><br><input type="text" id="docente"></td>
-                    <td><strong>Asignatura:</strong><br>
-                        <select id="asignatura">
-                            <option value="Formación Tecnológica">Formación Tecnológica</option>
-                            <option value="Informática Educativa">Informática Educativa</option>
-                        </select>
-                    </td>
+                    <td><strong>Asignatura:</strong><br><select id="asignatura"><option value="Formación Tecnológica">Formación Tecnológica</option><option value="Informática Educativa">Informática Educativa</option></select></td>
                     <td><strong>Curso lectivo:</strong><br><input type="number" id="curso" value="2026"></td>
                 </tr>
                 <tr>
-                    <td><strong>Ciclo:</strong><br>
-                        <select id="ciclo">
-                            <option value="">-- Seleccione --</option>
-                            <option value="preescolar">Preescolar</option>
-                            <option value="primaria">I Ciclo</option>
-                            <option value="primaria">II Ciclo</option>
-                            <option value="secundaria">III Ciclo</option>
-                        </select>
-                    </td>
-                    <td><strong>Nivel:</strong><br>
-                        <select id="nivel">
-                            <option value="">-- Primero seleccione ciclo --</option>
-                        </select>
-                    </td>
-                    <td><strong>Módulo:</strong><br>
-                        <select id="modulo">
-                            <option value="1">Módulo 1</option>
-                            <option value="2">Módulo 2</option>
-                        </select>
-                    </td>
+                    <td><strong>Ciclo:</strong><br><select id="ciclo"><option value="">-- Seleccione --</option><option value="preescolar">Preescolar</option><option value="primaria">I Ciclo</option><option value="primaria">II Ciclo</option><option value="secundaria">III Ciclo</option></select></td>
+                    <td><strong>Nivel:</strong><br><select id="nivel"><option value="">-- Primero seleccione ciclo --</option></select></td>
+                    <td><strong>Módulo:</strong><br><select id="modulo"><option value="1">Módulo 1</option><option value="2">Módulo 2</option><option value="ambos">Ambos módulos</option></select></td>
                 </tr>
                 <tr>
                     <td><strong>Lecciones planificadas:</strong><br><input type="number" id="lecciones" value="40"></td>
@@ -284,92 +366,42 @@
                     <td><strong>Mes final:</strong><br><input type="text" id="mesFinal" placeholder="Ej: Marzo"></td>
                 </tr>
                 <tr>
-                    <td colspan="3"><strong>Periodicidad:</strong><br>
-                        <label><input type="radio" name="periodicidad" value="mes"> mes</label>
-                        <label><input type="radio" name="periodicidad" value="bimestre"> bimestre</label>
-                        <label><input type="radio" name="periodicidad" value="trimestre"> trimestre</label>
-                        <label><input type="radio" name="periodicidad" value="semestre"> semestre</label>
-                    </td>
+                    <td colspan="3"><strong>Periodicidad:</strong><br><label><input type="radio" name="periodicidad" value="mes"> mes</label> <label><input type="radio" name="periodicidad" value="bimestre"> bimestre</label> <label><input type="radio" name="periodicidad" value="trimestre"> trimestre</label> <label><input type="radio" name="periodicidad" value="semestre"> semestre</label></td>
                 </tr>
             </table>
 
             <!-- ================= SECCIÓN 2: EJES TRANSVERSALES ================= -->
             <table class="form-table">
-                <tr>
-                    <th>Ciudadanía y ética digital</th>
-                    <th>Pensamiento computacional para la resolución de problemas</th>
-                    <th>Emprendimiento e Innovación</th>
-                </tr>
-                <tr>
-                    <td style="text-align: center;">
-                        <label><input type="checkbox" id="ejeCiudadania"> Competencias para la ciudadanía responsable y solidaria</label>
-                    </td>
-                    <td style="text-align: center;">
-                        <label><input type="checkbox" id="ejePensamiento"> Competencias para la vida: Sociales, emocionales y de aprendizaje</label>
-                    </td>
-                    <td style="text-align: center;">
-                        <label><input type="checkbox" id="ejeEmprendimiento"> Competencias para el empleo digno y emprendimiento</label>
-                    </td>
+                <tr><th>Ciudadanía y ética digital</th><th>Pensamiento computacional para la resolución de problemas</th><th>Emprendimiento e Innovación</th></tr>
+                <tr><td style="text-align: center;"><label><input type="checkbox" id="ejeCiudadania"> Competencias para la ciudadanía responsable y solidaria</label></td>
+                    <td style="text-align: center;"><label><input type="checkbox" id="ejePensamiento"> Competencias para la vida: Sociales, emocionales y de aprendizaje</label></td>
+                    <td style="text-align: center;"><label><input type="checkbox" id="ejeEmprendimiento"> Competencias para el empleo digno y emprendimiento</label></td>
                 </tr>
             </table>
 
             <!-- ================= SECCIÓN 3: METODOLOGÍA ACTIVA ================= -->
             <table class="form-table">
-                <tr>
-                    <th colspan="3">Metodología activa:</th>
-                </tr>
-                <tr>
-                    <td style="text-align: center;">
-                        <label><input type="radio" name="metodologia" value="ABJ"> Aprendizaje Basado en Juegos (ABJ)</label>
-                    </td>
-                    <td style="text-align: center;">
-                        <label><input type="radio" name="metodologia" value="ABR"> Aprendizaje Basado en Retos (ABR)</label>
-                    </td>
-                    <td style="text-align: center;">
-                        <label><input type="radio" name="metodologia" value="Design Thinking"> Design Thinking</label>
-                    </td>
+                <tr><th colspan="3">Metodología activa:</th></tr>
+                <tr><td style="text-align: center;"><label><input type="radio" name="metodologia" value="ABJ"> Aprendizaje Basado en Juegos (ABJ)</label></td>
+                    <td style="text-align: center;"><label><input type="radio" name="metodologia" value="ABR"> Aprendizaje Basado en Retos (ABR)</label></td>
+                    <td style="text-align: center;"><label><input type="radio" name="metodologia" value="Design Thinking"> Design Thinking</label></td>
                 </tr>
             </table>
 
             <!-- ================= SECCIÓN 4: ÁREAS DE CONOCIMIENTO + RdA ================= -->
             <table class="form-table" id="tablaAreas">
-                <tr>
-                    <th>Área de conocimiento</th>
-                    <th>RdA</th>
-                </tr>
-                <tr>
-                    <td>Apropiación Tecnológica y Digital</td>
-                    <td><div id="rdaApropiacion">(seleccione un módulo)</div></td>
-                </tr>
-                <tr>
-                    <td>Programación y Algoritmos</td>
-                    <td><div id="rdaProgramacion">(seleccione un módulo)</div></td>
-                </tr>
-                <tr>
-                    <td>Computación Física y Robótica</td>
-                    <td><div id="rdaComputacion">(seleccione un módulo)</div></td>
-                </tr>
-                <tr>
-                    <td>Ciencia de Datos e Inteligencia Artificial</td>
-                    <td><div id="rdaCienciaDatos">(seleccione un módulo)</div></td>
-                </tr>
+                <tr><th>Área de conocimiento</th><th>RdA</th></tr>
+                <tr><td>Apropiación Tecnológica y Digital</td><td><div id="rdaApropiacion">(seleccione un módulo)</div></td></tr>
+                <tr><td>Programación y Algoritmos</td><td><div id="rdaProgramacion">(seleccione un módulo)</div></td></tr>
+                <tr><td>Computación Física y Robótica</td><td><div id="rdaComputacion">(seleccione un módulo)</div></td></tr>
+                <tr><td>Ciencia de Datos e Inteligencia Artificial</td><td><div id="rdaCienciaDatos">(seleccione un módulo)</div></td></tr>
             </table>
 
             <!-- ================= SECCIÓN 5: SABERES ================= -->
             <table class="form-table">
-                <tr>
-                    <th>Saberes conceptuales (saber)</th>
-                    <th colspan="2">Saberes procedimentales (saber hacer)</th>
-                    <th>Saberes actitudinales (saber ser)</th>
-                </tr>
-                <tr>
-                    <td><div id="conceptualesContainer" class="saberes-columna"></div></td>
-                    <td colspan="2">
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                            <div class="saberes-columna" id="procCol1"></div>
-                            <div class="saberes-columna" id="procCol2"></div>
-                        </div>
-                    </td>
+                <tr><th>Saberes conceptuales (saber)</th><th colspan="2">Saberes procedimentales (saber hacer)</th><th>Saberes actitudinales (saber ser)</th></tr>
+                <tr><td><div id="conceptualesContainer" class="saberes-columna"></div></td>
+                    <td colspan="2"><div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;"><div class="saberes-columna" id="procCol1"></div><div class="saberes-columna" id="procCol2"></div></div></td>
                     <td><div id="actitudinalesContainer" class="saberes-columna"></div></td>
                 </tr>
             </table>
@@ -377,91 +409,52 @@
             <!-- ================= SECCIÓN 6: TABLA DE PLANEAMIENTO ================= -->
             <div class="recent-section">
                 <h2>Tabla de planeamiento</h2>
+                <div style="margin-bottom: 10px;">
+                    <button id="toggleFormatBtn" class="btn-secundario"><i class="fas fa-edit"></i> Mostrar/Ocultar formato</button>
+                </div>
                 <div style="overflow-x: auto;">
                     <table id="tablaPlaneamiento">
-                        <thead>
-                            <tr>
-                                <th>Indicadores de logro</th>
-                                <th>Estrategias de Mediación (integrar saberes)</th>
-                                <th>Indicador de evaluación</th>
-                            </tr>
-                        </thead>
+                        <thead><tr><th>Indicadores de logro</th><th>Estrategias de Mediación (integrar saberes)</th><th>Indicador de evaluación</th></tr></thead>
                         <tbody id="tablaBody"></tbody>
                     </table>
                 </div>
                 <div style="margin-top: 1rem;">
                     <button id="agregarFilaBtn" class="btn-secundario"><i class="fas fa-plus"></i> Agregar fila</button>
+                    <button id="guardarBtn" class="btn-accion"><i class="fas fa-save"></i> Guardar planeamiento</button>
+                    <button id="abrirBtn" class="btn-accion"><i class="fas fa-folder-open"></i> Abrir planeamiento</button>
+                    <button id="nuevoBtn" class="btn-accion"><i class="fas fa-file"></i> Nuevo</button>
+                    <button id="exportarJsonBtn" class="btn-accion"><i class="fas fa-code"></i> Exportar JSON</button>
                     <button id="iaBtn" class="btn-accion btn-ia"><i class="fas fa-robot"></i> Generar prompt para IA</button>
                     <button id="importarIaBtn" class="btn-secundario"><i class="fas fa-upload"></i> Importar desde IA</button>
+                </div>
+                <div style="margin-top: 1rem;">
+                    <button id="exportarWordBtn" class="btn-accion"><i class="fas fa-file-word"></i> Exportar a Word</button>
+                    <button id="exportarPDFBtn" class="btn-accion"><i class="fas fa-file-pdf"></i> Exportar PDF</button>
+                    <button id="exportarExcelBtn" class="btn-accion"><i class="fas fa-file-excel"></i> Exportar Excel</button>
                 </div>
             </div>
 
             <!-- ================= SECCIÓN 7: REFLEXIONES DOCENTES ================= -->
             <table class="form-table">
-                <tr>
-                    <th>¿Qué funcionó?</th>
-                    <th>¿Qué no funcionó?</th>
-                    <th>¿Qué puedo mejorar?</th>
-                </tr>
-                <tr>
-                    <td><textarea id="refFunciono" rows="3" style="width:100%;"></textarea></td>
-                    <td><textarea id="refNoFunciono" rows="3" style="width:100%;"></textarea></td>
-                    <td><textarea id="refMejorar" rows="3" style="width:100%;"></textarea></td>
+                <tr><th>¿Qué funcionó?</th><th>¿Qué no funcionó?</th><th>¿Qué puedo mejorar?</th></tr>
+                <tr><td><textarea id="refFunciono" rows="3" style="width:100%;" placeholder="Describa los aspectos positivos de la lección..."></textarea></td>
+                    <td><textarea id="refNoFunciono" rows="3" style="width:100%;" placeholder="Describa las dificultades encontradas..."></textarea></td>
+                    <td><textarea id="refMejorar" rows="3" style="width:100%;" placeholder="Proponga ajustes para futuras lecciones..."></textarea></td>
                 </tr>
             </table>
-
-            <!-- ================= OBSERVACIONES ================= -->
             <table class="form-table">
-                <tr>
-                    <th>Observaciones y/o recomendaciones didácticas por nivel</th>
-                </tr>
-                <tr>
-                    <td>
-                        <textarea id="observaciones" rows="4" style="width:100%;" placeholder="Observaciones: En este apartado la persona docente podrá realizar los apuntes que considere necesarios: antes, durante y después de la aplicación del planeamiento didáctico. Por ejemplo: las observaciones sobre los avances en el proceso de recuperación académica, el desarrollo de los saberes disciplinares, las habilidades, las competencias y el contexto, las valoraciones sobre las particularidades del estudiantado, los aprendizajes esperados que quedaron pendientes o se deban retomar, entre otros."></textarea>
-                    </td>
+                <tr><th>Observaciones y/o recomendaciones didácticas por nivel</th></tr>
+                <tr><td><textarea id="observaciones" rows="4" style="width:100%;" placeholder="Observaciones: En este apartado la persona docente podrá realizar los apuntes que considere necesarios: antes, durante y después de la aplicación del planeamiento didáctico. Por ejemplo: las observaciones sobre los avances en el proceso de recuperación académica, el desarrollo de los saberes disciplinares, las habilidades, las competencias y el contexto, las valoraciones sobre las particularidades del estudiantado, los aprendizajes esperados que quedaron pendientes o se deban retomar, entre otros."></textarea></td>
                 </tr>
             </table>
-
-            <!-- Botones de acción final -->
-            <div style="margin-top: 2rem; text-align: center;">
-                <button id="guardarBtn" class="btn-accion"><i class="fas fa-save"></i> Guardar planeamiento</button>
-                <button id="exportarWordBtn" class="btn-accion"><i class="fas fa-file-word"></i> Exportar a Word</button>
-                <button id="exportarPDFBtn" class="btn-accion"><i class="fas fa-file-pdf"></i> Exportar PDF</button>
-                <button id="exportarExcelBtn" class="btn-accion"><i class="fas fa-file-excel"></i> Exportar Excel</button>
-            </div>
         </main>
     </div>
 
     <!-- Modales -->
-    <div id="modalIA" class="modal">
-        <div class="modal-content">
-            <span class="close" id="closeModalIA">&times;</span>
-            <h2><i class="fas fa-robot" style="color:#2E7D32;"></i> Prompt generado para IA</h2>
-            <p>Copia este prompt y pégalo en tu IA favorita.</p>
-            <div id="promptTexto" class="prompt-area">Generando...</div>
-            <div class="ia-buttons">
-                <button id="btnChatGPT" class="ia-btn chatgpt"><i class="fab fa-openai"></i> ChatGPT</button>
-                <button id="btnCopilot" class="ia-btn copilot"><i class="fas fa-microsoft"></i> Copilot</button>
-                <button id="btnGemini" class="ia-btn gemini"><i class="fas fa-google"></i> Gemini</button>
-            </div>
-            <div style="text-align: center;">
-                <button id="btnCopiarPrompt" class="copy-btn"><i class="fas fa-copy"></i> Copiar prompt</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="modalImportarIA" class="modal">
-        <div class="modal-content">
-            <span class="close" id="closeImportarModal">&times;</span>
-            <h2><i class="fas fa-upload" style="color:#2E7D32;"></i> Importar respuesta de IA</h2>
-            <p>Pega aquí el JSON generado por la IA (debe contener las estrategias y evaluaciones).</p>
-            <textarea id="iaJsonInput" rows="10" style="width:100%; font-family:monospace;"></textarea>
-            <div style="text-align:center; margin-top:1rem;">
-                <button id="procesarJsonBtn" class="btn-accion"><i class="fas fa-play"></i> Procesar</button>
-                <button id="cancelarImportarBtn" class="btn-secundario">Cancelar</button>
-            </div>
-        </div>
-    </div>
+    <div id="modalIA" class="modal"><div class="modal-content"><span class="close" id="closeModalIA">&times;</span><h2><i class="fas fa-robot" style="color:#2E7D32;"></i> Prompt generado para IA</h2><p>Copia este prompt y pégalo en tu IA favorita.</p><div id="promptTexto" class="prompt-area">Generando...</div><div class="ia-buttons"><button id="btnChatGPT" class="ia-btn chatgpt"><i class="fab fa-openai"></i> ChatGPT</button><button id="btnCopilot" class="ia-btn copilot"><i class="fas fa-microsoft"></i> Copilot</button><button id="btnGemini" class="ia-btn gemini"><i class="fas fa-google"></i> Gemini</button></div><div style="text-align: center;"><button id="btnCopiarPrompt" class="copy-btn"><i class="fas fa-copy"></i> Copiar prompt</button></div></div></div>
+    <div id="modalImportarIA" class="modal"><div class="modal-content"><span class="close" id="closeImportarModal">&times;</span><h2><i class="fas fa-upload" style="color:#2E7D32;"></i> Importar respuesta de IA</h2><p>Pega aquí el JSON generado por la IA (debe contener las estrategias y evaluaciones).</p><textarea id="iaJsonInput" rows="10" style="width:100%; font-family:monospace;"></textarea><div style="text-align:center; margin-top:1rem;"><button id="procesarJsonBtn" class="btn-accion"><i class="fas fa-play"></i> Procesar</button><button id="cancelarImportarBtn" class="btn-secundario">Cancelar</button></div></div></div>
+    <div id="modalAbrir" class="modal"><div class="modal-content"><span class="close" id="closeAbrirModal">&times;</span><h2><i class="fas fa-folder-open"></i> Cargar planeamiento guardado</h2><select id="listaPlaneamientos" style="width:100%; padding:0.5rem;"></select><div style="margin-top:1rem;"><button id="cargarSeleccionadoBtn" class="btn-accion">Cargar</button></div></div></div>
+    <div id="modalCalendario" class="modal"><div class="modal-content"><span class="close" id="closeCalendario">&times;</span><h2><i class="fas fa-calendar-alt"></i> Calendario MEP 2026</h2><div id="calendarioLista" style="max-height: 400px; overflow-y: auto;"></div></div></div>
 
     <script>
         (function() {
@@ -478,6 +471,9 @@
             const tablaBody = document.getElementById('tablaBody');
             const agregarFilaBtn = document.getElementById('agregarFilaBtn');
             const guardarBtn = document.getElementById('guardarBtn');
+            const abrirBtn = document.getElementById('abrirBtn');
+            const nuevoBtn = document.getElementById('nuevoBtn');
+            const exportarJsonBtn = document.getElementById('exportarJsonBtn');
             const iaBtn = document.getElementById('iaBtn');
             const importarIaBtn = document.getElementById('importarIaBtn');
             const procesarJsonBtn = document.getElementById('procesarJsonBtn');
@@ -492,172 +488,251 @@
             const btnGemini = document.getElementById('btnGemini');
             const modalImportar = document.getElementById('modalImportarIA');
             const closeImportar = document.getElementById('closeImportarModal');
+            const modalAbrir = document.getElementById('modalAbrir');
+            const closeAbrirModal = document.getElementById('closeAbrirModal');
+            const listaPlaneamientos = document.getElementById('listaPlaneamientos');
+            const cargarSeleccionadoBtn = document.getElementById('cargarSeleccionadoBtn');
+            const modalCalendario = document.getElementById('modalCalendario');
+            const closeCalendario = document.getElementById('closeCalendario');
+            const calendarBtn = document.getElementById('calendarBtn');
 
-            // Elementos de RdA
+            // Elementos de RdA y saberes
             const rdaApropiacion = document.getElementById('rdaApropiacion');
             const rdaProgramacion = document.getElementById('rdaProgramacion');
             const rdaComputacion = document.getElementById('rdaComputacion');
             const rdaCienciaDatos = document.getElementById('rdaCienciaDatos');
-
-            // Contenedores de saberes
             const conceptualesContainer = document.getElementById('conceptualesContainer');
             const procCol1 = document.getElementById('procCol1');
             const procCol2 = document.getElementById('procCol2');
             const actitudinalesContainer = document.getElementById('actitudinalesContainer');
 
-            // ---------- Datos de prácticas y actitudes ----------
+            // Datos de prácticas y actitudes
             const practicas = window.PRACTICAS_PENSADOR_COMPUTACIONAL || [];
             const actitudes = window.ACTITUDES_PENSADOR_COMPUTACIONAL || [];
 
-            // Dividir prácticas en dos columnas
-            const mitad = Math.ceil(practicas.length / 2);
-            const practicasCol1 = practicas.slice(0, mitad);
-            const practicasCol2 = practicas.slice(mitad);
+            // Variables para editor enriquecido
+            let currentEditor = null;
+            let formatVisible = false;
 
-            // Llenar saberes procedimentales y actitudinales (fijos)
-            function llenarSaberesFijos() {
-                // Procedimentales columna 1
-                procCol1.innerHTML = practicasCol1.map(p => 
-                    `<label><input type="checkbox" class="saber-procedimental" value="${p.id}"> ${p.nombre}</label>`
-                ).join('');
-                // Procedimentales columna 2
-                procCol2.innerHTML = practicasCol2.map(p => 
-                    `<label><input type="checkbox" class="saber-procedimental" value="${p.id}"> ${p.nombre}</label>`
-                ).join('');
-                // Actitudinales
-                actitudinalesContainer.innerHTML = actitudes.map(a => 
-                    `<label><input type="checkbox" class="saber-actitudinal" value="${a.id}"> ${a.nombre}</label>`
-                ).join('');
-            }
-            llenarSaberesFijos();
-
-            // ---------- Actualizar niveles según ciclo ----------
-            const nivelesPorCiclo = {
-                preescolar: ['Educación Preescolar'],
-                primaria: ['Primero', 'Segundo', 'Tercero', 'Cuarto', 'Quinto', 'Sexto'],
-                secundaria: ['Sétimo', 'Octavo', 'Noveno']
-            };
-
-            cicloSelect.addEventListener('change', function() {
-                const ciclo = this.value;
-                nivelSelect.innerHTML = '<option value="">-- Seleccione --</option>';
-                if (ciclo && nivelesPorCiclo[ciclo]) {
-                    nivelesPorCiclo[ciclo].forEach(n => {
-                        const option = document.createElement('option');
-                        option.value = n;
-                        option.textContent = n;
-                        nivelSelect.appendChild(option);
-                    });
-                }
-                // Limpiar áreas y saberes conceptuales
-                rdaApropiacion.innerText = '(seleccione un módulo)';
-                rdaProgramacion.innerText = '(seleccione un módulo)';
-                rdaComputacion.innerText = '(seleccione un módulo)';
-                rdaCienciaDatos.innerText = '(seleccione un módulo)';
-                conceptualesContainer.innerHTML = '';
-                tablaBody.innerHTML = '';
-            });
-
-            // ---------- Cargar datos del módulo al cambiar nivel o módulo ----------
-            function cargarDatosModulo() {
-                const ciclo = cicloSelect.value;
-                const nivel = nivelSelect.value;
-                const modulo = parseInt(moduloSelect.value);
-
-                if (!ciclo || !nivel) return;
-
-                let moduloData = null;
-                if (ciclo === 'preescolar') {
-                    moduloData = window.CURRICULO.preescolar?.find(m => m.nivel === nivel && m.modulo === modulo);
-                } else if (ciclo === 'primaria') {
-                    const nivelKey = nivel.toLowerCase();
-                    moduloData = window.CURRICULO.primaria?.[nivelKey]?.find(m => m.modulo === modulo);
-                } else if (ciclo === 'secundaria') {
-                    const nivelMap = { 'Sétimo':'setimo', 'Octavo':'octavo', 'Noveno':'noveno' };
-                    const nivelKey = nivelMap[nivel];
-                    moduloData = window.CURRICULO.secundaria?.[nivelKey]?.find(m => m.modulo === modulo);
-                }
-
-                if (!moduloData) return;
-
-                // Actualizar RdA por área
-                moduloData.areas.forEach(area => {
-                    const rdaElement = {
-                        apropiacion: rdaApropiacion,
-                        programacion: rdaProgramacion,
-                        computacion_fisica: rdaComputacion,
-                        ciencia_datos: rdaCienciaDatos
-                    }[area.areaId];
-                    if (rdaElement) rdaElement.innerText = area.rda || 'No disponible';
-                });
-
-                // Actualizar saberes conceptuales
-                let conceptualesHtml = '';
-                moduloData.areas.forEach(area => {
-                    area.saberesConceptuales.forEach(s => {
-                        conceptualesHtml += `<label><input type="checkbox" class="saber-conceptual" value="${s.concepto}"> ${s.concepto}: ${s.indicadorLogro}</label>`;
-                    });
-                });
-                conceptualesContainer.innerHTML = conceptualesHtml;
-
-                // Generar filas en la tabla (una por cada saber conceptual)
-                tablaBody.innerHTML = '';
-                moduloData.areas.forEach(area => {
-                    area.saberesConceptuales.forEach(s => {
-                        const row = tablaBody.insertRow();
-                        row.innerHTML = `
-                            <td><textarea class="indicador-logro" rows="2">${s.indicadorLogro}</textarea></td>
-                            <td><textarea class="estrategia" rows="2" placeholder="Escriba la estrategia..."></textarea></td>
-                            <td><textarea class="indicador-eval" rows="2" placeholder="Acción + Contenido + Condición"></textarea></td>
-                        `;
-                    });
-                });
-            }
-
-            nivelSelect.addEventListener('change', cargarDatosModulo);
-            moduloSelect.addEventListener('change', cargarDatosModulo);
-
-            // ---------- Agregar fila a la tabla ----------
-            agregarFilaBtn.addEventListener('click', function() {
-                const row = tablaBody.insertRow();
-                row.innerHTML = `
-                    <td><textarea class="indicador-logro" rows="2" placeholder="Indicador de logro"></textarea></td>
-                    <td><textarea class="estrategia" rows="2" placeholder="Estrategia..."></textarea></td>
-                    <td><textarea class="indicador-eval" rows="2" placeholder="Acción + Contenido + Condición"></textarea></td>
-                `;
-            });
-
-            // ---------- Guardar en IndexedDB ----------
+            // ---------- IndexedDB ----------
             const DB_NAME = 'PNFT_DB';
-            const DB_VERSION = 1;
+            const DB_VERSION = 2;
+            let db = null;
 
             function abrirDB() {
                 return new Promise((resolve, reject) => {
                     const request = indexedDB.open(DB_NAME, DB_VERSION);
                     request.onerror = () => reject(request.error);
-                    request.onsuccess = () => resolve(request.result);
+                    request.onsuccess = () => { db = request.result; resolve(db); };
                     request.onupgradeneeded = (event) => {
                         const db = event.target.result;
                         if (!db.objectStoreNames.contains('plannings')) {
                             db.createObjectStore('plannings', { keyPath: 'id' });
                         }
+                        if (!db.objectStoreNames.contains('profile')) {
+                            db.createObjectStore('profile', { keyPath: 'key' });
+                        }
                     };
                 });
             }
 
-            async function guardarPlaneamientoIndexedDB(planeamiento) {
-                const db = await abrirDB();
+            async function guardarPlaneamiento(planeamiento) {
+                if (!db) await abrirDB();
                 return new Promise((resolve, reject) => {
-                    const transaction = db.transaction(['plannings'], 'readwrite');
-                    const store = transaction.objectStore('plannings');
-                    const request = store.put(planeamiento);
-                    request.onsuccess = () => resolve();
-                    request.onerror = () => reject(request.error);
+                    const tx = db.transaction(['plannings'], 'readwrite');
+                    const store = tx.objectStore('plannings');
+                    const req = store.put(planeamiento);
+                    req.onsuccess = () => resolve();
+                    req.onerror = () => reject(req.error);
                 });
             }
 
-            guardarBtn.addEventListener('click', async function() {
-                // Recoger datos del formulario
+            async function cargarPlaneamientos() {
+                if (!db) await abrirDB();
+                return new Promise((resolve, reject) => {
+                    const tx = db.transaction(['plannings'], 'readonly');
+                    const store = tx.objectStore('plannings');
+                    const req = store.getAll();
+                    req.onsuccess = () => resolve(req.result);
+                    req.onerror = () => reject(req.error);
+                });
+            }
+
+            async function cargarPlaneamientoPorId(id) {
+                if (!db) await abrirDB();
+                return new Promise((resolve, reject) => {
+                    const tx = db.transaction(['plannings'], 'readonly');
+                    const store = tx.objectStore('plannings');
+                    const req = store.get(id);
+                    req.onsuccess = () => resolve(req.result);
+                    req.onerror = () => reject(req.error);
+                });
+            }
+
+            async function guardarPerfil(key, value) {
+                if (!db) await abrirDB();
+                return new Promise((resolve, reject) => {
+                    const tx = db.transaction(['profile'], 'readwrite');
+                    const store = tx.objectStore('profile');
+                    const req = store.put({ key, value });
+                    req.onsuccess = () => resolve();
+                    req.onerror = () => reject(req.error);
+                });
+            }
+
+            async function cargarPerfil(key) {
+                if (!db) await abrirDB();
+                return new Promise((resolve, reject) => {
+                    const tx = db.transaction(['profile'], 'readonly');
+                    const store = tx.objectStore('profile');
+                    const req = store.get(key);
+                    req.onsuccess = () => resolve(req.result ? req.result.value : null);
+                    req.onerror = () => reject(req.error);
+                });
+            }
+
+            // ---------- Funciones auxiliares ----------
+            function llenarSaberesFijos() {
+                const mitad = Math.ceil(practicas.length / 2);
+                const practicasCol1 = practicas.slice(0, mitad);
+                const practicasCol2 = practicas.slice(mitad);
+                procCol1.innerHTML = practicasCol1.map(p => `<label title="${p.descripcion}"><input type="checkbox" class="saber-procedimental" value="${p.id}"> ${p.nombre}</label>`).join('');
+                procCol2.innerHTML = practicasCol2.map(p => `<label title="${p.descripcion}"><input type="checkbox" class="saber-procedimental" value="${p.id}"> ${p.nombre}</label>`).join('');
+                actitudinalesContainer.innerHTML = actitudes.map(a => `<label title="${a.descripcion}"><input type="checkbox" class="saber-actitudinal" value="${a.id}"> ${a.nombre}</label>`).join('');
+            }
+
+            function actualizarNiveles() {
+                const ciclo = cicloSelect.value;
+                nivelSelect.innerHTML = '<option value="">-- Seleccione --</option>';
+                const niveles = {
+                    preescolar: ['Educación Preescolar'],
+                    primaria: ['Primero', 'Segundo', 'Tercero', 'Cuarto', 'Quinto', 'Sexto'],
+                    secundaria: ['Sétimo', 'Octavo', 'Noveno']
+                }[ciclo] || [];
+                niveles.forEach(n => nivelSelect.add(new Option(n, n)));
+            }
+
+            function cargarDatosModulo() {
+                const ciclo = cicloSelect.value;
+                const nivel = nivelSelect.value;
+                const moduloVal = moduloSelect.value;
+                if (!ciclo || !nivel) return;
+
+                let modulos = [];
+                if (moduloVal === 'ambos') {
+                    modulos = [1, 2];
+                } else {
+                    modulos = [parseInt(moduloVal)];
+                }
+
+                let rdas = { apropiacion: '', programacion: '', computacion_fisica: '', ciencia_datos: '' };
+                let conceptuales = [];
+
+                modulos.forEach(mod => {
+                    let moduloData = null;
+                    if (ciclo === 'preescolar') {
+                        moduloData = window.CURRICULO.preescolar?.find(m => m.nivel === nivel && m.modulo === mod);
+                    } else if (ciclo === 'primaria') {
+                        const nivelKey = nivel.toLowerCase();
+                        moduloData = window.CURRICULO.primaria?.[nivelKey]?.find(m => m.modulo === mod);
+                    } else if (ciclo === 'secundaria') {
+                        const nivelMap = { 'Sétimo':'setimo', 'Octavo':'octavo', 'Noveno':'noveno' };
+                        const nivelKey = nivelMap[nivel];
+                        moduloData = window.CURRICULO.secundaria?.[nivelKey]?.find(m => m.modulo === mod);
+                    }
+                    if (moduloData) {
+                        moduloData.areas.forEach(area => {
+                            const key = { apropiacion: 'apropiacion', programacion: 'programacion', computacion_fisica: 'computacion_fisica', ciencia_datos: 'ciencia_datos' }[area.areaId];
+                            if (key && area.rda) rdas[key] += (rdas[key] ? '\n---\n' : '') + area.rda;
+                            conceptuales.push(...area.saberesConceptuales);
+                        });
+                    }
+                });
+
+                rdaApropiacion.innerText = rdas.apropiacion || '(no disponible)';
+                rdaProgramacion.innerText = rdas.programacion || '(no disponible)';
+                rdaComputacion.innerText = rdas.computacion_fisica || '(no disponible)';
+                rdaCienciaDatos.innerText = rdas.ciencia_datos || '(no disponible)';
+
+                conceptualesContainer.innerHTML = conceptuales.map(s => `<label><input type="checkbox" class="saber-conceptual" value="${s.concepto}"> ${s.concepto}: ${s.indicadorLogro}</label>`).join('');
+
+                // Generar filas de tabla con editores enriquecidos
+                tablaBody.innerHTML = '';
+                conceptuales.forEach(s => {
+                    const row = tablaBody.insertRow();
+                    row.innerHTML = `
+                        <td><div class="rich-editor" contenteditable="true" data-field="indicador">${s.indicadorLogro}</div></td>
+                        <td><div class="rich-editor" contenteditable="true" data-field="estrategia"></div></td>
+                        <td><div class="rich-editor" contenteditable="true" data-field="evaluacion"></div></td>
+                    `;
+                });
+            }
+
+            // ---------- Editor enriquecido ----------
+            function applyFormat(command, value = null) {
+                if (currentEditor) {
+                    document.execCommand(command, false, value);
+                    currentEditor.focus();
+                }
+            }
+
+            function toggleToolbar() {
+                formatVisible = !formatVisible;
+                const toolbar = document.getElementById('richToolbar');
+                if (toolbar) toolbar.classList.toggle('visible', formatVisible);
+            }
+
+            function attachEditorEvents() {
+                const editors = document.querySelectorAll('.rich-editor');
+                editors.forEach(editor => {
+                    editor.addEventListener('focus', () => { currentEditor = editor; });
+                    editor.addEventListener('blur', () => { currentEditor = null; });
+                });
+            }
+
+            // Crear barra de herramientas flotante
+            function createToolbar() {
+                if (document.getElementById('richToolbar')) return;
+                const toolbar = document.createElement('div');
+                toolbar.id = 'richToolbar';
+                toolbar.className = 'toolbar';
+                toolbar.innerHTML = `
+                    <button type="button" data-cmd="bold"><i class="fas fa-bold"></i></button>
+                    <button type="button" data-cmd="italic"><i class="fas fa-italic"></i></button>
+                    <button type="button" data-cmd="underline"><i class="fas fa-underline"></i></button>
+                    <button type="button" data-cmd="strikeThrough"><i class="fas fa-strikethrough"></i></button>
+                    <button type="button" data-cmd="insertUnorderedList"><i class="fas fa-list-ul"></i></button>
+                    <button type="button" data-cmd="insertOrderedList"><i class="fas fa-list-ol"></i></button>
+                    <select data-cmd="formatBlock" style="width:80px;">
+                        <option value="p">Normal</option>
+                        <option value="h1">Título 1</option>
+                        <option value="h2">Título 2</option>
+                        <option value="h3">Título 3</option>
+                    </select>
+                    <input type="color" data-cmd="foreColor" value="#000000" style="width:30px; height:30px;">
+                    <button type="button" data-cmd="removeFormat"><i class="fas fa-eraser"></i></button>
+                `;
+                document.querySelector('.recent-section').prepend(toolbar);
+                toolbar.addEventListener('click', (e) => {
+                    const btn = e.target.closest('button');
+                    if (!btn) return;
+                    const cmd = btn.dataset.cmd;
+                    if (cmd === 'removeFormat') {
+                        applyFormat('removeFormat');
+                    } else {
+                        applyFormat(cmd);
+                    }
+                });
+                toolbar.querySelector('select').addEventListener('change', (e) => {
+                    applyFormat('formatBlock', e.target.value);
+                });
+                toolbar.querySelector('input[type="color"]').addEventListener('input', (e) => {
+                    applyFormat('foreColor', e.target.value);
+                });
+            }
+
+            // ---------- Guardar y cargar ----------
+            function obtenerDatosFormulario() {
                 const planeamiento = {
                     id: Date.now(),
                     fecha: new Date().toISOString(),
@@ -674,7 +749,9 @@
                         lecciones: leccionesInput.value,
                         mesInicio: document.getElementById('mesInicio').value,
                         mesFinal: document.getElementById('mesFinal').value,
-                        periodicidad: document.querySelector('input[name="periodicidad"]:checked')?.value || ''
+                        periodicidad: document.querySelector('input[name="periodicidad"]:checked')?.value || '',
+                        nombreEscuela: document.getElementById('nombreEscuela').value,
+                        escudoBase64: localStorage.getItem('escudoBase64') || ''
                     },
                     ejes: {
                         ciudadania: document.getElementById('ejeCiudadania').checked,
@@ -695,29 +772,123 @@
                         observaciones: document.getElementById('observaciones').value
                     }
                 };
-
-                // Recoger filas de la tabla
                 document.querySelectorAll('#tablaBody tr').forEach(row => {
+                    const cells = row.querySelectorAll('.rich-editor');
                     planeamiento.tabla.push({
-                        indicador: row.querySelector('.indicador-logro')?.value || '',
-                        estrategia: row.querySelector('.estrategia')?.value || '',
-                        evaluacion: row.querySelector('.indicador-eval')?.value || ''
+                        indicador: cells[0]?.innerHTML || '',
+                        estrategia: cells[1]?.innerHTML || '',
+                        evaluacion: cells[2]?.innerHTML || ''
                     });
                 });
+                return planeamiento;
+            }
 
+            function cargarDatosEnFormulario(data) {
+                document.getElementById('region').value = data.datosAdministrativos.region || '';
+                document.getElementById('centro').value = data.datosAdministrativos.centro || '';
+                document.getElementById('codigo').value = data.datosAdministrativos.codigo || '';
+                document.getElementById('docente').value = data.datosAdministrativos.docente || '';
+                document.getElementById('asignatura').value = data.datosAdministrativos.asignatura || 'Formación Tecnológica';
+                document.getElementById('curso').value = data.datosAdministrativos.curso || 2026;
+                cicloSelect.value = data.datosAdministrativos.ciclo || '';
+                actualizarNiveles();
+                nivelSelect.value = data.datosAdministrativos.nivel || '';
+                moduloSelect.value = data.datosAdministrativos.modulo || '1';
+                document.getElementById('lecciones').value = data.datosAdministrativos.lecciones || 40;
+                document.getElementById('mesInicio').value = data.datosAdministrativos.mesInicio || '';
+                document.getElementById('mesFinal').value = data.datosAdministrativos.mesFinal || '';
+                if (data.datosAdministrativos.periodicidad) {
+                    document.querySelector(`input[name="periodicidad"][value="${data.datosAdministrativos.periodicidad}"]`).checked = true;
+                }
+                document.getElementById('nombreEscuela').value = data.datosAdministrativos.nombreEscuela || '';
+                if (data.datosAdministrativos.escudoBase64) {
+                    document.getElementById('escudoPreview').innerHTML = `<img src="${data.datosAdministrativos.escudoBase64}" class="escudo-preview">`;
+                }
+                document.getElementById('ejeCiudadania').checked = data.ejes?.ciudadania || false;
+                document.getElementById('ejePensamiento').checked = data.ejes?.pensamiento || false;
+                document.getElementById('ejeEmprendimiento').checked = data.ejes?.emprendimiento || false;
+                if (data.metodologia) document.querySelector(`input[name="metodologia"][value="${data.metodologia}"]`).checked = true;
+                // Actualizar checkboxes de saberes
+                document.querySelectorAll('.saber-conceptual').forEach(cb => cb.checked = data.saberes?.conceptuales?.includes(cb.value));
+                document.querySelectorAll('.saber-procedimental').forEach(cb => cb.checked = data.saberes?.procedimentales?.includes(cb.value));
+                document.querySelectorAll('.saber-actitudinal').forEach(cb => cb.checked = data.saberes?.actitudinales?.includes(cb.value));
+                // Recargar tabla con datos guardados
+                tablaBody.innerHTML = '';
+                data.tabla.forEach(fila => {
+                    const row = tablaBody.insertRow();
+                    row.innerHTML = `
+                        <td><div class="rich-editor" contenteditable="true" data-field="indicador">${fila.indicador || ''}</div></td>
+                        <td><div class="rich-editor" contenteditable="true" data-field="estrategia">${fila.estrategia || ''}</div></td>
+                        <td><div class="rich-editor" contenteditable="true" data-field="evaluacion">${fila.evaluacion || ''}</div></td>
+                    `;
+                });
+                attachEditorEvents();
+                document.getElementById('refFunciono').value = data.reflexiones?.funciono || '';
+                document.getElementById('refNoFunciono').value = data.reflexiones?.noFunciono || '';
+                document.getElementById('refMejorar').value = data.reflexiones?.mejorar || '';
+                document.getElementById('observaciones').value = data.reflexiones?.observaciones || '';
+            }
+
+            // ---------- Eventos ----------
+            cicloSelect.addEventListener('change', actualizarNiveles);
+            moduloSelect.addEventListener('change', cargarDatosModulo);
+            nivelSelect.addEventListener('change', cargarDatosModulo);
+
+            agregarFilaBtn.addEventListener('click', () => {
+                const row = tablaBody.insertRow();
+                row.innerHTML = `
+                    <td><div class="rich-editor" contenteditable="true" data-field="indicador"></div></td>
+                    <td><div class="rich-editor" contenteditable="true" data-field="estrategia"></div></td>
+                    <td><div class="rich-editor" contenteditable="true" data-field="evaluacion"></div></td>
+                `;
+                attachEditorEvents();
+            });
+
+            guardarBtn.addEventListener('click', async () => {
+                const data = obtenerDatosFormulario();
                 try {
-                    await guardarPlaneamientoIndexedDB(planeamiento);
-                    alert('✅ Planeamiento guardado en IndexedDB');
+                    await guardarPlaneamiento(data);
+                    alert('✅ Planeamiento guardado');
                 } catch (e) {
-                    // Fallback a localStorage
-                    const localPlannings = JSON.parse(localStorage.getItem('pnft_plannings') || '[]');
-                    localPlannings.push(planeamiento);
-                    localStorage.setItem('pnft_plannings', JSON.stringify(localPlannings));
-                    alert('✅ Planeamiento guardado en localStorage (IndexedDB falló)');
+                    console.error(e);
+                    alert('❌ Error al guardar');
                 }
             });
 
-            // ---------- Generar prompt para IA ----------
+            abrirBtn.addEventListener('click', async () => {
+                const plannings = await cargarPlaneamientos();
+                listaPlaneamientos.innerHTML = '';
+                plannings.forEach(p => {
+                    const option = document.createElement('option');
+                    option.value = p.id;
+                    option.textContent = `${p.datosAdministrativos.nivel || 'Sin nivel'} - ${new Date(p.fecha).toLocaleDateString()}`;
+                    listaPlaneamientos.appendChild(option);
+                });
+                modalAbrir.style.display = 'block';
+            });
+
+            cargarSeleccionadoBtn.addEventListener('click', async () => {
+                const id = parseInt(listaPlaneamientos.value);
+                const data = await cargarPlaneamientoPorId(id);
+                if (data) {
+                    cargarDatosEnFormulario(data);
+                    modalAbrir.style.display = 'none';
+                    alert('✅ Planeamiento cargado');
+                } else {
+                    alert('❌ No se encontró');
+                }
+            });
+
+            nuevoBtn.addEventListener('click', () => location.reload());
+
+            exportarJsonBtn.addEventListener('click', () => {
+                const data = obtenerDatosFormulario();
+                const jsonStr = JSON.stringify(data, null, 2);
+                const blob = new Blob([jsonStr], {type: 'application/json'});
+                saveAs(blob, `planeamiento_${data.id}.json`);
+            });
+
+            // ---------- Prompt afinado para IA ----------
             iaBtn.addEventListener('click', function() {
                 const ciclo = cicloSelect.value;
                 const nivel = nivelSelect.value;
@@ -730,13 +901,14 @@
                     return;
                 }
 
-                // Recoger indicadores de la tabla
+                // Recoger indicadores de la tabla (solo textos planos para el prompt)
                 const filas = [];
                 document.querySelectorAll('#tablaBody tr').forEach(row => {
+                    const cells = row.querySelectorAll('.rich-editor');
                     filas.push({
-                        indicador: row.querySelector('.indicador-logro')?.value || '',
-                        estrategia: row.querySelector('.estrategia')?.value || '',
-                        evaluacion: row.querySelector('.indicador-eval')?.value || ''
+                        indicador: cells[0]?.innerText || '',
+                        estrategia: cells[1]?.innerText || '',
+                        evaluacion: cells[2]?.innerText || ''
                     });
                 });
 
@@ -744,7 +916,7 @@
                 prompt += `**DATOS DEL PLANEAMIENTO**:\n`;
                 prompt += `- Ciclo: ${ciclo}\n- Nivel: ${nivel}\n- Módulo: ${modulo}\n- Metodología: ${metodologia}\n- Total de lecciones: ${lecciones}\n\n`;
                 prompt += `**SABERES E INDICADORES DEL MÓDULO**:\n`;
-                // (Se podrían incluir aquí los saberes conceptuales, pero para no alargar, se omite, la IA ya los conoce por contexto)
+                // Aquí podríamos incluir los saberes conceptuales seleccionados (opcional)
                 prompt += `**FILAS DE LA TABLA ACTUAL** (pueden estar vacías):\n`;
                 filas.forEach((f, i) => {
                     prompt += `\nFila ${i+1}:\n- Indicador: ${f.indicador || '(vacío)'}\n- Estrategia: ${f.estrategia || '(vacío)'}\n- Evaluación: ${f.evaluacion || '(vacío)'}\n`;
@@ -759,34 +931,24 @@
                 modalIA.style.display = 'block';
             });
 
-            // ---------- Importar JSON de IA ----------
-            importarIaBtn.addEventListener('click', () => {
-                modalImportar.style.display = 'block';
-                iaJsonInput.value = '';
-            });
-
-            closeImportar.onclick = () => modalImportar.style.display = 'none';
-            cancelarImportar.onclick = () => modalImportar.style.display = 'none';
-            window.onclick = (e) => { if (e.target == modalImportar) modalImportar.style.display = 'none'; };
-
+            // Importar JSON IA (similar a antes, pero adaptado a rich-editor)
             procesarJsonBtn.addEventListener('click', () => {
                 try {
                     const json = JSON.parse(iaJsonInput.value);
                     if (!json.lecciones || !Array.isArray(json.lecciones)) {
                         throw new Error('El JSON debe contener un array "lecciones"');
                     }
-                    // Limpiar tabla actual y generar filas según las lecciones
                     tablaBody.innerHTML = '';
                     json.lecciones.forEach(leccion => {
                         const row = tablaBody.insertRow();
-                        // En la columna de indicadores podemos poner algo genérico o combinar los indicadores de la lección
                         const indicadoresTexto = leccion.evaluaciones?.map(e => e.indicador).join('\n') || '';
                         row.innerHTML = `
-                            <td><textarea class="indicador-logro" rows="2">Indicadores de la lección ${leccion.numero}</textarea></td>
-                            <td><textarea class="estrategia" rows="4">INICIO: ${leccion.inicio || ''}\nDESARROLLO: ${leccion.desarrollo || ''}\nCIERRE: ${leccion.cierre || ''}</textarea></td>
-                            <td><textarea class="indicador-eval" rows="2">${indicadoresTexto}</textarea></td>
+                            <td><div class="rich-editor" contenteditable="true" data-field="indicador">Indicadores de la lección ${leccion.numero}</div></td>
+                            <td><div class="rich-editor" contenteditable="true" data-field="estrategia">INICIO: ${leccion.inicio || ''}\nDESARROLLO: ${leccion.desarrollo || ''}\nCIERRE: ${leccion.cierre || ''}</div></td>
+                            <td><div class="rich-editor" contenteditable="true" data-field="evaluacion">${indicadoresTexto}</div></td>
                         `;
                     });
+                    attachEditorEvents();
                     alert('✅ Tabla actualizada con las lecciones importadas');
                     modalImportar.style.display = 'none';
                 } catch (error) {
@@ -794,24 +956,153 @@
                 }
             });
 
-            // ---------- Cerrar modales ----------
-            closeModalIA.onclick = () => modalIA.style.display = 'none';
-            window.onclick = (e) => { if (e.target == modalIA) modalIA.style.display = 'none'; };
+            // ---------- Exportaciones ----------
+            function getHtmlForExport() {
+                // Clonar el contenido principal para exportar
+                const content = document.querySelector('.main-content').cloneNode(true);
+                // Eliminar modales y elementos no deseados
+                content.querySelectorAll('.modal, .toolbar, .btn-accion, .btn-secundario, .btn-ia').forEach(el => el.remove());
+                return content.outerHTML;
+            }
 
-            btnCopiar.addEventListener('click', () => {
-                navigator.clipboard.writeText(promptTexto.textContent).then(() => {
-                    alert('✅ Prompt copiado');
-                }).catch(() => alert('❌ No se pudo copiar'));
+            document.getElementById('exportarWordBtn').addEventListener('click', async () => {
+                try {
+                    const html = getHtmlForExport();
+                    const blob = new Blob([html], {type: 'application/msword'});
+                    saveAs(blob, 'planeamiento.doc');
+                } catch (e) {
+                    alert('Error al exportar Word: ' + e.message);
+                }
             });
 
-            btnChatGPT.addEventListener('click', () => window.open('https://chat.openai.com', '_blank'));
-            btnCopilot.addEventListener('click', () => window.open('https://copilot.microsoft.com', '_blank'));
-            btnGemini.addEventListener('click', () => window.open('https://gemini.google.com', '_blank'));
+            document.getElementById('exportarPDFBtn').addEventListener('click', () => {
+                const element = document.querySelector('.main-content');
+                html2canvas(element, { scale: 2 }).then(canvas => {
+                    const imgData = canvas.toDataURL('image/png');
+                    const pdf = new jspdf.jsPDF('p', 'mm', 'a4');
+                    const imgWidth = 190;
+                    const pageHeight = 297;
+                    const imgHeight = (canvas.height * imgWidth) / canvas.width;
+                    let heightLeft = imgHeight;
+                    let position = 0;
+                    pdf.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
+                    heightLeft -= pageHeight;
+                    while (heightLeft > 0) {
+                        position = heightLeft - imgHeight;
+                        pdf.addPage();
+                        pdf.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
+                        heightLeft -= pageHeight;
+                    }
+                    pdf.save('planeamiento.pdf');
+                });
+            });
 
-            // Exportación (simulada por ahora)
-            document.getElementById('exportarWordBtn').addEventListener('click', () => alert('Función de exportación a Word en desarrollo'));
-            document.getElementById('exportarPDFBtn').addEventListener('click', () => alert('Función de exportación a PDF en desarrollo'));
-            document.getElementById('exportarExcelBtn').addEventListener('click', () => alert('Función de exportación a Excel en desarrollo'));
+            document.getElementById('exportarExcelBtn').addEventListener('click', () => {
+                const wsData = [['Indicadores de logro', 'Estrategias', 'Indicador evaluación']];
+                document.querySelectorAll('#tablaBody tr').forEach(row => {
+                    const cells = row.querySelectorAll('.rich-editor');
+                    wsData.push([
+                        cells[0]?.innerText || '',
+                        cells[1]?.innerText || '',
+                        cells[2]?.innerText || ''
+                    ]);
+                });
+                const ws = XLSX.utils.aoa_to_sheet(wsData);
+                const wb = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(wb, ws, 'Planeamiento');
+                XLSX.writeFile(wb, 'planeamiento.xlsx');
+            });
+
+            // ---------- Calendario MEP (completo) ----------
+            const fechasMEP = [
+                "23/02/2026 - Inicio de lecciones",
+                "29/03/2026 al 05/04/2026 - Semana Santa",
+                "06/07/2026 al 17/07/2026 - Vacaciones de medio periodo",
+                "11/04/2026 - Batalla de Rivas",
+                "01/05/2026 - Día del Trabajo",
+                "15/08/2026 - Día de la Madre",
+                "15/09/2026 - Independencia",
+                "01/12/2026 - Abolición del Ejército",
+                "09/12/2026 - Cierre del curso lectivo",
+                // (Se pueden agregar muchas más del calendario oficial)
+            ];
+            calendarBtn.addEventListener('click', () => {
+                document.getElementById('calendarioLista').innerHTML = `<ul>${fechasMEP.map(f => `<li>${f}</li>`).join('')}</ul>`;
+                modalCalendario.style.display = 'block';
+            });
+            closeCalendario.onclick = () => modalCalendario.style.display = 'none';
+
+            // ---------- Perfil docente ----------
+            const docenteNombreSpan = document.getElementById('docenteNombreText');
+            const profileImg = document.getElementById('profileImg');
+            docenteNombreSpan.addEventListener('click', async () => {
+                const nuevo = prompt('Nombre del docente:', docenteNombreSpan.innerText);
+                if (nuevo) {
+                    docenteNombreSpan.innerText = nuevo;
+                    await guardarPerfil('docenteNombre', nuevo);
+                }
+            });
+            profileImg.addEventListener('click', () => {
+                const input = document.createElement('input');
+                input.type = 'file';
+                input.accept = 'image/*';
+                input.onchange = async (e) => {
+                    const file = e.target.files[0];
+                    const reader = new FileReader();
+                    reader.onload = async (ev) => {
+                        profileImg.src = ev.target.result;
+                        profileImg.style.display = 'block';
+                        await guardarPerfil('fotoPerfil', ev.target.result);
+                    };
+                    reader.readAsDataURL(file);
+                };
+                input.click();
+            });
+
+            // ---------- Escudo ----------
+            document.getElementById('escudoFile').addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                const reader = new FileReader();
+                reader.onload = (ev) => {
+                    const preview = document.getElementById('escudoPreview');
+                    preview.innerHTML = `<img src="${ev.target.result}" class="escudo-preview">`;
+                    localStorage.setItem('escudoBase64', ev.target.result);
+                };
+                reader.readAsDataURL(file);
+            });
+
+            // ---------- Inicialización ----------
+            (async () => {
+                await abrirDB();
+                llenarSaberesFijos();
+                createToolbar();
+                attachEditorEvents();
+                const nombreGuardado = await cargarPerfil('docenteNombre');
+                if (nombreGuardado) docenteNombreSpan.innerText = nombreGuardado;
+                const fotoGuardada = await cargarPerfil('fotoPerfil');
+                if (fotoGuardada) { profileImg.src = fotoGuardada; profileImg.style.display = 'block'; }
+                const escudoGuardado = localStorage.getItem('escudoBase64');
+                if (escudoGuardado) document.getElementById('escudoPreview').innerHTML = `<img src="${escudoGuardado}" class="escudo-preview">`;
+                document.getElementById('toggleFormatBtn').addEventListener('click', toggleToolbar);
+            })();
+
+            // Cerrar modales
+            closeModalIA.onclick = () => modalIA.style.display = 'none';
+            closeImportar.onclick = () => modalImportar.style.display = 'none';
+            cancelarImportar.onclick = () => modalImportar.style.display = 'none';
+            closeAbrirModal.onclick = () => modalAbrir.style.display = 'none';
+            window.onclick = (e) => {
+                if (e.target === modalIA) modalIA.style.display = 'none';
+                if (e.target === modalImportar) modalImportar.style.display = 'none';
+                if (e.target === modalAbrir) modalAbrir.style.display = 'none';
+                if (e.target === modalCalendario) modalCalendario.style.display = 'none';
+            };
+            btnCopiar.addEventListener('click', () => {
+                navigator.clipboard.writeText(promptTexto.textContent).then(() => alert('✅ Prompt copiado'));
+            });
+            btnChatGPT.addEventListener('click', () => window.open('https://chat.openai.com'));
+            btnCopilot.addEventListener('click', () => window.open('https://copilot.microsoft.com'));
+            btnGemini.addEventListener('click', () => window.open('https://gemini.google.com'));
         })();
     </script>
 </body>
