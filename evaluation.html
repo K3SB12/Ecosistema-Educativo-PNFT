@@ -103,6 +103,18 @@
         (function() {
             if (!window.CURRICULO) { alert('Error: No se encontró window.CURRICULO.'); return; }
 
+            // ---------- Generador de IDs enteros ----------
+            let lastId = 0;
+            function generarIdEntero() {
+                const now = Date.now();
+                if (now === lastId) {
+                    // Si dos llamadas en el mismo milisegundo, incrementamos en 1
+                    return now + 1;
+                }
+                lastId = now;
+                return now;
+            }
+
             // Elementos DOM
             const grupoSelect = document.getElementById('grupoSelect');
             const periodoSelect = document.getElementById('periodoSelect');
@@ -333,7 +345,7 @@
                 renderizarIndicadores();
             }
 
-            // ---------- ELIMINACIÓN INDIVIDUAL (con verificación de ID) ----------
+            // ---------- ELIMINACIÓN INDIVIDUAL (con verificación de ID exacto) ----------
             indicadoresLista.addEventListener('click', async (e) => {
                 const btn = e.target.closest('.delete-indicador');
                 if (!btn) return;
@@ -341,10 +353,10 @@
                 const card = btn.closest('.indicador-card');
                 if (!card) return;
 
-                const idFromCard = parseInt(card.dataset.id);
+                const idFromCard = Number(card.dataset.id); // Convertir a número
                 console.log('🖱️ Click eliminar, id desde data-id:', idFromCard);
 
-                // Buscar el indicador en currentIndicadores usando ese id
+                // Buscar el indicador en currentIndicadores usando ese id (coincidencia exacta)
                 const indicadorEncontrado = currentIndicadores.find(i => i.id === idFromCard);
                 if (!indicadorEncontrado) {
                     console.error('No se encontró el indicador en currentIndicadores. IDs disponibles:', currentIndicadores.map(i => i.id));
@@ -429,7 +441,17 @@
                     const concepto = cb.dataset.concepto;
                     const indicadorTexto = cb.dataset.indicador;
                     const descripcion = `${concepto}: ${indicadorTexto}`;
-                    nuevosIndicadores.push({ id: Date.now() + Math.random(), groupId: currentGroupId, periodId: currentPeriodId, descripcion, puntajeMaximo: 100, fechaInicio: null, fechaFin: null, instrumento: 'Escala', origen: 'curriculum' });
+                    nuevosIndicadores.push({
+                        id: generarIdEntero(), // ID entero
+                        groupId: currentGroupId,
+                        periodId: currentPeriodId,
+                        descripcion: descripcion,
+                        puntajeMaximo: 100,
+                        fechaInicio: null,
+                        fechaFin: null,
+                        instrumento: 'Escala',
+                        origen: 'curriculum'
+                    });
                 }
                 for (let ind of nuevosIndicadores) await guardarIndicador(ind);
                 await cargarIndicadores(currentGroupId, currentPeriodId);
@@ -465,7 +487,7 @@
                 const descripcion = indicadorDesc.value.trim();
                 if (!descripcion) { alert('La descripción es obligatoria'); return; }
                 const nuevoIndicador = {
-                    id: currentIndicadorId || Date.now(),
+                    id: currentIndicadorId || generarIdEntero(), // ID entero
                     groupId: currentGroupId,
                     periodId: currentPeriodId,
                     descripcion: descripcion,
