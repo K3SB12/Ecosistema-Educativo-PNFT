@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="css/style.css">
     <script src="js/curriculum.js"></script>
     <style>
-        /* ========== Estilos adicionales para evaluación (coherentes con el sistema) ========== */
+        /* ========== Estilos adicionales para evaluación ========== */
         .indicador-card {
             background: white;
             border-radius: 16px;
@@ -87,7 +87,7 @@
             font-weight: 500;
             color: #2E7D32;
         }
-        .form-inline select {
+        .form-inline select, .form-inline input {
             width: 100%;
             padding: 0.6rem;
             border-radius: 8px;
@@ -189,6 +189,33 @@
             border-radius: 8px;
             font-size: 0.95rem;
         }
+        .date-wrapper {
+            position: relative;
+        }
+        .date-wrapper i {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #2E7D32;
+            pointer-events: none;
+        }
+        input[type="date"] {
+            padding-right: 2rem;
+        }
+        .button-group {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin: 1rem 0;
+        }
+        .flex-between {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
     </style>
 </head>
 <body>
@@ -244,15 +271,23 @@
 
             <!-- Lista de indicadores -->
             <div id="indicadoresContainer" class="recent-section">
-                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem;">
+                <div class="flex-between">
                     <h2><i class="fas fa-clipboard-list"></i> Indicadores de evaluación</h2>
-                    <div style="display: flex; gap: 0.8rem;">
+                    <div class="button-group">
                         <button id="importarCurriculumBtn" class="btn-accion btn-ia"><i class="fas fa-download"></i> Importar desde currículo</button>
                         <button id="agregarManualBtn" class="btn-accion"><i class="fas fa-plus"></i> Agregar manual</button>
                     </div>
                 </div>
                 <div id="indicadoresLista">
                     <p class="empty-table">Seleccione un grupo y período, luego presione "Cargar".</p>
+                </div>
+                <!-- Botones adicionales en la parte inferior -->
+                <div class="flex-between" style="margin-top: 1.5rem;">
+                    <div></div>
+                    <div class="button-group">
+                        <button id="importarCurriculumBtnBottom" class="btn-accion btn-ia"><i class="fas fa-download"></i> Importar desde currículo</button>
+                        <button id="agregarManualBtnBottom" class="btn-accion"><i class="fas fa-plus"></i> Agregar manual</button>
+                    </div>
                 </div>
             </div>
         </main>
@@ -315,12 +350,14 @@
                 <label>Puntaje máximo</label>
                 <input type="number" id="indicadorPuntaje" value="100" step="1">
             </div>
-            <div class="form-group">
+            <div class="form-group date-wrapper">
                 <label>Fecha inicio (opcional)</label>
+                <i class="fas fa-calendar-alt"></i>
                 <input type="date" id="indicadorFechaInicio">
             </div>
-            <div class="form-group">
+            <div class="form-group date-wrapper">
                 <label>Fecha fin (opcional)</label>
+                <i class="fas fa-calendar-check"></i>
                 <input type="date" id="indicadorFechaFin">
             </div>
             <div class="form-group">
@@ -351,6 +388,8 @@
             const cargarBtn = document.getElementById('cargarIndicadoresBtn');
             const importarCurriculumBtn = document.getElementById('importarCurriculumBtn');
             const agregarManualBtn = document.getElementById('agregarManualBtn');
+            const importarCurriculumBtnBottom = document.getElementById('importarCurriculumBtnBottom');
+            const agregarManualBtnBottom = document.getElementById('agregarManualBtnBottom');
             const indicadoresLista = document.getElementById('indicadoresLista');
 
             // Modal de currículo
@@ -783,21 +822,26 @@
                 await cargarIndicadores(groupId, periodId);
             });
 
-            importarCurriculumBtn.addEventListener('click', () => {
+            // Botones de importar/agregar (ambos conjuntos)
+            const handleImportar = () => {
                 if (!currentGroupId || !currentPeriodId) {
                     alert('Primero debe seleccionar un grupo y período en la página principal y hacer clic en "Cargar".');
                     return;
                 }
                 abrirModalCurriculum();
-            });
-
-            agregarManualBtn.addEventListener('click', () => {
+            };
+            const handleAgregar = () => {
                 if (!currentGroupId || !currentPeriodId) {
                     alert('Primero debe seleccionar un grupo y período en la página principal y hacer clic en "Cargar".');
                     return;
                 }
                 abrirModalNuevo();
-            });
+            };
+
+            importarCurriculumBtn.addEventListener('click', handleImportar);
+            agregarManualBtn.addEventListener('click', handleAgregar);
+            importarCurriculumBtnBottom.addEventListener('click', handleImportar);
+            agregarManualBtnBottom.addEventListener('click', handleAgregar);
 
             // ---------- Inicialización con datos de ejemplo ----------
             (async () => {
