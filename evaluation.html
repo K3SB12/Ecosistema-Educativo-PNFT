@@ -281,14 +281,6 @@
                 <div id="indicadoresLista">
                     <p class="empty-table">Seleccione un grupo y período, luego presione "Cargar".</p>
                 </div>
-                <!-- Botones adicionales en la parte inferior -->
-                <div class="flex-between" style="margin-top: 1.5rem;">
-                    <div></div>
-                    <div class="button-group">
-                        <button id="importarCurriculumBtnBottom" class="btn-accion btn-ia"><i class="fas fa-download"></i> Importar desde currículo</button>
-                        <button id="agregarManualBtnBottom" class="btn-accion"><i class="fas fa-plus"></i> Agregar manual</button>
-                    </div>
-                </div>
             </div>
         </main>
     </div>
@@ -388,8 +380,6 @@
             const cargarBtn = document.getElementById('cargarIndicadoresBtn');
             const importarCurriculumBtn = document.getElementById('importarCurriculumBtn');
             const agregarManualBtn = document.getElementById('agregarManualBtn');
-            const importarCurriculumBtnBottom = document.getElementById('importarCurriculumBtnBottom');
-            const agregarManualBtnBottom = document.getElementById('agregarManualBtnBottom');
             const indicadoresLista = document.getElementById('indicadoresLista');
 
             // Modal de currículo
@@ -600,7 +590,7 @@
                     `;
                 });
                 indicadoresLista.innerHTML = html;
-                // Asignar eventos de edición y eliminación
+                // Asignar eventos de edición y eliminación a los botones recién creados
                 document.querySelectorAll('.edit-indicador').forEach(btn => {
                     btn.addEventListener('click', (e) => {
                         const id = parseInt(btn.dataset.id);
@@ -822,26 +812,21 @@
                 await cargarIndicadores(groupId, periodId);
             });
 
-            // Botones de importar/agregar (ambos conjuntos)
-            const handleImportar = () => {
+            importarCurriculumBtn.addEventListener('click', () => {
                 if (!currentGroupId || !currentPeriodId) {
                     alert('Primero debe seleccionar un grupo y período en la página principal y hacer clic en "Cargar".');
                     return;
                 }
                 abrirModalCurriculum();
-            };
-            const handleAgregar = () => {
+            });
+
+            agregarManualBtn.addEventListener('click', () => {
                 if (!currentGroupId || !currentPeriodId) {
                     alert('Primero debe seleccionar un grupo y período en la página principal y hacer clic en "Cargar".');
                     return;
                 }
                 abrirModalNuevo();
-            };
-
-            importarCurriculumBtn.addEventListener('click', handleImportar);
-            agregarManualBtn.addEventListener('click', handleAgregar);
-            importarCurriculumBtnBottom.addEventListener('click', handleImportar);
-            agregarManualBtnBottom.addEventListener('click', handleAgregar);
+            });
 
             // ---------- Inicialización con datos de ejemplo ----------
             (async () => {
