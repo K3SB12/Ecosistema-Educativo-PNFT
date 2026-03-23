@@ -590,23 +590,7 @@
                     `;
                 });
                 indicadoresLista.innerHTML = html;
-                // Asignar eventos de edición y eliminación a los botones recién creados
-                document.querySelectorAll('.edit-indicador').forEach(btn => {
-                    btn.addEventListener('click', (e) => {
-                        const id = parseInt(btn.dataset.id);
-                        const indicador = currentIndicadores.find(i => i.id === id);
-                        if (indicador) abrirModalEditar(indicador);
-                    });
-                });
-                document.querySelectorAll('.delete-indicador').forEach(btn => {
-                    btn.addEventListener('click', async (e) => {
-                        if (confirm('¿Eliminar este indicador?')) {
-                            const id = parseInt(btn.dataset.id);
-                            await eliminarIndicador(id);
-                            await cargarIndicadores(currentGroupId, currentPeriodId);
-                        }
-                    });
-                });
+                // No es necesario asignar eventos aquí porque usamos delegación en el contenedor
             }
 
             function escapeHtml(text) {
@@ -631,6 +615,26 @@
                 currentIndicadores = indicadores;
                 renderizarIndicadores();
             }
+
+            // ---------- Delegación de eventos para editar/eliminar ----------
+            indicadoresLista.addEventListener('click', async (e) => {
+                const btn = e.target.closest('.edit-indicador, .delete-indicador');
+                if (!btn) return;
+                const card = btn.closest('.indicador-card');
+                if (!card) return;
+                const id = parseInt(card.dataset.id);
+                const indicador = currentIndicadores.find(i => i.id === id);
+                if (!indicador) return;
+
+                if (btn.classList.contains('edit-indicador')) {
+                    abrirModalEditar(indicador);
+                } else if (btn.classList.contains('delete-indicador')) {
+                    if (confirm('¿Eliminar este indicador?')) {
+                        await eliminarIndicador(id);
+                        await cargarIndicadores(currentGroupId, currentPeriodId);
+                    }
+                }
+            });
 
             // ---------- Modal de importación desde currículo ----------
             function abrirModalCurriculum() {
