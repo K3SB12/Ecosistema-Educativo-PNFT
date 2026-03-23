@@ -456,13 +456,20 @@
             }
 
             async function eliminarIndicador(id) {
+                console.log('🔍 Intentando eliminar indicador con id:', id);
                 if (!db) await abrirDB();
                 return new Promise((resolve, reject) => {
                     const tx = db.transaction(['evaluation_indicators'], 'readwrite');
                     const store = tx.objectStore('evaluation_indicators');
                     const req = store.delete(id);
-                    req.onsuccess = () => resolve();
-                    req.onerror = () => reject(req.error);
+                    req.onsuccess = () => {
+                        console.log('✅ Indicador eliminado correctamente, id:', id);
+                        resolve();
+                    };
+                    req.onerror = (e) => {
+                        console.error('❌ Error al eliminar indicador:', e);
+                        reject(req.error);
+                    };
                 });
             }
 
@@ -476,6 +483,7 @@
                     req.onsuccess = () => {
                         const todos = req.result;
                         const filtrados = todos.filter(i => i.periodId === periodId);
+                        console.log('📋 Indicadores obtenidos:', filtrados);
                         resolve(filtrados);
                     };
                     req.onerror = () => reject(req.error);
@@ -571,7 +579,6 @@
                 }
                 let html = '';
                 currentIndicadores.forEach(ind => {
-                    // Mostrar botón editar solo si es manual (origen !== 'curriculum')
                     const mostrarEditar = ind.origen !== 'curriculum';
                     html += `
                         <div class="indicador-card" data-id="${ind.id}">
@@ -624,16 +631,25 @@
                 const card = btn.closest('.indicador-card');
                 if (!card) return;
                 const id = parseInt(card.dataset.id);
+                console.log('🖱️ Click en botón, id:', id);
                 const indicador = currentIndicadores.find(i => i.id === id);
-                if (!indicador) return;
+                if (!indicador) {
+                    console.warn('No se encontró indicador con id:', id);
+                    return;
+                }
 
                 if (btn.classList.contains('edit-indicador')) {
                     abrirModalEditar(indicador);
                 } else if (btn.classList.contains('delete-indicador')) {
                     if (confirm('¿Eliminar este indicador?')) {
-                        await eliminarIndicador(id);
-                        // Recargar la lista para reflejar la eliminación
-                        await cargarIndicadores(currentGroupId, currentPeriodId);
+                        try {
+                            await eliminarIndicador(id);
+                            console.log('Recargando lista después de eliminar...');
+                            await cargarIndicadores(currentGroupId, currentPeriodId);
+                        } catch (err) {
+                            console.error('Error al eliminar:', err);
+                            alert('❌ No se pudo eliminar el indicador. Revisa la consola.');
+                        }
                     }
                 }
             });
