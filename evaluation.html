@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="css/style.css">
     <script src="js/curriculum.js"></script>
     <style>
-        /* ========== Estilos adicionales para evaluación ========== */
+        /* Estilos iguales que antes, no se modifican */
         .indicador-card {
             background: white;
             border-radius: 16px;
@@ -216,11 +216,14 @@
             flex-wrap: wrap;
             gap: 1rem;
         }
+        .debug-btn {
+            background: #FF9800;
+            margin-left: 1rem;
+        }
     </style>
 </head>
 <body>
     <div class="app">
-        <!-- Sidebar -->
         <aside class="sidebar">
             <div class="sidebar-header">
                 <div class="logo">PNFT</div>
@@ -245,6 +248,7 @@
                 <div class="user-info">
                     <span class="user-badge"><i class="fas fa-user-graduate"></i> Docente</span>
                     <span class="user-badge"><i class="fas fa-calendar-alt"></i> 2026</span>
+                    <button id="debugDeleteBtn" class="btn-secundario debug-btn" style="display: none;">🔧 Depuración</button>
                 </div>
             </div>
 
@@ -285,43 +289,18 @@
         </main>
     </div>
 
-    <!-- Modal para importar desde currículo -->
+    <!-- Modales (igual que antes) -->
     <div id="modalImportarCurriculum" class="modal">
         <div class="modal-content">
             <span class="close" id="closeModalCurr">&times;</span>
             <h2><i class="fas fa-book-open"></i> Importar indicadores desde el currículo</h2>
             <div class="form-inline">
-                <div>
-                    <label>Ciclo</label>
-                    <select id="cicloCurr">
-                        <option value="">-- Seleccione --</option>
-                        <option value="preescolar">Preescolar</option>
-                        <option value="primaria">I Ciclo</option>
-                        <option value="primaria">II Ciclo</option>
-                        <option value="secundaria">III Ciclo</option>
-                    </select>
-                </div>
-                <div>
-                    <label>Nivel</label>
-                    <select id="nivelCurr">
-                        <option value="">-- Primero seleccione ciclo --</option>
-                    </select>
-                </div>
-                <div>
-                    <label>Módulo</label>
-                    <select id="moduloCurr">
-                        <option value="1">Módulo 1</option>
-                        <option value="2">Módulo 2</option>
-                        <option value="ambos">Ambos módulos</option>
-                    </select>
-                </div>
-                <div>
-                    <button id="cargarIndicadoresCurrBtn" class="btn-accion"><i class="fas fa-search"></i> Cargar saberes</button>
-                </div>
+                <div><label>Ciclo</label><select id="cicloCurr"><option value="">-- Seleccione --</option><option value="preescolar">Preescolar</option><option value="primaria">I Ciclo</option><option value="primaria">II Ciclo</option><option value="secundaria">III Ciclo</option></select></div>
+                <div><label>Nivel</label><select id="nivelCurr"><option value="">-- Primero seleccione ciclo --</option></select></div>
+                <div><label>Módulo</label><select id="moduloCurr"><option value="1">Módulo 1</option><option value="2">Módulo 2</option><option value="ambos">Ambos módulos</option></select></div>
+                <div><button id="cargarIndicadoresCurrBtn" class="btn-accion"><i class="fas fa-search"></i> Cargar saberes</button></div>
             </div>
-            <div id="saberesCurrContainer" class="checkbox-group">
-                <p>Seleccione ciclo, nivel y módulo, luego haga clic en "Cargar saberes".</p>
-            </div>
+            <div id="saberesCurrContainer" class="checkbox-group"><p>Seleccione ciclo, nivel y módulo, luego haga clic en "Cargar saberes".</p></div>
             <div style="text-align: right; margin-top: 1.5rem;">
                 <button id="confirmarImportarBtn" class="btn-accion">Importar seleccionados</button>
                 <button id="cancelarImportarBtn" class="btn-secundario">Cancelar</button>
@@ -329,41 +308,16 @@
         </div>
     </div>
 
-    <!-- Modal para agregar/editar indicador manualmente -->
     <div id="modalIndicador" class="modal">
         <div class="modal-content">
             <span class="close" id="closeModalInd">&times;</span>
             <h2 id="modalIndTitulo">Agregar indicador</h2>
-            <div class="form-group">
-                <label>Descripción *</label>
-                <textarea id="indicadorDesc" rows="3"></textarea>
-            </div>
-            <div class="form-group">
-                <label>Puntaje máximo</label>
-                <input type="number" id="indicadorPuntaje" value="100" step="1">
-            </div>
-            <div class="form-group date-wrapper">
-                <label>Fecha inicio (opcional)</label>
-                <i class="fas fa-calendar-alt"></i>
-                <input type="date" id="indicadorFechaInicio">
-            </div>
-            <div class="form-group date-wrapper">
-                <label>Fecha fin (opcional)</label>
-                <i class="fas fa-calendar-check"></i>
-                <input type="date" id="indicadorFechaFin">
-            </div>
-            <div class="form-group">
-                <label>Instrumento sugerido</label>
-                <select id="indicadorInstrumento">
-                    <option value="Escala">Escala de valoración</option>
-                    <option value="Lista de cotejo">Lista de cotejo</option>
-                    <option value="Rúbrica analítica">Rúbrica analítica</option>
-                </select>
-            </div>
-            <div style="text-align: right; margin-top: 1.5rem;">
-                <button id="guardarIndicadorBtn" class="btn-accion">Guardar</button>
-                <button id="cancelarIndicadorBtn" class="btn-secundario">Cancelar</button>
-            </div>
+            <div class="form-group"><label>Descripción *</label><textarea id="indicadorDesc" rows="3"></textarea></div>
+            <div class="form-group"><label>Puntaje máximo</label><input type="number" id="indicadorPuntaje" value="100" step="1"></div>
+            <div class="form-group date-wrapper"><label>Fecha inicio (opcional)</label><i class="fas fa-calendar-alt"></i><input type="date" id="indicadorFechaInicio"></div>
+            <div class="form-group date-wrapper"><label>Fecha fin (opcional)</label><i class="fas fa-calendar-check"></i><input type="date" id="indicadorFechaFin"></div>
+            <div class="form-group"><label>Instrumento sugerido</label><select id="indicadorInstrumento"><option value="Escala">Escala de valoración</option><option value="Lista de cotejo">Lista de cotejo</option><option value="Rúbrica analítica">Rúbrica analítica</option></select></div>
+            <div style="text-align: right; margin-top: 1.5rem;"><button id="guardarIndicadorBtn" class="btn-accion">Guardar</button><button id="cancelarIndicadorBtn" class="btn-secundario">Cancelar</button></div>
         </div>
     </div>
 
@@ -374,15 +328,16 @@
                 return;
             }
 
-            // ---------- Elementos DOM ----------
+            // Elementos DOM
             const grupoSelect = document.getElementById('grupoSelect');
             const periodoSelect = document.getElementById('periodoSelect');
             const cargarBtn = document.getElementById('cargarIndicadoresBtn');
             const importarCurriculumBtn = document.getElementById('importarCurriculumBtn');
             const agregarManualBtn = document.getElementById('agregarManualBtn');
             const indicadoresLista = document.getElementById('indicadoresLista');
+            const debugDeleteBtn = document.getElementById('debugDeleteBtn');
 
-            // Modal de currículo
+            // Modales
             const modalCurr = document.getElementById('modalImportarCurriculum');
             const closeModalCurr = document.getElementById('closeModalCurr');
             const cicloCurr = document.getElementById('cicloCurr');
@@ -393,7 +348,6 @@
             const confirmarImportarBtn = document.getElementById('confirmarImportarBtn');
             const cancelarImportarBtn = document.getElementById('cancelarImportarBtn');
 
-            // Modal de indicador manual
             const modalInd = document.getElementById('modalIndicador');
             const closeModalInd = document.getElementById('closeModalInd');
             const modalIndTitulo = document.getElementById('modalIndTitulo');
@@ -405,7 +359,7 @@
             const guardarIndicadorBtn = document.getElementById('guardarIndicadorBtn');
             const cancelarIndicadorBtn = document.getElementById('cancelarIndicadorBtn');
 
-            // Variables de estado
+            // Estado
             let currentIndicadorId = null;
             let currentGroupId = null;
             let currentPeriodId = null;
@@ -423,18 +377,10 @@
                     request.onsuccess = () => { db = request.result; resolve(db); };
                     request.onupgradeneeded = (event) => {
                         const db = event.target.result;
-                        if (!db.objectStoreNames.contains('plannings')) {
-                            db.createObjectStore('plannings', { keyPath: 'id' });
-                        }
-                        if (!db.objectStoreNames.contains('profile')) {
-                            db.createObjectStore('profile', { keyPath: 'key' });
-                        }
-                        if (!db.objectStoreNames.contains('groups')) {
-                            db.createObjectStore('groups', { keyPath: 'id' });
-                        }
-                        if (!db.objectStoreNames.contains('periods')) {
-                            db.createObjectStore('periods', { keyPath: 'id' });
-                        }
+                        if (!db.objectStoreNames.contains('plannings')) db.createObjectStore('plannings', { keyPath: 'id' });
+                        if (!db.objectStoreNames.contains('profile')) db.createObjectStore('profile', { keyPath: 'key' });
+                        if (!db.objectStoreNames.contains('groups')) db.createObjectStore('groups', { keyPath: 'id' });
+                        if (!db.objectStoreNames.contains('periods')) db.createObjectStore('periods', { keyPath: 'id' });
                         if (!db.objectStoreNames.contains('evaluation_indicators')) {
                             const store = db.createObjectStore('evaluation_indicators', { keyPath: 'id' });
                             store.createIndex('groupId', 'groupId', { unique: false });
@@ -456,18 +402,18 @@
             }
 
             async function eliminarIndicador(id) {
-                console.log('🔍 Intentando eliminar indicador con id:', id);
+                console.log('🗑️ Eliminando indicador con id:', id);
                 if (!db) await abrirDB();
                 return new Promise((resolve, reject) => {
                     const tx = db.transaction(['evaluation_indicators'], 'readwrite');
                     const store = tx.objectStore('evaluation_indicators');
                     const req = store.delete(id);
                     req.onsuccess = () => {
-                        console.log('✅ Indicador eliminado correctamente, id:', id);
+                        console.log('✅ Eliminado exitosamente');
                         resolve();
                     };
                     req.onerror = (e) => {
-                        console.error('❌ Error al eliminar indicador:', e);
+                        console.error('❌ Error al eliminar:', e);
                         reject(req.error);
                     };
                 });
@@ -483,7 +429,7 @@
                     req.onsuccess = () => {
                         const todos = req.result;
                         const filtrados = todos.filter(i => i.periodId === periodId);
-                        console.log('📋 Indicadores obtenidos:', filtrados);
+                        console.log(`📋 Indicadores cargados (${filtrados.length}):`, filtrados);
                         resolve(filtrados);
                     };
                     req.onerror = () => reject(req.error);
@@ -515,15 +461,7 @@
             async function crearGrupoEjemplo() {
                 const grupos = await obtenerGrupos();
                 if (grupos.length === 0) {
-                    const grupoEjemplo = {
-                        id: 1,
-                        nombre: 'Informática - Primer Ciclo-2-1',
-                        nivel: 'Primero',
-                        seccion: '2-1',
-                        materia: 'Informática',
-                        centroEducativo: 'Escuela Tranquilino Sáenz Rojas',
-                        añoLectivo: 2026
-                    };
+                    const grupoEjemplo = { id: 1, nombre: 'Informática - Primer Ciclo-2-1', nivel: 'Primero', seccion: '2-1', materia: 'Informática', centroEducativo: 'Escuela Tranquilino Sáenz Rojas', añoLectivo: 2026 };
                     const tx = db.transaction(['groups'], 'readwrite');
                     const store = tx.objectStore('groups');
                     store.put(grupoEjemplo);
@@ -534,13 +472,7 @@
             async function crearPeriodoEjemplo() {
                 const periodos = await obtenerPeriodos();
                 if (periodos.length === 0) {
-                    const periodoEjemplo = {
-                        id: 1,
-                        nombre: 'I Semestre',
-                        fechaInicio: '2026-02-23',
-                        fechaFin: '2026-07-03',
-                        tipo: 'semestre'
-                    };
+                    const periodoEjemplo = { id: 1, nombre: 'I Semestre', fechaInicio: '2026-02-23', fechaFin: '2026-07-03', tipo: 'semestre' };
                     const tx = db.transaction(['periods'], 'readwrite');
                     const store = tx.objectStore('periods');
                     store.put(periodoEjemplo);
@@ -571,7 +503,7 @@
                 });
             }
 
-            // ---------- Renderizar lista de indicadores ----------
+            // ---------- Renderizar lista ----------
             function renderizarIndicadores() {
                 if (!currentIndicadores.length) {
                     indicadoresLista.innerHTML = '<p class="empty-table">No hay indicadores para este grupo y período. Use "Importar desde currículo" o "Agregar manual".</p>';
@@ -599,6 +531,8 @@
                     `;
                 });
                 indicadoresLista.innerHTML = html;
+                // Forzar reasignación de eventos (por si acaso)
+                // Los eventos se manejan por delegación, así que no es necesario.
             }
 
             function escapeHtml(text) {
@@ -611,7 +545,7 @@
                 });
             }
 
-            // ---------- Cargar indicadores para grupo/período ----------
+            // ---------- Cargar indicadores ----------
             async function cargarIndicadores(groupId, periodId) {
                 if (!groupId || !periodId) {
                     indicadoresLista.innerHTML = '<p class="empty-table">Seleccione un grupo y período, luego presione "Cargar".</p>';
@@ -619,50 +553,42 @@
                 }
                 currentGroupId = groupId;
                 currentPeriodId = periodId;
-                const indicadores = await obtenerIndicadores(groupId, periodId);
-                currentIndicadores = indicadores;
+                currentIndicadores = await obtenerIndicadores(groupId, periodId);
                 renderizarIndicadores();
             }
 
-            // ---------- Delegación de eventos para editar/eliminar ----------
+            // ---------- Eliminar con delegación ----------
             indicadoresLista.addEventListener('click', async (e) => {
-                const btn = e.target.closest('.edit-indicador, .delete-indicador');
+                const btn = e.target.closest('.delete-indicador');
                 if (!btn) return;
                 const card = btn.closest('.indicador-card');
                 if (!card) return;
                 const id = parseInt(card.dataset.id);
-                console.log('🖱️ Click en botón, id:', id);
-                const indicador = currentIndicadores.find(i => i.id === id);
-                if (!indicador) {
-                    console.warn('No se encontró indicador con id:', id);
-                    return;
-                }
-
-                if (btn.classList.contains('edit-indicador')) {
-                    abrirModalEditar(indicador);
-                } else if (btn.classList.contains('delete-indicador')) {
-                    if (confirm('¿Eliminar este indicador?')) {
-                        try {
-                            await eliminarIndicador(id);
-                            console.log('Recargando lista después de eliminar...');
-                            await cargarIndicadores(currentGroupId, currentPeriodId);
-                        } catch (err) {
-                            console.error('Error al eliminar:', err);
-                            alert('❌ No se pudo eliminar el indicador. Revisa la consola.');
-                        }
+                console.log('🖱️ Click eliminar, id:', id);
+                if (confirm('¿Eliminar este indicador?')) {
+                    try {
+                        await eliminarIndicador(id);
+                        // Recargar lista
+                        await cargarIndicadores(currentGroupId, currentPeriodId);
+                    } catch (err) {
+                        console.error(err);
+                        alert('Error al eliminar. Revisa la consola.');
                     }
                 }
             });
 
-            // ---------- Modal de importación desde currículo ----------
-            function abrirModalCurriculum() {
-                modalCurr.style.display = 'block';
-                cicloCurr.value = '';
-                nivelCurr.innerHTML = '<option value="">-- Primero seleccione ciclo --</option>';
-                moduloCurr.value = '1';
-                saberesCurrContainer.innerHTML = '<p>Seleccione ciclo, nivel y módulo, luego haga clic en "Cargar saberes".</p>';
-            }
+            // Editar solo para manuales
+            indicadoresLista.addEventListener('click', (e) => {
+                const btn = e.target.closest('.edit-indicador');
+                if (!btn) return;
+                const card = btn.closest('.indicador-card');
+                if (!card) return;
+                const id = parseInt(card.dataset.id);
+                const indicador = currentIndicadores.find(i => i.id === id);
+                if (indicador) abrirModalEditar(indicador);
+            });
 
+            // ---------- Modal de importación ----------
             function actualizarNivelesCurr() {
                 const ciclo = cicloCurr.value;
                 nivelCurr.innerHTML = '<option value="">-- Seleccione --</option>';
@@ -678,7 +604,6 @@
                     nivelCurr.appendChild(option);
                 });
             }
-
             cicloCurr.addEventListener('change', actualizarNivelesCurr);
 
             cargarIndicadoresCurrBtn.addEventListener('click', () => {
@@ -693,12 +618,9 @@
                 let saberes = [];
                 modulos.forEach(mod => {
                     let moduloData = null;
-                    if (ciclo === 'preescolar') {
-                        moduloData = window.CURRICULO.preescolar?.find(m => m.nivel === nivel && m.modulo === mod);
-                    } else if (ciclo === 'primaria') {
-                        const nivelKey = nivel.toLowerCase();
-                        moduloData = window.CURRICULO.primaria?.[nivelKey]?.find(m => m.modulo === mod);
-                    } else if (ciclo === 'secundaria') {
+                    if (ciclo === 'preescolar') moduloData = window.CURRICULO.preescolar?.find(m => m.nivel === nivel && m.modulo === mod);
+                    else if (ciclo === 'primaria') moduloData = window.CURRICULO.primaria?.[nivel.toLowerCase()]?.find(m => m.modulo === mod);
+                    else if (ciclo === 'secundaria') {
                         const nivelMap = { 'Sétimo':'setimo','Octavo':'octavo','Noveno':'noveno' };
                         const nivelKey = nivelMap[nivel];
                         moduloData = window.CURRICULO.secundaria?.[nivelKey]?.find(m => m.modulo === mod);
@@ -706,10 +628,7 @@
                     if (moduloData) {
                         moduloData.areas.forEach(area => {
                             area.saberesConceptuales.forEach(s => {
-                                saberes.push({
-                                    concepto: s.concepto,
-                                    indicador: s.indicadorLogro
-                                });
+                                saberes.push({ concepto: s.concepto, indicador: s.indicadorLogro });
                             });
                         });
                     }
@@ -720,12 +639,7 @@
                 }
                 let html = '';
                 saberes.forEach((s, idx) => {
-                    html += `
-                        <label>
-                            <input type="checkbox" data-idx="${idx}" data-concepto="${escapeHtml(s.concepto)}" data-indicador="${escapeHtml(s.indicador)}">
-                            <strong>${escapeHtml(s.concepto)}</strong>: ${escapeHtml(s.indicador)}
-                        </label>
-                    `;
+                    html += `<label><input type="checkbox" data-idx="${idx}" data-concepto="${escapeHtml(s.concepto)}" data-indicador="${escapeHtml(s.indicador)}"><strong>${escapeHtml(s.concepto)}</strong>: ${escapeHtml(s.indicador)}</label>`;
                 });
                 saberesCurrContainer.innerHTML = html;
             });
@@ -850,7 +764,14 @@
                 abrirModalNuevo();
             });
 
-            // ---------- Inicialización con datos de ejemplo ----------
+            // Botón de depuración (oculto, se puede mostrar con CSS si es necesario)
+            debugDeleteBtn.addEventListener('click', async () => {
+                const todos = await obtenerIndicadores(currentGroupId, currentPeriodId);
+                console.log('Lista completa de indicadores:', todos);
+                alert('Revisa la consola (F12) para ver la lista de indicadores y sus IDs.');
+            });
+
+            // ---------- Inicialización ----------
             (async () => {
                 await abrirDB();
                 await crearGrupoEjemplo();
@@ -859,7 +780,6 @@
                 await cargarPeriodos();
             })();
 
-            // Cerrar modales al hacer clic fuera
             window.onclick = (e) => {
                 if (e.target === modalCurr) modalCurr.style.display = 'none';
                 if (e.target === modalInd) modalInd.style.display = 'none';
