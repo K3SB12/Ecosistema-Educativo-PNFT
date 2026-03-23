@@ -333,7 +333,7 @@
                 renderizarIndicadores();
             }
 
-            // ---------- ELIMINACIÓN INDIVIDUAL (con manejo robusto) ----------
+            // ---------- ELIMINACIÓN INDIVIDUAL (con verificación de ID) ----------
             indicadoresLista.addEventListener('click', async (e) => {
                 const btn = e.target.closest('.delete-indicador');
                 if (!btn) return;
@@ -341,26 +341,24 @@
                 const card = btn.closest('.indicador-card');
                 if (!card) return;
 
-                const id = parseInt(card.dataset.id);
-                console.log('🖱️ Click eliminar, id:', id, 'tipo:', typeof id);
+                const idFromCard = parseInt(card.dataset.id);
+                console.log('🖱️ Click eliminar, id desde data-id:', idFromCard);
 
-                if (isNaN(id)) {
-                    console.error('ID inválido:', card.dataset.id);
-                    alert('Error: ID de indicador no válido.');
+                // Buscar el indicador en currentIndicadores usando ese id
+                const indicadorEncontrado = currentIndicadores.find(i => i.id === idFromCard);
+                if (!indicadorEncontrado) {
+                    console.error('No se encontró el indicador en currentIndicadores. IDs disponibles:', currentIndicadores.map(i => i.id));
+                    alert('No se pudo localizar el indicador. Recarga la lista e intenta de nuevo.');
                     return;
                 }
 
-                if (!currentGroupId || !currentPeriodId) {
-                    console.error('No hay grupo/período actual');
-                    alert('No se ha cargado ningún grupo y período.');
-                    return;
-                }
+                const id = indicadorEncontrado.id;
+                console.log('Usando id de currentIndicadores:', id);
 
                 if (confirm('¿Eliminar este indicador?')) {
                     try {
                         await eliminarIndicador(id);
                         console.log('Esperando recarga de lista...');
-                        // Recargar la lista desde la base de datos
                         await cargarIndicadores(currentGroupId, currentPeriodId);
                         alert('✅ Indicador eliminado correctamente.');
                     } catch (err) {
