@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="css/style.css">
     <script src="js/curriculum.js"></script>
     <style>
-        /* Estilos iguales que antes (no modificados) */
+        /* Estilos iguales que antes (sin cambios) */
         .indicador-card { background: white; border-radius: 16px; padding: 1.2rem; margin-bottom: 1rem; box-shadow: 0 4px 12px rgba(0,0,0,0.05); border-left: 4px solid #2E7D32; transition: all 0.2s; }
         .indicador-card:hover { box-shadow: 0 8px 20px rgba(0,0,0,0.08); }
         .indicador-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; }
@@ -95,7 +95,7 @@
         </main>
     </div>
 
-    <!-- Modales (simplificados) -->
+    <!-- Modales -->
     <div id="modalImportarCurriculum" class="modal"><div class="modal-content"><span class="close" id="closeModalCurr">&times;</span><h2><i class="fas fa-book-open"></i> Importar indicadores desde el currículo</h2><div class="form-inline"><div><label>Ciclo</label><select id="cicloCurr"><option value="">-- Seleccione --</option><option value="preescolar">Preescolar</option><option value="primaria">I Ciclo</option><option value="primaria">II Ciclo</option><option value="secundaria">III Ciclo</option></select></div><div><label>Nivel</label><select id="nivelCurr"><option value="">-- Primero seleccione ciclo --</option></select></div><div><label>Módulo</label><select id="moduloCurr"><option value="1">Módulo 1</option><option value="2">Módulo 2</option><option value="ambos">Ambos módulos</option></select></div><div><button id="cargarIndicadoresCurrBtn" class="btn-accion"><i class="fas fa-search"></i> Cargar saberes</button></div></div><div id="saberesCurrContainer" class="checkbox-group"><p>Seleccione ciclo, nivel y módulo, luego haga clic en "Cargar saberes".</p></div><div style="text-align: right; margin-top: 1.5rem;"><button id="confirmarImportarBtn" class="btn-accion">Importar seleccionados</button><button id="cancelarImportarBtn" class="btn-secundario">Cancelar</button></div></div></div>
     <div id="modalIndicador" class="modal"><div class="modal-content"><span class="close" id="closeModalInd">&times;</span><h2 id="modalIndTitulo">Agregar indicador</h2><div class="form-group"><label>Descripción *</label><textarea id="indicadorDesc" rows="3"></textarea></div><div class="form-group"><label>Puntaje máximo</label><input type="number" id="indicadorPuntaje" value="100" step="1"></div><div class="form-group date-wrapper"><label>Fecha inicio (opcional)</label><i class="fas fa-calendar-alt"></i><input type="date" id="indicadorFechaInicio"></div><div class="form-group date-wrapper"><label>Fecha fin (opcional)</label><i class="fas fa-calendar-check"></i><input type="date" id="indicadorFechaFin"></div><div class="form-group"><label>Instrumento sugerido</label><select id="indicadorInstrumento"><option value="Escala">Escala de valoración</option><option value="Lista de cotejo">Lista de cotejo</option><option value="Rúbrica analítica">Rúbrica analítica</option></select></div><div style="text-align: right; margin-top: 1.5rem;"><button id="guardarIndicadorBtn" class="btn-accion">Guardar</button><button id="cancelarIndicadorBtn" class="btn-secundario">Cancelar</button></div></div></div>
 
@@ -198,13 +198,6 @@
                         reject(req.error);
                     };
                 });
-            }
-
-            async function eliminarTodosIndicadores(groupId, periodId) {
-                const todos = await obtenerIndicadores(groupId, periodId);
-                for (let ind of todos) {
-                    await eliminarIndicador(ind.id);
-                }
             }
 
             async function obtenerIndicadores(groupId, periodId) {
@@ -340,21 +333,35 @@
                 renderizarIndicadores();
             }
 
-            // Eventos de eliminar con delegación
+            // ---------- ELIMINACIÓN INDIVIDUAL (corregida) ----------
             indicadoresLista.addEventListener('click', async (e) => {
+                // Buscar si se hizo clic en un botón de eliminar
                 const btn = e.target.closest('.delete-indicador');
                 if (!btn) return;
+
+                // Obtener la tarjeta contenedora
                 const card = btn.closest('.indicador-card');
                 if (!card) return;
+
+                // Obtener el ID desde el atributo data-id
                 const id = parseInt(card.dataset.id);
                 console.log('🖱️ Click eliminar, id:', id);
+
+                if (isNaN(id)) {
+                    console.error('ID inválido:', card.dataset.id);
+                    alert('Error: ID de indicador no válido.');
+                    return;
+                }
+
                 if (confirm('¿Eliminar este indicador?')) {
                     try {
                         await eliminarIndicador(id);
+                        // Recargar la lista
                         await cargarIndicadores(currentGroupId, currentPeriodId);
+                        alert('✅ Indicador eliminado correctamente.');
                     } catch (err) {
-                        console.error(err);
-                        alert('Error al eliminar. Revisa la consola.');
+                        console.error('Error al eliminar:', err);
+                        alert('❌ Error al eliminar. Revisa la consola.');
                     }
                 }
             });
@@ -370,7 +377,7 @@
                 if (indicador) abrirModalEditar(indicador);
             });
 
-            // Modal importar desde currículo (sin cambios)
+            // Modal importar desde currículo
             function actualizarNivelesCurr() {
                 const ciclo = cicloCurr.value;
                 nivelCurr.innerHTML = '<option value="">-- Seleccione --</option>';
@@ -490,7 +497,7 @@
                 abrirModalNuevo();
             });
 
-            // Botón de depuración: muestra los IDs
+            // Botón de depuración
             debugBtn.addEventListener('click', async () => {
                 if (!currentGroupId || !currentPeriodId) { alert('Primero seleccione grupo y período y haga clic en "Cargar".'); return; }
                 const lista = await obtenerIndicadores(currentGroupId, currentPeriodId);
@@ -499,13 +506,14 @@
                 alert(`Se listaron ${lista.length} indicadores en la consola. Revisa F12.`);
             });
 
-            // Botón eliminar todos
+            // Eliminar todos
             deleteAllBtn.addEventListener('click', async () => {
                 if (!currentGroupId || !currentPeriodId) { alert('Primero seleccione grupo y período y haga clic en "Cargar".'); return; }
                 if (confirm('¿Eliminar TODOS los indicadores de este grupo y período? Esta acción no se puede deshacer.')) {
-                    await eliminarTodosIndicadores(currentGroupId, currentPeriodId);
+                    const todos = await obtenerIndicadores(currentGroupId, currentPeriodId);
+                    for (let ind of todos) await eliminarIndicador(ind.id);
                     await cargarIndicadores(currentGroupId, currentPeriodId);
-                    alert('✅ Todos los indicadores han sido eliminados.');
+                    alert('✅ Todos los indicadores eliminados.');
                 }
             });
 
