@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="css/style.css">
     <script src="js/curriculum.js"></script>
     <style>
-        /* Estilos iguales que antes (no modificados) */
+        /* Estilos idénticos a la versión anterior, no modificados */
         .indicador-card { background: white; border-radius: 16px; padding: 1.2rem; margin-bottom: 1rem; box-shadow: 0 4px 12px rgba(0,0,0,0.05); border-left: 4px solid #2E7D32; transition: all 0.2s; }
         .indicador-card:hover { box-shadow: 0 8px 20px rgba(0,0,0,0.08); }
         .indicador-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; }
@@ -94,7 +94,7 @@
         </main>
     </div>
 
-    <!-- Modales (simplificados para evitar repetición) -->
+    <!-- Modales (simplificados) -->
     <div id="modalImportarCurriculum" class="modal"><div class="modal-content"><span class="close" id="closeModalCurr">&times;</span><h2><i class="fas fa-book-open"></i> Importar indicadores desde el currículo</h2><div class="form-inline"><div><label>Ciclo</label><select id="cicloCurr"><option value="">-- Seleccione --</option><option value="preescolar">Preescolar</option><option value="primaria">I Ciclo</option><option value="primaria">II Ciclo</option><option value="secundaria">III Ciclo</option></select></div><div><label>Nivel</label><select id="nivelCurr"><option value="">-- Primero seleccione ciclo --</option></select></div><div><label>Módulo</label><select id="moduloCurr"><option value="1">Módulo 1</option><option value="2">Módulo 2</option><option value="ambos">Ambos módulos</option></select></div><div><button id="cargarIndicadoresCurrBtn" class="btn-accion"><i class="fas fa-search"></i> Cargar saberes</button></div></div><div id="saberesCurrContainer" class="checkbox-group"><p>Seleccione ciclo, nivel y módulo, luego haga clic en "Cargar saberes".</p></div><div style="text-align: right; margin-top: 1.5rem;"><button id="confirmarImportarBtn" class="btn-accion">Importar seleccionados</button><button id="cancelarImportarBtn" class="btn-secundario">Cancelar</button></div></div></div>
     <div id="modalIndicador" class="modal"><div class="modal-content"><span class="close" id="closeModalInd">&times;</span><h2 id="modalIndTitulo">Agregar indicador</h2><div class="form-group"><label>Descripción *</label><textarea id="indicadorDesc" rows="3"></textarea></div><div class="form-group"><label>Puntaje máximo</label><input type="number" id="indicadorPuntaje" value="100" step="1"></div><div class="form-group date-wrapper"><label>Fecha inicio (opcional)</label><i class="fas fa-calendar-alt"></i><input type="date" id="indicadorFechaInicio"></div><div class="form-group date-wrapper"><label>Fecha fin (opcional)</label><i class="fas fa-calendar-check"></i><input type="date" id="indicadorFechaFin"></div><div class="form-group"><label>Instrumento sugerido</label><select id="indicadorInstrumento"><option value="Escala">Escala de valoración</option><option value="Lista de cotejo">Lista de cotejo</option><option value="Rúbrica analítica">Rúbrica analítica</option></select></div><div style="text-align: right; margin-top: 1.5rem;"><button id="guardarIndicadorBtn" class="btn-accion">Guardar</button><button id="cancelarIndicadorBtn" class="btn-secundario">Cancelar</button></div></div></div>
 
@@ -174,27 +174,24 @@
                 });
             }
 
-            async function eliminarIndicador(id) {
-                console.log('🗑️ Eliminando indicador con id:', id);
+            // Función de eliminación SIMPLE pero robusta
+            async function eliminarIndicadorPorId(id) {
+                console.log('🗑️ Intentando eliminar indicador con id:', id);
                 if (!db) await abrirDB();
                 return new Promise((resolve, reject) => {
                     const tx = db.transaction(['evaluation_indicators'], 'readwrite');
                     const store = tx.objectStore('evaluation_indicators');
-                    const req = store.delete(id);
-                    req.onsuccess = () => {
-                        // La eliminación se registra, pero esperamos a que la transacción complete
+                    const request = store.delete(id);
+                    request.onsuccess = () => {
+                        console.log('✅ Eliminado exitosamente de la base de datos');
                         tx.oncomplete = () => {
-                            console.log('✅ Transacción completada, indicador eliminado');
+                            console.log('✅ Transacción completada');
                             resolve();
                         };
-                        tx.onerror = (e) => {
-                            console.error('❌ Error en transacción:', e);
-                            reject(tx.error);
-                        };
                     };
-                    req.onerror = (e) => {
-                        console.error('❌ Error al eliminar:', e);
-                        reject(req.error);
+                    request.onerror = (e) => {
+                        console.error('❌ Error en la eliminación:', e);
+                        reject(request.error);
                     };
                 });
             }
@@ -210,6 +207,8 @@
                         const todos = req.result;
                         const filtrados = todos.filter(i => i.periodId === periodId);
                         console.log(`📋 Indicadores cargados (${filtrados.length})`);
+                        // Mostrar los IDs en consola para depuración
+                        filtrados.forEach(i => console.log(`ID: ${i.id} - ${i.descripcion.substring(0, 50)}`));
                         resolve(filtrados);
                     };
                     req.onerror = () => reject(req.error);
@@ -282,6 +281,7 @@
                 });
             }
 
+            // Renderizado con botones de eliminar que llaman directamente a la función con el ID
             function renderizarIndicadores() {
                 if (!currentIndicadores.length) {
                     indicadoresLista.innerHTML = '<p class="empty-table">No hay indicadores para este grupo y período. Use "Importar desde currículo" o "Agregar manual".</p>';
@@ -309,6 +309,33 @@
                     `;
                 });
                 indicadoresLista.innerHTML = html;
+
+                // Asignar eventos de eliminación de forma DIRECTA
+                document.querySelectorAll('.delete-indicador').forEach(btn => {
+                    btn.addEventListener('click', async (e) => {
+                        const id = parseInt(btn.dataset.id);
+                        console.log('🖱️ Click eliminar directo, id:', id);
+                        if (confirm('¿Eliminar este indicador?')) {
+                            try {
+                                await eliminarIndicadorPorId(id);
+                                // Recargar la lista completa
+                                await cargarIndicadores(currentGroupId, currentPeriodId);
+                            } catch (err) {
+                                console.error('Error al eliminar:', err);
+                                alert('No se pudo eliminar. Revisa la consola.');
+                            }
+                        }
+                    });
+                });
+
+                // Editar (solo manuales)
+                document.querySelectorAll('.edit-indicador').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const id = parseInt(btn.dataset.id);
+                        const indicador = currentIndicadores.find(i => i.id === id);
+                        if (indicador) abrirModalEditar(indicador);
+                    });
+                });
             }
 
             function escapeHtml(text) {
@@ -332,38 +359,7 @@
                 renderizarIndicadores();
             }
 
-            // Eventos de eliminar con delegación
-            indicadoresLista.addEventListener('click', async (e) => {
-                const btn = e.target.closest('.delete-indicador');
-                if (!btn) return;
-                const card = btn.closest('.indicador-card');
-                if (!card) return;
-                const id = parseInt(card.dataset.id);
-                console.log('🖱️ Click eliminar, id:', id);
-                if (confirm('¿Eliminar este indicador?')) {
-                    try {
-                        await eliminarIndicador(id);
-                        // Recargar lista para reflejar cambios
-                        await cargarIndicadores(currentGroupId, currentPeriodId);
-                    } catch (err) {
-                        console.error(err);
-                        alert('Error al eliminar. Revisa la consola.');
-                    }
-                }
-            });
-
-            // Editar
-            indicadoresLista.addEventListener('click', (e) => {
-                const btn = e.target.closest('.edit-indicador');
-                if (!btn) return;
-                const card = btn.closest('.indicador-card');
-                if (!card) return;
-                const id = parseInt(card.dataset.id);
-                const indicador = currentIndicadores.find(i => i.id === id);
-                if (indicador) abrirModalEditar(indicador);
-            });
-
-            // Modal importar desde currículo
+            // Modal importar desde currículo (sin cambios)
             function actualizarNivelesCurr() {
                 const ciclo = cicloCurr.value;
                 nivelCurr.innerHTML = '<option value="">-- Seleccione --</option>';
@@ -423,7 +419,7 @@
             cancelarImportarBtn.addEventListener('click', () => modalCurr.style.display = 'none');
             closeModalCurr.onclick = () => modalCurr.style.display = 'none';
 
-            // Modal agregar/editar manual
+            // Modal agregar/editar manual (sin cambios)
             function abrirModalNuevo() {
                 modalIndTitulo.textContent = 'Agregar indicador';
                 currentIndicadorId = null;
@@ -483,7 +479,7 @@
                 abrirModalNuevo();
             });
 
-            // Botón de depuración: muestra los IDs en consola
+            // Botón de depuración
             debugBtn.addEventListener('click', async () => {
                 if (!currentGroupId || !currentPeriodId) { alert('Primero seleccione grupo y período y haga clic en "Cargar".'); return; }
                 const lista = await obtenerIndicadores(currentGroupId, currentPeriodId);
