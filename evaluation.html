@@ -177,7 +177,7 @@
             }
 
             async function eliminarIndicador(id) {
-                console.log('🗑️ Eliminando indicador con id:', id, 'tipo:', typeof id);
+                console.log('🗑️ Eliminando indicador con id:', id);
                 if (!db) await abrirDB();
                 return new Promise((resolve, reject) => {
                     const tx = db.transaction(['evaluation_indicators'], 'readwrite');
@@ -333,7 +333,7 @@
                 renderizarIndicadores();
             }
 
-            // ---------- ELIMINACIÓN INDIVIDUAL ----------
+            // ---------- ELIMINACIÓN INDIVIDUAL (simplificada) ----------
             indicadoresLista.addEventListener('click', async (e) => {
                 const btn = e.target.closest('.delete-indicador');
                 if (!btn) return;
@@ -342,7 +342,7 @@
                 if (!card) return;
 
                 const id = parseInt(card.dataset.id);
-                console.log('🖱️ Click eliminar, id:', id, 'tipo:', typeof id);
+                console.log('🖱️ Click eliminar, id:', id);
 
                 if (isNaN(id)) {
                     console.error('ID inválido:', card.dataset.id);
@@ -350,19 +350,10 @@
                     return;
                 }
 
-                // Verificar si el indicador existe en currentIndicadores
-                const indicadorExistente = currentIndicadores.find(i => i.id === id);
-                if (!indicadorExistente) {
-                    console.warn('Indicador no encontrado en currentIndicadores:', id);
-                    alert('El indicador ya no existe o no se pudo localizar.');
-                    return;
-                }
-
                 if (confirm('¿Eliminar este indicador?')) {
                     try {
                         await eliminarIndicador(id);
-                        console.log('Eliminación exitosa, recargando lista...');
-                        // Recargar desde la base de datos
+                        // Recargar la lista desde la base de datos
                         await cargarIndicadores(currentGroupId, currentPeriodId);
                         alert('✅ Indicador eliminado correctamente.');
                     } catch (err) {
