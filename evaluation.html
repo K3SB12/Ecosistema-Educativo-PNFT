@@ -571,12 +571,14 @@
                 }
                 let html = '';
                 currentIndicadores.forEach(ind => {
+                    // Mostrar botón editar solo si es manual (origen !== 'curriculum')
+                    const mostrarEditar = ind.origen !== 'curriculum';
                     html += `
                         <div class="indicador-card" data-id="${ind.id}">
                             <div class="indicador-header">
                                 <div class="indicador-desc">${escapeHtml(ind.descripcion)}</div>
                                 <div class="indicador-actions">
-                                    <button class="edit-indicador" data-id="${ind.id}" title="Editar"><i class="fas fa-edit"></i></button>
+                                    ${mostrarEditar ? `<button class="edit-indicador" data-id="${ind.id}" title="Editar"><i class="fas fa-edit"></i></button>` : ''}
                                     <button class="delete-indicador" data-id="${ind.id}" title="Eliminar"><i class="fas fa-trash-alt"></i></button>
                                 </div>
                             </div>
@@ -590,7 +592,6 @@
                     `;
                 });
                 indicadoresLista.innerHTML = html;
-                // No es necesario asignar eventos aquí porque usamos delegación en el contenedor
             }
 
             function escapeHtml(text) {
@@ -631,6 +632,7 @@
                 } else if (btn.classList.contains('delete-indicador')) {
                     if (confirm('¿Eliminar este indicador?')) {
                         await eliminarIndicador(id);
+                        // Recargar la lista para reflejar la eliminación
                         await cargarIndicadores(currentGroupId, currentPeriodId);
                     }
                 }
