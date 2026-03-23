@@ -8,217 +8,43 @@
     <link rel="stylesheet" href="css/style.css">
     <script src="js/curriculum.js"></script>
     <style>
-        /* Estilos */
-        .indicador-card {
-            background: white;
-            border-radius: 16px;
-            padding: 1.2rem;
-            margin-bottom: 1rem;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-            border-left: 4px solid #2E7D32;
-            transition: all 0.2s;
-            display: flex;
-            align-items: flex-start;
-            gap: 1rem;
-        }
+        /* Estilos iguales que antes (no modificados) */
+        .indicador-card { background: white; border-radius: 16px; padding: 1.2rem; margin-bottom: 1rem; box-shadow: 0 4px 12px rgba(0,0,0,0.05); border-left: 4px solid #2E7D32; transition: all 0.2s; }
         .indicador-card:hover { box-shadow: 0 8px 20px rgba(0,0,0,0.08); }
-        .indicador-checkbox {
-            margin-top: 0.2rem;
-        }
-        .indicador-checkbox input {
-            transform: scale(1.2);
-            cursor: pointer;
-        }
-        .indicador-contenido {
-            flex: 1;
-        }
-        .indicador-desc {
-            font-weight: 500;
-            color: #1e293b;
-            line-height: 1.4;
-            margin-bottom: 0.5rem;
-        }
-        .indicador-meta {
-            display: flex;
-            gap: 1.2rem;
-            font-size: 0.85rem;
-            color: #64748b;
-            flex-wrap: wrap;
-            border-top: 1px solid #e2e8f0;
-            padding-top: 0.5rem;
-            margin-top: 0.5rem;
-        }
-        .indicador-meta span {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.3rem;
-        }
-        .indicador-actions {
-            display: flex;
-            gap: 0.5rem;
-            align-items: center;
-        }
-        .edit-indicador {
-            background: none;
-            border: none;
-            cursor: pointer;
-            font-size: 1rem;
-            padding: 0.3rem;
-            border-radius: 8px;
-            color: #1976D2;
-        }
-        .edit-indicador:hover {
-            background: #e8f5e9;
-        }
-        .form-inline {
-            display: flex;
-            gap: 1rem;
-            flex-wrap: wrap;
-            align-items: flex-end;
-            margin-bottom: 1.5rem;
-        }
-        .form-inline > div {
-            flex: 1;
-            min-width: 150px;
-        }
-        .form-inline label {
-            display: block;
-            margin-bottom: 0.3rem;
-            font-weight: 500;
-            color: #2E7D32;
-        }
-        .form-inline select, .form-inline input {
-            width: 100%;
-            padding: 0.6rem;
-            border-radius: 8px;
-            border: 1px solid #ddd;
-            background: white;
-            font-size: 0.95rem;
-        }
-        .checkbox-group {
-            max-height: 400px;
-            overflow-y: auto;
-            margin: 1rem 0;
-            padding: 1rem;
-            border: 1px solid #e2e8f0;
-            border-radius: 12px;
-            background: #f8fafc;
-        }
-        .checkbox-group label {
-            display: block;
-            margin: 0.6rem 0;
-            font-size: 0.9rem;
-            line-height: 1.4;
-        }
-        .checkbox-group input[type="checkbox"] {
-            margin-right: 0.6rem;
-            transform: scale(1.1);
-            vertical-align: middle;
-        }
-        .empty-table {
-            text-align: center;
-            color: #94a3b8;
-            padding: 2rem !important;
-            font-style: italic;
-            background: #f8fafc;
-            border-radius: 12px;
-        }
-        .btn-accion {
-            background: #2E7D32;
-            color: white;
-            border: none;
-            padding: 0.7rem 1.5rem;
-            border-radius: 40px;
-            cursor: pointer;
-            font-size: 0.9rem;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            transition: all 0.2s;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-        .btn-accion:hover {
-            background: #1e5a20;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
-        }
-        .btn-ia {
-            background: #1976D2;
-        }
-        .btn-secundario {
-            background: #f0f0f0;
-            color: #333;
-            border: 1px solid #ccc;
-        }
-        .btn-secundario:hover {
-            background: #e0e0e0;
-            transform: translateY(-1px);
-        }
-        .recent-section {
-            background: white;
-            border-radius: 24px;
-            padding: 1.8rem;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.02);
-            margin-bottom: 2rem;
-        }
-        h2 {
-            font-size: 1.4rem;
-            font-weight: 600;
-            color: #0f3b1a;
-            margin-bottom: 1.2rem;
-        }
-        .modal-content {
-            border-radius: 24px;
-        }
-        .modal-content .form-group {
-            margin-bottom: 1.2rem;
-        }
-        .modal-content label {
-            font-weight: 500;
-            margin-bottom: 0.3rem;
-            display: block;
-            color: #2E7D32;
-        }
-        .modal-content input, .modal-content select, .modal-content textarea {
-            width: 100%;
-            padding: 0.6rem;
-            border: 1px solid #ccc;
-            border-radius: 8px;
-            font-size: 0.95rem;
-        }
-        .date-wrapper {
-            position: relative;
-        }
-        .date-wrapper i {
-            position: absolute;
-            right: 12px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #2E7D32;
-            pointer-events: none;
-        }
-        input[type="date"] {
-            padding-right: 2rem;
-        }
-        .button-group {
-            display: flex;
-            gap: 1rem;
-            flex-wrap: wrap;
-            margin: 1rem 0;
-        }
-        .flex-between {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 1rem;
-        }
-        .delete-selected-btn {
-            background: #c62828;
-        }
-        .delete-selected-btn:hover {
-            background: #b71c1c;
-        }
+        .indicador-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; }
+        .indicador-desc { flex: 1; font-weight: 500; color: #1e293b; line-height: 1.4; }
+        .indicador-meta { display: flex; gap: 1.2rem; margin-top: 0.8rem; font-size: 0.85rem; color: #64748b; flex-wrap: wrap; border-top: 1px solid #e2e8f0; padding-top: 0.8rem; }
+        .indicador-meta span { display: inline-flex; align-items: center; gap: 0.3rem; }
+        .indicador-actions { display: flex; gap: 0.5rem; }
+        .edit-indicador, .delete-indicador { background: none; border: none; cursor: pointer; font-size: 1.1rem; padding: 0.3rem; border-radius: 8px; transition: all 0.2s; color: #64748b; }
+        .edit-indicador:hover { background: #e8f5e9; color: #1976D2; }
+        .delete-indicador:hover { background: #ffebee; color: #c62828; }
+        .form-inline { display: flex; gap: 1rem; flex-wrap: wrap; align-items: flex-end; margin-bottom: 1.5rem; }
+        .form-inline > div { flex: 1; min-width: 150px; }
+        .form-inline label { display: block; margin-bottom: 0.3rem; font-weight: 500; color: #2E7D32; }
+        .form-inline select, .form-inline input { width: 100%; padding: 0.6rem; border-radius: 8px; border: 1px solid #ddd; background: white; font-size: 0.95rem; }
+        .checkbox-group { max-height: 400px; overflow-y: auto; margin: 1rem 0; padding: 1rem; border: 1px solid #e2e8f0; border-radius: 12px; background: #f8fafc; }
+        .checkbox-group label { display: block; margin: 0.6rem 0; font-size: 0.9rem; line-height: 1.4; }
+        .checkbox-group input[type="checkbox"] { margin-right: 0.6rem; transform: scale(1.1); vertical-align: middle; }
+        .empty-table { text-align: center; color: #94a3b8; padding: 2rem !important; font-style: italic; background: #f8fafc; border-radius: 12px; }
+        .btn-accion { background: #2E7D32; color: white; border: none; padding: 0.7rem 1.5rem; border-radius: 40px; cursor: pointer; font-size: 0.9rem; display: inline-flex; align-items: center; gap: 0.5rem; transition: all 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .btn-accion:hover { background: #1e5a20; transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.15); }
+        .btn-ia { background: #1976D2; }
+        .btn-ia:hover { background: #0d5a9e; }
+        .btn-secundario { background: #f0f0f0; color: #333; border: 1px solid #ccc; }
+        .btn-secundario:hover { background: #e0e0e0; transform: translateY(-1px); }
+        .recent-section { background: white; border-radius: 24px; padding: 1.8rem; box-shadow: 0 8px 20px rgba(0,0,0,0.02); margin-bottom: 2rem; }
+        h2 { font-size: 1.4rem; font-weight: 600; color: #0f3b1a; margin-bottom: 1.2rem; }
+        .modal-content { border-radius: 24px; }
+        .modal-content .form-group { margin-bottom: 1.2rem; }
+        .modal-content label { font-weight: 500; margin-bottom: 0.3rem; display: block; color: #2E7D32; }
+        .modal-content input, .modal-content select, .modal-content textarea { width: 100%; padding: 0.6rem; border: 1px solid #ccc; border-radius: 8px; font-size: 0.95rem; }
+        .date-wrapper { position: relative; }
+        .date-wrapper i { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); color: #2E7D32; pointer-events: none; }
+        input[type="date"] { padding-right: 2rem; }
+        .button-group { display: flex; gap: 1rem; flex-wrap: wrap; margin: 1rem 0; }
+        .flex-between { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
+        .debug-btn { background: #FF9800; color: #333; margin-left: 1rem; }
     </style>
 </head>
 <body>
@@ -243,6 +69,8 @@
                 <div class="user-info">
                     <span class="user-badge"><i class="fas fa-user-graduate"></i> Docente</span>
                     <span class="user-badge"><i class="fas fa-calendar-alt"></i> 2026</span>
+                    <button id="debugBtn" class="btn-secundario debug-btn"><i class="fas fa-bug"></i> Depurar</button>
+                    <button id="deleteAllBtn" class="btn-secundario" style="background:#c62828; color:white;"><i class="fas fa-trash-alt"></i> Eliminar todos</button>
                 </div>
             </div>
 
@@ -260,8 +88,6 @@
                     <div class="button-group">
                         <button id="importarCurriculumBtn" class="btn-accion btn-ia"><i class="fas fa-download"></i> Importar desde currículo</button>
                         <button id="agregarManualBtn" class="btn-accion"><i class="fas fa-plus"></i> Agregar manual</button>
-                        <button id="eliminarSeleccionadosBtn" class="btn-accion delete-selected-btn"><i class="fas fa-trash-alt"></i> Eliminar seleccionados</button>
-                        <button id="deleteAllBtn" class="btn-accion" style="background:#c62828;"><i class="fas fa-trash"></i> Eliminar todos</button>
                     </div>
                 </div>
                 <div id="indicadoresLista"><p class="empty-table">Seleccione un grupo y período, luego presione "Cargar".</p></div>
@@ -269,38 +95,9 @@
         </main>
     </div>
 
-    <!-- Modal para importar desde currículo -->
-    <div id="modalImportarCurriculum" class="modal">
-        <div class="modal-content">
-            <span class="close" id="closeModalCurr">&times;</span>
-            <h2><i class="fas fa-book-open"></i> Importar indicadores desde el currículo</h2>
-            <div class="form-inline">
-                <div><label>Ciclo</label><select id="cicloCurr"><option value="">-- Seleccione --</option><option value="preescolar">Preescolar</option><option value="primaria">I Ciclo</option><option value="primaria">II Ciclo</option><option value="secundaria">III Ciclo</option></select></div>
-                <div><label>Nivel</label><select id="nivelCurr"><option value="">-- Primero seleccione ciclo --</option></select></div>
-                <div><label>Módulo</label><select id="moduloCurr"><option value="1">Módulo 1</option><option value="2">Módulo 2</option><option value="ambos">Ambos módulos</option></select></div>
-                <div><button id="cargarIndicadoresCurrBtn" class="btn-accion"><i class="fas fa-search"></i> Cargar saberes</button></div>
-            </div>
-            <div id="saberesCurrContainer" class="checkbox-group"><p>Seleccione ciclo, nivel y módulo, luego haga clic en "Cargar saberes".</p></div>
-            <div style="text-align: right; margin-top: 1.5rem;">
-                <button id="confirmarImportarBtn" class="btn-accion">Importar seleccionados</button>
-                <button id="cancelarImportarBtn" class="btn-secundario">Cancelar</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal para agregar/editar indicador manualmente -->
-    <div id="modalIndicador" class="modal">
-        <div class="modal-content">
-            <span class="close" id="closeModalInd">&times;</span>
-            <h2 id="modalIndTitulo">Agregar indicador</h2>
-            <div class="form-group"><label>Descripción *</label><textarea id="indicadorDesc" rows="3"></textarea></div>
-            <div class="form-group"><label>Puntaje máximo</label><input type="number" id="indicadorPuntaje" value="100" step="1"></div>
-            <div class="form-group date-wrapper"><label>Fecha inicio (opcional)</label><i class="fas fa-calendar-alt"></i><input type="date" id="indicadorFechaInicio"></div>
-            <div class="form-group date-wrapper"><label>Fecha fin (opcional)</label><i class="fas fa-calendar-check"></i><input type="date" id="indicadorFechaFin"></div>
-            <div class="form-group"><label>Instrumento sugerido</label><select id="indicadorInstrumento"><option value="Escala">Escala de valoración</option><option value="Lista de cotejo">Lista de cotejo</option><option value="Rúbrica analítica">Rúbrica analítica</option></select></div>
-            <div style="text-align: right; margin-top: 1.5rem;"><button id="guardarIndicadorBtn" class="btn-accion">Guardar</button><button id="cancelarIndicadorBtn" class="btn-secundario">Cancelar</button></div>
-        </div>
-    </div>
+    <!-- Modales -->
+    <div id="modalImportarCurriculum" class="modal"><div class="modal-content"><span class="close" id="closeModalCurr">&times;</span><h2><i class="fas fa-book-open"></i> Importar indicadores desde el currículo</h2><div class="form-inline"><div><label>Ciclo</label><select id="cicloCurr"><option value="">-- Seleccione --</option><option value="preescolar">Preescolar</option><option value="primaria">I Ciclo</option><option value="primaria">II Ciclo</option><option value="secundaria">III Ciclo</option></select></div><div><label>Nivel</label><select id="nivelCurr"><option value="">-- Primero seleccione ciclo --</option></select></div><div><label>Módulo</label><select id="moduloCurr"><option value="1">Módulo 1</option><option value="2">Módulo 2</option><option value="ambos">Ambos módulos</option></select></div><div><button id="cargarIndicadoresCurrBtn" class="btn-accion"><i class="fas fa-search"></i> Cargar saberes</button></div></div><div id="saberesCurrContainer" class="checkbox-group"><p>Seleccione ciclo, nivel y módulo, luego haga clic en "Cargar saberes".</p></div><div style="text-align: right; margin-top: 1.5rem;"><button id="confirmarImportarBtn" class="btn-accion">Importar seleccionados</button><button id="cancelarImportarBtn" class="btn-secundario">Cancelar</button></div></div></div>
+    <div id="modalIndicador" class="modal"><div class="modal-content"><span class="close" id="closeModalInd">&times;</span><h2 id="modalIndTitulo">Agregar indicador</h2><div class="form-group"><label>Descripción *</label><textarea id="indicadorDesc" rows="3"></textarea></div><div class="form-group"><label>Puntaje máximo</label><input type="number" id="indicadorPuntaje" value="100" step="1"></div><div class="form-group date-wrapper"><label>Fecha inicio (opcional)</label><i class="fas fa-calendar-alt"></i><input type="date" id="indicadorFechaInicio"></div><div class="form-group date-wrapper"><label>Fecha fin (opcional)</label><i class="fas fa-calendar-check"></i><input type="date" id="indicadorFechaFin"></div><div class="form-group"><label>Instrumento sugerido</label><select id="indicadorInstrumento"><option value="Escala">Escala de valoración</option><option value="Lista de cotejo">Lista de cotejo</option><option value="Rúbrica analítica">Rúbrica analítica</option></select></div><div style="text-align: right; margin-top: 1.5rem;"><button id="guardarIndicadorBtn" class="btn-accion">Guardar</button><button id="cancelarIndicadorBtn" class="btn-secundario">Cancelar</button></div></div></div>
 
     <script>
         (function() {
@@ -312,9 +109,9 @@
             const cargarBtn = document.getElementById('cargarIndicadoresBtn');
             const importarCurriculumBtn = document.getElementById('importarCurriculumBtn');
             const agregarManualBtn = document.getElementById('agregarManualBtn');
-            const eliminarSeleccionadosBtn = document.getElementById('eliminarSeleccionadosBtn');
-            const deleteAllBtn = document.getElementById('deleteAllBtn');
             const indicadoresLista = document.getElementById('indicadoresLista');
+            const debugBtn = document.getElementById('debugBtn');
+            const deleteAllBtn = document.getElementById('deleteAllBtn');
 
             // Modales
             const modalCurr = document.getElementById('modalImportarCurriculum');
@@ -413,7 +210,7 @@
                     req.onsuccess = () => {
                         const todos = req.result;
                         const filtrados = todos.filter(i => i.periodId === periodId);
-                        console.log('📋 Indicadores cargados:', filtrados.length);
+                        console.log('📋 Indicadores obtenidos de DB:', filtrados.map(i => ({ id: i.id, desc: i.descripcion.substring(0,40) })));
                         resolve(filtrados);
                     };
                     req.onerror = () => reject(req.error);
@@ -486,16 +283,6 @@
                 });
             }
 
-            function escapeHtml(text) {
-                if (!text) return '';
-                return text.replace(/[&<>]/g, function(m) {
-                    if (m === '&') return '&amp;';
-                    if (m === '<') return '&lt;';
-                    if (m === '>') return '&gt;';
-                    return m;
-                });
-            }
-
             function renderizarIndicadores() {
                 if (!currentIndicadores.length) {
                     indicadoresLista.innerHTML = '<p class="empty-table">No hay indicadores para este grupo y período. Use "Importar desde currículo" o "Agregar manual".</p>';
@@ -506,25 +293,33 @@
                     const mostrarEditar = ind.origen !== 'curriculum';
                     html += `
                         <div class="indicador-card" data-id="${ind.id}">
-                            <div class="indicador-checkbox">
-                                <input type="checkbox" class="indicador-seleccionado" value="${ind.id}">
-                            </div>
-                            <div class="indicador-contenido">
+                            <div class="indicador-header">
                                 <div class="indicador-desc">${escapeHtml(ind.descripcion)}</div>
-                                <div class="indicador-meta">
-                                    <span><i class="fas fa-star"></i> Puntaje: ${ind.puntajeMaximo || 100} pts</span>
-                                    ${ind.fechaInicio ? `<span><i class="fas fa-calendar-alt"></i> Inicio: ${ind.fechaInicio}</span>` : ''}
-                                    ${ind.fechaFin ? `<span><i class="fas fa-calendar-check"></i> Fin: ${ind.fechaFin}</span>` : ''}
-                                    <span><i class="fas fa-clipboard"></i> Instrumento: ${ind.instrumento || 'Escala'}</span>
+                                <div class="indicador-actions">
+                                    ${mostrarEditar ? `<button class="edit-indicador" data-id="${ind.id}" title="Editar"><i class="fas fa-edit"></i></button>` : ''}
+                                    <button class="delete-indicador" data-id="${ind.id}" title="Eliminar"><i class="fas fa-trash-alt"></i></button>
                                 </div>
                             </div>
-                            <div class="indicador-actions">
-                                ${mostrarEditar ? `<button class="edit-indicador" data-id="${ind.id}" title="Editar"><i class="fas fa-edit"></i></button>` : ''}
+                            <div class="indicador-meta">
+                                <span><i class="fas fa-star"></i> Puntaje: ${ind.puntajeMaximo || 100} pts</span>
+                                ${ind.fechaInicio ? `<span><i class="fas fa-calendar-alt"></i> Inicio: ${ind.fechaInicio}</span>` : ''}
+                                ${ind.fechaFin ? `<span><i class="fas fa-calendar-check"></i> Fin: ${ind.fechaFin}</span>` : ''}
+                                <span><i class="fas fa-clipboard"></i> Instrumento: ${ind.instrumento || 'Escala'}</span>
                             </div>
                         </div>
                     `;
                 });
                 indicadoresLista.innerHTML = html;
+            }
+
+            function escapeHtml(text) {
+                if (!text) return '';
+                return text.replace(/[&<>]/g, function(m) {
+                    if (m === '&') return '&amp;';
+                    if (m === '<') return '&lt;';
+                    if (m === '>') return '&gt;';
+                    return m;
+                });
             }
 
             async function cargarIndicadores(groupId, periodId) {
@@ -538,34 +333,40 @@
                 renderizarIndicadores();
             }
 
-            // ---------- Eliminar seleccionados ----------
-            eliminarSeleccionadosBtn.addEventListener('click', async () => {
-                const checkboxes = document.querySelectorAll('.indicador-seleccionado:checked');
-                if (checkboxes.length === 0) {
-                    alert('No hay indicadores seleccionados.');
-                    return;
-                }
-                if (confirm(`¿Eliminar ${checkboxes.length} indicador(es)?`)) {
-                    const ids = Array.from(checkboxes).map(cb => parseInt(cb.value));
-                    for (let id of ids) {
-                        await eliminarIndicador(id);
-                    }
-                    await cargarIndicadores(currentGroupId, currentPeriodId);
-                    alert('✅ Indicadores eliminados.');
-                }
-            });
+            // ---------- ELIMINACIÓN INDIVIDUAL (con manejo robusto) ----------
+            indicadoresLista.addEventListener('click', async (e) => {
+                const btn = e.target.closest('.delete-indicador');
+                if (!btn) return;
 
-            // ---------- Eliminar todos ----------
-            deleteAllBtn.addEventListener('click', async () => {
-                if (!currentGroupId || !currentPeriodId) {
-                    alert('Primero seleccione grupo y período y haga clic en "Cargar".');
+                const card = btn.closest('.indicador-card');
+                if (!card) return;
+
+                const id = parseInt(card.dataset.id);
+                console.log('🖱️ Click eliminar, id:', id, 'tipo:', typeof id);
+
+                if (isNaN(id)) {
+                    console.error('ID inválido:', card.dataset.id);
+                    alert('Error: ID de indicador no válido.');
                     return;
                 }
-                if (confirm('¿Eliminar TODOS los indicadores de este grupo y período? Esta acción no se puede deshacer.')) {
-                    const todos = await obtenerIndicadores(currentGroupId, currentPeriodId);
-                    for (let ind of todos) await eliminarIndicador(ind.id);
-                    await cargarIndicadores(currentGroupId, currentPeriodId);
-                    alert('✅ Todos los indicadores eliminados.');
+
+                if (!currentGroupId || !currentPeriodId) {
+                    console.error('No hay grupo/período actual');
+                    alert('No se ha cargado ningún grupo y período.');
+                    return;
+                }
+
+                if (confirm('¿Eliminar este indicador?')) {
+                    try {
+                        await eliminarIndicador(id);
+                        console.log('Esperando recarga de lista...');
+                        // Recargar la lista desde la base de datos
+                        await cargarIndicadores(currentGroupId, currentPeriodId);
+                        alert('✅ Indicador eliminado correctamente.');
+                    } catch (err) {
+                        console.error('Error al eliminar:', err);
+                        alert('❌ Error al eliminar. Revisa la consola.');
+                    }
                 }
             });
 
@@ -575,7 +376,7 @@
                 if (!btn) return;
                 const card = btn.closest('.indicador-card');
                 if (!card) return;
-                const id = parseInt(btn.dataset.id);
+                const id = parseInt(card.dataset.id);
                 const indicador = currentIndicadores.find(i => i.id === id);
                 if (indicador) abrirModalEditar(indicador);
             });
@@ -698,6 +499,26 @@
             agregarManualBtn.addEventListener('click', () => {
                 if (!currentGroupId || !currentPeriodId) { alert('Primero debe seleccionar un grupo y período en la página principal y hacer clic en "Cargar".'); return; }
                 abrirModalNuevo();
+            });
+
+            // Botón de depuración
+            debugBtn.addEventListener('click', async () => {
+                if (!currentGroupId || !currentPeriodId) { alert('Primero seleccione grupo y período y haga clic en "Cargar".'); return; }
+                const lista = await obtenerIndicadores(currentGroupId, currentPeriodId);
+                console.clear();
+                console.table(lista.map(i => ({ id: i.id, descripcion: i.descripcion.substring(0, 50), origen: i.origen })));
+                alert(`Se listaron ${lista.length} indicadores en la consola. Revisa F12.`);
+            });
+
+            // Eliminar todos
+            deleteAllBtn.addEventListener('click', async () => {
+                if (!currentGroupId || !currentPeriodId) { alert('Primero seleccione grupo y período y haga clic en "Cargar".'); return; }
+                if (confirm('¿Eliminar TODOS los indicadores de este grupo y período? Esta acción no se puede deshacer.')) {
+                    const todos = await obtenerIndicadores(currentGroupId, currentPeriodId);
+                    for (let ind of todos) await eliminarIndicador(ind.id);
+                    await cargarIndicadores(currentGroupId, currentPeriodId);
+                    alert('✅ Todos los indicadores eliminados.');
+                }
             });
 
             // Inicialización
