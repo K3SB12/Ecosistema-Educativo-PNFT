@@ -98,6 +98,12 @@
             display: block;
             margin: 0.5rem 0;
         }
+        .empty-table {
+            text-align: center;
+            color: #94a3b8;
+            padding: 2rem !important;
+            font-style: italic;
+        }
     </style>
 </head>
 <body>
@@ -293,9 +299,9 @@
             let currentPeriodId = null;
             let currentIndicadores = [];
 
-            // ---------- IndexedDB (versión actualizada con nueva store) ----------
+            // ---------- IndexedDB ----------
             const DB_NAME = 'PNFT_DB';
-            const DB_VERSION = 3; // Incrementamos versión para nueva store
+            const DB_VERSION = 3;
             let db = null;
 
             function abrirDB() {
@@ -317,7 +323,6 @@
                         if (!db.objectStoreNames.contains('periods')) {
                             db.createObjectStore('periods', { keyPath: 'id' });
                         }
-                        // Nueva store para indicadores de evaluación
                         if (!db.objectStoreNames.contains('evaluation_indicators')) {
                             const store = db.createObjectStore('evaluation_indicators', { keyPath: 'id' });
                             store.createIndex('groupId', 'groupId', { unique: false });
@@ -327,6 +332,7 @@
                 });
             }
 
+            // ---------- Funciones de datos ----------
             async function guardarIndicador(indicador) {
                 if (!db) await abrirDB();
                 return new Promise((resolve, reject) => {
@@ -387,6 +393,42 @@
                 });
             }
 
+            async function crearGrupoEjemplo() {
+                const grupos = await obtenerGrupos();
+                if (grupos.length === 0) {
+                    const grupoEjemplo = {
+                        id: 1,
+                        nombre: 'Informática - Primer Ciclo-2-1',
+                        nivel: 'Primero',
+                        seccion: '2-1',
+                        materia: 'Informática',
+                        centroEducativo: 'Escuela Tranquilino Sáenz Rojas',
+                        añoLectivo: 2026
+                    };
+                    const tx = db.transaction(['groups'], 'readwrite');
+                    const store = tx.objectStore('groups');
+                    store.put(grupoEjemplo);
+                    console.log('✅ Grupo de ejemplo creado');
+                }
+            }
+
+            async function crearPeriodoEjemplo() {
+                const periodos = await obtenerPeriodos();
+                if (periodos.length === 0) {
+                    const periodoEjemplo = {
+                        id: 1,
+                        nombre: 'I Semestre',
+                        fechaInicio: '2026-02-23',
+                        fechaFin: '2026-07-03',
+                        tipo: 'semestre'
+                    };
+                    const tx = db.transaction(['periods'], 'readwrite');
+                    const store = tx.objectStore('periods');
+                    store.put(periodoEjemplo);
+                    console.log('✅ Período de ejemplo creado');
+                }
+            }
+
             // ---------- Cargar selectores ----------
             async function cargarGrupos() {
                 const grupos = await obtenerGrupos();
@@ -394,7 +436,7 @@
                 grupos.forEach(g => {
                     const option = document.createElement('option');
                     option.value = g.id;
-                    option.textContent = `${g.nombre || g.nivel || 'Sin nombre'} (${g.nivel || ''})`;
+                    option.textContent = `${g.nombre || g.materia || 'Sin nombre'} (${g.nivel || ''})`;
                     grupoSelect.appendChild(option);
                 });
             }
@@ -482,14 +524,12 @@
             // ---------- Modal de importación desde currículo ----------
             function abrirModalCurriculum() {
                 modalCurr.style.display = 'block';
-                // Resetear
                 cicloCurr.value = '';
                 nivelCurr.innerHTML = '<option value="">-- Primero seleccione ciclo --</option>';
                 moduloCurr.value = '1';
                 saberesCurrContainer.innerHTML = '<p>Seleccione ciclo, nivel y módulo, luego haga clic en "Cargar saberes".</p>';
             }
 
-            // Actualizar niveles según ciclo
             function actualizarNivelesCurr() {
                 const ciclo = cicloCurr.value;
                 nivelCurr.innerHTML = '<option value="">-- Seleccione --</option>';
@@ -508,7 +548,6 @@
 
             cicloCurr.addEventListener('change', actualizarNivelesCurr);
 
-            // Cargar saberes conceptuales del currículo
             cargarIndicadoresCurrBtn.addEventListener('click', () => {
                 const ciclo = cicloCurr.value;
                 const nivel = nivelCurr.value;
@@ -678,12 +717,13 @@
                 abrirModalNuevo();
             });
 
-            // ---------- Inicialización ----------
+            // ---------- Inicialización con datos de ejemplo ----------
             (async () => {
                 await abrirDB();
+                await crearGrupoEjemplo();
+                await crearPeriodoEjemplo();
                 await cargarGrupos();
                 await cargarPeriodos();
-                // Si hay grupos y períodos precargados, no cargamos automáticamente
             })();
 
             // Cerrar modales al hacer clic fuera
