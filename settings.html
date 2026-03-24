@@ -327,13 +327,15 @@
     <div id="modalPreload" class="modal">
         <div class="modal-content">
             <span class="close" id="closePreloadModal">&times;</span>
-            <h2>Precargar plantilla por modalidad</h2>
-            <p>Seleccione la modalidad para crear un componente con subcomponentes típicos del MEP:</p>
+            <h2>Precargar componente por modalidad (Formación Tecnológica)</h2>
+            <p>Seleccione la modalidad para cargar la plantilla con los porcentajes oficiales del MEP:</p>
             <select id="preloadModalidad" style="width:100%; padding:0.5rem; margin:1rem 0;">
-                <option value="I Ciclo">I Ciclo (1°-3°)</option>
-                <option value="II Ciclo">II Ciclo (4°-6°)</option>
-                <option value="III Ciclo">III Ciclo (7°-9°)</option>
-                <option value="Diversificada">Diversificada (10°-12°)</option>
+                <option value="I Ciclo">I Ciclo (1°-3°) – Trabajo cotidiano 65%, Tareas 10%, Prueba de ejecución 15%, Asistencia 10%</option>
+                <option value="II Ciclo">II Ciclo (4°-6°) – Trabajo cotidiano 60%, Tareas 10%, Prueba de ejecución 20%, Asistencia 10%</option>
+                <option value="III Ciclo">III Ciclo (7°-9°) – Trabajo cotidiano 50%, Tareas 10%, Proyecto 30%, Asistencia 10%</option>
+                <option value="Diversificada">Diversificada (10°-12°) – Trabajo cotidiano 50%, Tareas 5%, Proyecto 35%, Asistencia 10%</option>
+                <option value="Educación Adultos">Educación Adultos (CINDEA/IPEC) – Trabajo cotidiano 50%, Tareas 10%, Proyecto 30%, Asistencia 10%</option>
+                <option value="Educación Especial">Educación Especial (III Ciclo/Diversificado) – Trabajo cotidiano 60%, Tareas 10%, Proyecto 20%, Asistencia 10%</option>
             </select>
             <div style="text-align: right;">
                 <button id="confirmPreloadBtn" class="btn-accion">Cargar</button>
@@ -715,35 +717,42 @@
         document.getElementById('cancelComponentBtn').onclick = () => closeAllModals();
         document.getElementById('closeComponentModal').onclick = () => closeAllModals();
 
-        // Precarga por modalidad
+        // Precarga por modalidad (Formación Tecnológica)
         const modalidadesData = {
             'I Ciclo': [
-                { nombre: 'Trabajo cotidiano', porcentaje: 30 },
-                { nombre: 'Tareas', porcentaje: 20 },
-                { nombre: 'Pruebas escritas', porcentaje: 30 },
-                { nombre: 'Proyectos', porcentaje: 10 },
-                { nombre: 'Asistencia y participación', porcentaje: 10 }
+                { nombre: 'Trabajo cotidiano', porcentaje: 65 },
+                { nombre: 'Tareas', porcentaje: 10 },
+                { nombre: 'Prueba de ejecución', porcentaje: 15 },
+                { nombre: 'Asistencia', porcentaje: 10 }
             ],
             'II Ciclo': [
-                { nombre: 'Trabajo cotidiano', porcentaje: 25 },
-                { nombre: 'Tareas', porcentaje: 15 },
-                { nombre: 'Pruebas', porcentaje: 30 },
-                { nombre: 'Proyectos', porcentaje: 20 },
+                { nombre: 'Trabajo cotidiano', porcentaje: 60 },
+                { nombre: 'Tareas', porcentaje: 10 },
+                { nombre: 'Prueba de ejecución', porcentaje: 20 },
                 { nombre: 'Asistencia', porcentaje: 10 }
             ],
             'III Ciclo': [
-                { nombre: 'Trabajo cotidiano', porcentaje: 20 },
-                { nombre: 'Tareas', porcentaje: 15 },
-                { nombre: 'Exámenes', porcentaje: 30 },
-                { nombre: 'Proyecto final', porcentaje: 25 },
+                { nombre: 'Trabajo cotidiano', porcentaje: 50 },
+                { nombre: 'Tareas', porcentaje: 10 },
+                { nombre: 'Proyecto', porcentaje: 30 },
                 { nombre: 'Asistencia', porcentaje: 10 }
             ],
             'Diversificada': [
-                { nombre: 'Trabajo cotidiano', porcentaje: 15 },
+                { nombre: 'Trabajo cotidiano', porcentaje: 50 },
+                { nombre: 'Tareas', porcentaje: 5 },
+                { nombre: 'Proyecto', porcentaje: 35 },
+                { nombre: 'Asistencia', porcentaje: 10 }
+            ],
+            'Educación Adultos': [
+                { nombre: 'Trabajo cotidiano', porcentaje: 50 },
                 { nombre: 'Tareas', porcentaje: 10 },
-                { nombre: 'Pruebas', porcentaje: 25 },
-                { nombre: 'Proyecto final', porcentaje: 30 },
-                { nombre: 'Portafolio', porcentaje: 10 },
+                { nombre: 'Proyecto', porcentaje: 30 },
+                { nombre: 'Asistencia', porcentaje: 10 }
+            ],
+            'Educación Especial': [
+                { nombre: 'Trabajo cotidiano', porcentaje: 60 },
+                { nombre: 'Tareas', porcentaje: 10 },
+                { nombre: 'Proyecto', porcentaje: 20 },
                 { nombre: 'Asistencia', porcentaje: 10 }
             ]
         };
