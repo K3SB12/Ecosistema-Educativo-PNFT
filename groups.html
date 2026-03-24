@@ -1,13 +1,15 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Secciones - PNFT Articulador</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- SheetJS para importar/exportar Excel -->
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
     <style>
-        /* Estilos originales de Registra Profe (se mantienen) */
+        /* Estilos existentes (se mantienen) */
         body { background-color: #f8fafc; }
         .sidebar { background: linear-gradient(180deg, #1e5a20 0%, #2E7D32 100%); }
         .nav-item.active { background: white; color: #2E7D32; box-shadow: 0 10px 20px -5px rgba(0,0,0,0.2); }
@@ -31,10 +33,14 @@
         .group-main-actions .btn-sm:hover { background: #e2e8f0; }
         .group-main-actions .btn-danger { background: #fee2e2; border-color: #fecaca; color: #b91c1c; }
         .group-main-actions .btn-danger:hover { background: #fecaca; }
+        .student-table { width: 100%; border-collapse: collapse; }
+        .student-table th, .student-table td { border: 1px solid #e5e7eb; padding: 0.5rem; text-align: left; }
+        .student-table th { background: #f3f4f6; }
     </style>
 </head>
 <body class="font-sans antialiased">
     <div class="flex min-h-screen">
+        <!-- Sidebar (igual) -->
         <aside class="w-72 bg-gradient-to-b from-green-800 to-green-700 text-white flex-shrink-0 sticky top-0 h-screen overflow-y-auto">
             <div class="text-center py-8 border-b border-white/20">
                 <div class="w-20 h-20 bg-white/10 rounded-full flex items-center justify-center text-3xl font-bold mx-auto mb-4 border-2 border-white/20">PNFT</div>
@@ -54,6 +60,7 @@
         </aside>
 
         <main class="flex-1 p-8 bg-gray-50">
+            <!-- Contenido principal igual -->
             <div class="flex justify-between items-center mb-8 bg-white p-4 rounded-2xl shadow-sm">
                 <h1 class="text-2xl font-bold text-gray-800">Secciones</h1>
                 <div class="flex gap-4">
@@ -72,14 +79,8 @@
 
             <div class="bg-white p-6 border border-gray-200 rounded-xl shadow-sm mb-8">
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-1"> Institución </label>
-                        <select id="filtroInstitucion" class="w-full border-gray-300 rounded-lg py-2 focus:ring-green-500 focus:border-green-500"><option value="todos">Todas las Instituciones</option></select>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-1"> Nivel </label>
-                        <select id="filtroNivel" class="w-full border-gray-300 rounded-lg py-2 focus:ring-green-500 focus:border-green-500"><option value="todos">Todos los Niveles</option></select>
-                    </div>
+                    <div><label class="block text-sm font-semibold text-gray-700 mb-1"> Institución </label><select id="filtroInstitucion" class="w-full border-gray-300 rounded-lg py-2"><option value="todos">Todas las Instituciones</option></select></div>
+                    <div><label class="block text-sm font-semibold text-gray-700 mb-1"> Nivel </label><select id="filtroNivel" class="w-full border-gray-300 rounded-lg py-2"><option value="todos">Todos los Niveles</option></select></div>
                     <div class="flex items-end"><button id="limpiarFiltrosBtn" class="w-full px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg transition"> Limpiar filtros </button></div>
                 </div>
             </div>
@@ -112,11 +113,56 @@
         </div>
     </div>
 
+    <!-- Modal para gestión de estudiantes -->
+    <div id="modalEstudiantes" class="modal">
+        <div class="modal-content" style="max-width: 900px;">
+            <span class="close" id="closeModalEstudiantes">&times;</span>
+            <h2 class="text-xl font-bold mb-4">Estudiantes</h2>
+            <div class="flex justify-between items-center mb-4">
+                <div class="flex gap-2">
+                    <button id="btnAgregarEstudiante" class="bg-green-600 text-white px-3 py-1 rounded-lg text-sm flex items-center gap-1"><i class="fas fa-plus"></i> Agregar manual</button>
+                    <button id="btnImportarExcel" class="bg-blue-600 text-white px-3 py-1 rounded-lg text-sm flex items-center gap-1"><i class="fas fa-file-excel"></i> Importar Excel</button>
+                    <button id="btnExportarExcel" class="bg-purple-600 text-white px-3 py-1 rounded-lg text-sm flex items-center gap-1"><i class="fas fa-download"></i> Exportar Excel</button>
+                </div>
+                <input type="text" id="buscarEstudiante" placeholder="Buscar estudiante..." class="border rounded-lg px-3 py-1 text-sm w-64">
+            </div>
+            <div id="estudiantesLista" class="overflow-x-auto">
+                <table class="student-table w-full">
+                    <thead>
+                        <tr><th>Nombre</th><th>Apellido1</th><th>Apellido2</th><th>Email</th><th>Teléfono</th><th>Acciones</th></tr>
+                    </thead>
+                    <tbody id="tablaEstudiantes"></tbody>
+                </table>
+            </div>
+            <div id="paginacionEstudiantes" class="flex justify-center gap-2 mt-4"></div>
+        </div>
+    </div>
+
+    <!-- Modal para agregar/editar estudiante -->
+    <div id="modalFormEstudiante" class="modal">
+        <div class="modal-content" style="max-width: 500px;">
+            <span class="close" id="closeFormEstudiante">&times;</span>
+            <h2 id="formEstudianteTitulo" class="text-xl font-bold mb-4">Agregar Estudiante</h2>
+            <form id="formEstudiante">
+                <input type="hidden" id="estudianteId">
+                <div class="mb-3"><label class="block text-sm font-medium">Nombre *</label><input type="text" id="estNombre" required class="w-full border rounded p-2"></div>
+                <div class="mb-3"><label class="block text-sm font-medium">Primer Apellido *</label><input type="text" id="estApellido1" required class="w-full border rounded p-2"></div>
+                <div class="mb-3"><label class="block text-sm font-medium">Segundo Apellido</label><input type="text" id="estApellido2" class="w-full border rounded p-2"></div>
+                <div class="mb-3"><label class="block text-sm font-medium">Email</label><input type="email" id="estEmail" class="w-full border rounded p-2"></div>
+                <div class="mb-3"><label class="block text-sm font-medium">Teléfono</label><input type="text" id="estTelefono" class="w-full border rounded p-2"></div>
+                <div class="flex justify-end gap-2"><button type="submit" class="bg-green-600 text-white px-4 py-2 rounded-lg">Guardar</button><button type="button" id="cancelarFormEstudiante" class="bg-gray-200 px-4 py-2 rounded-lg">Cancelar</button></div>
+            </form>
+        </div>
+    </div>
+
     <script type="module">
         import { openDB, getAll, put, remove, getById } from './js/db.js';
 
         let db;
         let currentGroupId = null;
+        let estudiantesList = [];
+        let currentPage = 1;
+        const itemsPerPage = 10;
 
         // Datos de ejemplo predefinidos
         const datosEjemplo = {
@@ -169,10 +215,165 @@
             `).join('');
         }
 
-        document.getElementById('grupoAnio').addEventListener('change', (e) => cargarPeriodos(e.target.value));
+        // Funciones para estudiantes
+        async function cargarEstudiantes(groupId) {
+            const all = await getAll('students');
+            estudiantesList = all.filter(s => s.groupId === groupId);
+            renderTablaEstudiantes();
+        }
 
+        function renderTablaEstudiantes() {
+            const search = document.getElementById('buscarEstudiante').value.toLowerCase();
+            let filtered = estudiantesList;
+            if (search) {
+                filtered = estudiantesList.filter(s => 
+                    s.nombre.toLowerCase().includes(search) || 
+                    s.apellido1.toLowerCase().includes(search) ||
+                    (s.apellido2 && s.apellido2.toLowerCase().includes(search))
+                );
+            }
+            const start = (currentPage - 1) * itemsPerPage;
+            const paginated = filtered.slice(start, start + itemsPerPage);
+            const tbody = document.getElementById('tablaEstudiantes');
+            if (paginated.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" class="text-center text-gray-500">No hay estudiantes</td></tr>';
+                return;
+            }
+            tbody.innerHTML = paginated.map(s => `
+                <tr>
+                    <td>${escapeHtml(s.nombre)}</td>
+                    <td>${escapeHtml(s.apellido1)}</td>
+                    <td>${escapeHtml(s.apellido2 || '')}</td>
+                    <td>${escapeHtml(s.email || '')}</td>
+                    <td>${escapeHtml(s.telefono || '')}</td>
+                    <td class="whitespace-nowrap">
+                        <button class="editar-estudiante text-blue-600 hover:text-blue-800 mr-2" data-id="${s.id}"><i class="fas fa-edit"></i></button>
+                        <button class="eliminar-estudiante text-red-600 hover:text-red-800" data-id="${s.id}"><i class="fas fa-trash-alt"></i></button>
+                    </td>
+                </tr>
+            `).join('');
+            // Paginación
+            const totalPages = Math.ceil(filtered.length / itemsPerPage);
+            const pagContainer = document.getElementById('paginacionEstudiantes');
+            if (totalPages <= 1) { pagContainer.innerHTML = ''; return; }
+            let pagHtml = '';
+            for (let i = 1; i <= totalPages; i++) {
+                pagHtml += `<button class="pag-btn px-3 py-1 rounded ${i === currentPage ? 'bg-green-600 text-white' : 'bg-gray-200'}" data-page="${i}">${i}</button>`;
+            }
+            pagContainer.innerHTML = pagHtml;
+            document.querySelectorAll('.pag-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    currentPage = parseInt(btn.dataset.page);
+                    renderTablaEstudiantes();
+                });
+            });
+            // Asignar eventos a los botones de editar/eliminar después de renderizar
+            document.querySelectorAll('.editar-estudiante').forEach(btn => {
+                btn.addEventListener('click', async (e) => {
+                    const id = parseInt(btn.dataset.id);
+                    const estudiante = estudiantesList.find(s => s.id === id);
+                    if (estudiante) abrirFormEstudiante(estudiante);
+                });
+            });
+            document.querySelectorAll('.eliminar-estudiante').forEach(btn => {
+                btn.addEventListener('click', async (e) => {
+                    const id = parseInt(btn.dataset.id);
+                    if (confirm('¿Eliminar este estudiante?')) {
+                        await remove('students', id);
+                        await cargarEstudiantes(currentGroupId);
+                        await renderGrupos(); // actualizar contador en tarjeta
+                    }
+                });
+            });
+        }
+
+        function abrirFormEstudiante(estudiante = null) {
+            document.getElementById('formEstudianteTitulo').innerText = estudiante ? 'Editar Estudiante' : 'Agregar Estudiante';
+            document.getElementById('estudianteId').value = estudiante ? estudiante.id : '';
+            document.getElementById('estNombre').value = estudiante ? estudiante.nombre : '';
+            document.getElementById('estApellido1').value = estudiante ? estudiante.apellido1 : '';
+            document.getElementById('estApellido2').value = estudiante ? estudiante.apellido2 : '';
+            document.getElementById('estEmail').value = estudiante ? estudiante.email : '';
+            document.getElementById('estTelefono').value = estudiante ? estudiante.telefono : '';
+            document.getElementById('modalFormEstudiante').style.display = 'block';
+        }
+
+        document.getElementById('formEstudiante').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('estudianteId').value;
+            const estudiante = {
+                id: id ? parseInt(id) : Date.now(),
+                groupId: currentGroupId,
+                nombre: document.getElementById('estNombre').value.trim(),
+                apellido1: document.getElementById('estApellido1').value.trim(),
+                apellido2: document.getElementById('estApellido2').value.trim(),
+                email: document.getElementById('estEmail').value.trim(),
+                telefono: document.getElementById('estTelefono').value.trim()
+            };
+            await put('students', estudiante);
+            await cargarEstudiantes(currentGroupId);
+            await renderGrupos(); // actualizar contador
+            closeModalFormEstudiante();
+        });
+
+        function closeModalFormEstudiante() {
+            document.getElementById('modalFormEstudiante').style.display = 'none';
+            document.getElementById('formEstudiante').reset();
+        }
+
+        // Importar Excel
+        async function importarExcel(file) {
+            const data = await file.arrayBuffer();
+            const workbook = XLSX.read(data);
+            const sheet = workbook.Sheets[workbook.SheetNames[0]];
+            const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
+            if (rows.length < 2) { alert('El archivo no contiene datos.'); return; }
+            const headers = rows[0];
+            const nameIdx = headers.findIndex(h => h?.toLowerCase().includes('nombre'));
+            const ap1Idx = headers.findIndex(h => h?.toLowerCase().includes('primer') && h?.toLowerCase().includes('apellido'));
+            const ap2Idx = headers.findIndex(h => h?.toLowerCase().includes('segundo') && h?.toLowerCase().includes('apellido'));
+            const emailIdx = headers.findIndex(h => h?.toLowerCase() === 'email');
+            const phoneIdx = headers.findIndex(h => h?.toLowerCase() === 'teléfono' || h?.toLowerCase() === 'telefono');
+            if (nameIdx === -1 || ap1Idx === -1) { alert('El Excel debe tener columnas "Nombre" y "Primer Apellido".'); return; }
+            const nuevos = [];
+            for (let i = 1; i < rows.length; i++) {
+                const row = rows[i];
+                if (!row[nameIdx] || !row[ap1Idx]) continue;
+                nuevos.push({
+                    id: Date.now() + i,
+                    groupId: currentGroupId,
+                    nombre: row[nameIdx].toString().trim(),
+                    apellido1: row[ap1Idx].toString().trim(),
+                    apellido2: ap2Idx !== -1 ? row[ap2Idx]?.toString().trim() : '',
+                    email: emailIdx !== -1 ? row[emailIdx]?.toString().trim() : '',
+                    telefono: phoneIdx !== -1 ? row[phoneIdx]?.toString().trim() : ''
+                });
+            }
+            if (nuevos.length === 0) { alert('No se encontraron estudiantes válidos.'); return; }
+            for (let s of nuevos) await put('students', s);
+            await cargarEstudiantes(currentGroupId);
+            await renderGrupos();
+            alert(`${nuevos.length} estudiantes importados.`);
+        }
+
+        // Exportar Excel
+        async function exportarExcel() {
+            const estudiantes = await getAll('students');
+            const groupStudents = estudiantes.filter(s => s.groupId === currentGroupId);
+            const data = [['Nombre', 'Primer Apellido', 'Segundo Apellido', 'Email', 'Teléfono']];
+            for (let s of groupStudents) {
+                data.push([s.nombre, s.apellido1, s.apellido2 || '', s.email || '', s.telefono || '']);
+            }
+            const ws = XLSX.utils.aoa_to_sheet(data);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, 'Estudiantes');
+            XLSX.writeFile(wb, `estudiantes_${currentGroupId}.xlsx`);
+        }
+
+        // --- Funciones de grupos (igual que antes, pero con actualización de contador) ---
         async function renderGrupos() {
             const grupos = await getAll('groups');
+            const estudiantes = await getAll('students');
             const centros = await getAll('centros_educativos');
             const container = document.getElementById('gruposContainer');
             if (grupos.length === 0) {
@@ -181,11 +382,13 @@
             }
             container.innerHTML = grupos.map(g => {
                 const centro = centros.find(c => c.id == g.centroId);
+                const count = estudiantes.filter(s => s.groupId === g.id).length;
                 return `
                     <div class="bg-white rounded-xl shadow-md border border-gray-200 p-5 group-card">
                         <div class="flex justify-between items-start"><h3 class="text-xl font-semibold text-gray-800">${g.seccion}</h3><span class="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">${g.anio}</span></div>
                         <div class="mt-2 text-sm text-gray-600"><i class="fas fa-school w-4 text-green-700"></i> ${centro ? centro.nombre : ''}</div>
                         <div class="mt-1 text-sm text-gray-600"><i class="fas fa-graduation-cap w-4 text-green-700"></i> ${g.nivel}</div>
+                        <div class="mt-1 text-sm text-gray-600"><i class="fas fa-users w-4 text-green-700"></i> Estudiantes: ${count}</div>
                         <div class="flex gap-2 mt-4 border-t pt-3">
                             <button class="ver-estudiantes text-sm bg-gray-100 hover:bg-gray-200 rounded-full px-3 py-1 transition" data-id="${g.id}"><i class="fas fa-users"></i> Ver estudiantes</button>
                             <button class="editar-grupo text-sm bg-gray-100 hover:bg-gray-200 rounded-full px-3 py-1 transition" data-id="${g.id}"><i class="fas fa-edit"></i> Editar</button>
@@ -201,6 +404,13 @@
         }
 
         function attachCardEvents() {
+            document.querySelectorAll('.ver-estudiantes').forEach(btn => {
+                btn.addEventListener('click', async (e) => {
+                    currentGroupId = parseInt(btn.dataset.id);
+                    await cargarEstudiantes(currentGroupId);
+                    document.getElementById('modalEstudiantes').style.display = 'block';
+                });
+            });
             document.querySelectorAll('.editar-grupo').forEach(btn => {
                 btn.addEventListener('click', async (e) => {
                     const id = parseInt(btn.dataset.id);
@@ -212,8 +422,13 @@
             document.querySelectorAll('.eliminar-grupo').forEach(btn => {
                 btn.addEventListener('click', async (e) => {
                     const id = parseInt(btn.dataset.id);
-                    if (confirm('¿Eliminar esta sección? Se perderán todos los datos asociados.')) {
+                    if (confirm('¿Eliminar esta sección? Se perderán todos los datos asociados (estudiantes, notas, asistencias).')) {
                         await remove('groups', id);
+                        // Eliminar también estudiantes asociados
+                        const estudiantes = await getAll('students');
+                        for (let s of estudiantes.filter(s => s.groupId === id)) {
+                            await remove('students', s.id);
+                        }
                         await renderGrupos();
                     }
                 });
@@ -222,11 +437,18 @@
                 btn.addEventListener('click', (e) => {
                     const action = btn.dataset.action;
                     const id = btn.dataset.id;
-                    alert(`Funcionalidad: ${action} para el grupo ${id} (en desarrollo)`);
+                    if (action === 'estudiantes') {
+                        currentGroupId = parseInt(id);
+                        cargarEstudiantes(currentGroupId);
+                        document.getElementById('modalEstudiantes').style.display = 'block';
+                    } else {
+                        alert(`Funcionalidad: ${action} para el grupo ${id} (en desarrollo)`);
+                    }
                 });
             });
         }
 
+        // --- Funciones de grupos (modal) ---
         function abrirModalEdicion(grupo = null) {
             currentGroupId = grupo ? grupo.id : null;
             document.getElementById('modalTitulo').innerText = grupo ? 'Editar Sección' : 'Agregar Sección';
@@ -282,7 +504,7 @@
         document.getElementById('closeModalGrupo').onclick = closeModal;
         document.getElementById('cancelarGrupoBtn').onclick = closeModal;
 
-        // Exportar respaldo (todos los stores)
+        // --- Backup y filtros (igual que antes) ---
         async function exportarBackup() {
             const stores = ['centros_educativos', 'school_years', 'periods_enhanced', 'components', 'groups', 'students', 'attendance', 'grades'];
             const backup = {};
@@ -299,7 +521,6 @@
             alert('Respaldo exportado correctamente.');
         }
 
-        // Importar respaldo
         async function importarBackup(file) {
             const reader = new FileReader();
             reader.onload = async (e) => {
@@ -331,7 +552,6 @@
         document.getElementById('agregarSeccionBtn').onclick = () => abrirModalEdicion();
         document.getElementById('limpiarFiltrosBtn').onclick = () => { document.getElementById('filtroInstitucion').value = 'todos'; document.getElementById('filtroNivel').value = 'todos'; renderGrupos(); };
 
-        // Filtros
         async function aplicarFiltros() {
             const instId = document.getElementById('filtroInstitucion').value;
             const nivel = document.getElementById('filtroNivel').value;
@@ -340,14 +560,17 @@
             if (nivel !== 'todos') grupos = grupos.filter(g => g.nivel === nivel);
             const container = document.getElementById('gruposContainer');
             if (grupos.length === 0) { container.innerHTML = '<div class="col-span-full text-center text-gray-500 py-8">No hay secciones.</div>'; return; }
+            const estudiantes = await getAll('students');
             const centros = await getAll('centros_educativos');
             container.innerHTML = grupos.map(g => {
                 const centro = centros.find(c => c.id == g.centroId);
+                const count = estudiantes.filter(s => s.groupId === g.id).length;
                 return `
                     <div class="bg-white rounded-xl shadow-md border border-gray-200 p-5 group-card">
                         <div class="flex justify-between items-start"><h3 class="text-xl font-semibold text-gray-800">${g.seccion}</h3><span class="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">${g.anio}</span></div>
                         <div class="mt-2 text-sm text-gray-600"><i class="fas fa-school"></i> ${centro ? centro.nombre : ''}</div>
                         <div class="mt-1 text-sm text-gray-600"><i class="fas fa-graduation-cap"></i> ${g.nivel}</div>
+                        <div class="mt-1 text-sm text-gray-600"><i class="fas fa-users"></i> Estudiantes: ${count}</div>
                         <div class="flex gap-2 mt-4 border-t pt-3">
                             <button class="ver-estudiantes text-sm bg-gray-100 hover:bg-gray-200 rounded-full px-3 py-1 transition" data-id="${g.id}"><i class="fas fa-users"></i> Ver estudiantes</button>
                             <button class="editar-grupo text-sm bg-gray-100 hover:bg-gray-200 rounded-full px-3 py-1 transition" data-id="${g.id}"><i class="fas fa-edit"></i> Editar</button>
@@ -380,6 +603,37 @@
         await cargarDatosEjemplo();
         await cargarFiltros();
         await renderGrupos();
+
+        // Eventos de modales de estudiantes
+        document.getElementById('closeModalEstudiantes').onclick = () => document.getElementById('modalEstudiantes').style.display = 'none';
+        document.getElementById('closeFormEstudiante').onclick = closeModalFormEstudiante;
+        document.getElementById('cancelarFormEstudiante').onclick = closeModalFormEstudiante;
+        document.getElementById('btnAgregarEstudiante').onclick = () => abrirFormEstudiante();
+        document.getElementById('btnImportarExcel').onclick = () => {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.xlsx, .xls';
+            input.onchange = (e) => { if (e.target.files[0]) importarExcel(e.target.files[0]); };
+            input.click();
+        };
+        document.getElementById('btnExportarExcel').onclick = exportarExcel;
+        document.getElementById('buscarEstudiante').addEventListener('input', () => { currentPage = 1; renderTablaEstudiantes(); });
+
+        window.onclick = (e) => {
+            if (e.target.classList.contains('modal')) closeModal();
+            if (e.target.id === 'modalEstudiantes') document.getElementById('modalEstudiantes').style.display = 'none';
+            if (e.target.id === 'modalFormEstudiante') closeModalFormEstudiante();
+        };
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/[&<>]/g, function(m) {
+                if (m === '&') return '&amp;';
+                if (m === '<') return '&lt;';
+                if (m === '>') return '&gt;';
+                return m;
+            });
+        }
     </script>
 </body>
 </html>
