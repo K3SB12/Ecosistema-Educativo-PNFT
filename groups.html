@@ -6,7 +6,6 @@
     <title>Secciones - PNFT Articulador</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- SheetJS para importar/exportar Excel -->
     <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
     <style>
         /* Estilos existentes (se mantienen) */
@@ -40,7 +39,7 @@
 </head>
 <body class="font-sans antialiased">
     <div class="flex min-h-screen">
-        <!-- Sidebar (igual) -->
+        <!-- Sidebar -->
         <aside class="w-72 bg-gradient-to-b from-green-800 to-green-700 text-white flex-shrink-0 sticky top-0 h-screen overflow-y-auto">
             <div class="text-center py-8 border-b border-white/20">
                 <div class="w-20 h-20 bg-white/10 rounded-full flex items-center justify-center text-3xl font-bold mx-auto mb-4 border-2 border-white/20">PNFT</div>
@@ -60,7 +59,7 @@
         </aside>
 
         <main class="flex-1 p-8 bg-gray-50">
-            <!-- Contenido principal igual -->
+            <!-- Header -->
             <div class="flex justify-between items-center mb-8 bg-white p-4 rounded-2xl shadow-sm">
                 <h1 class="text-2xl font-bold text-gray-800">Secciones</h1>
                 <div class="flex gap-4">
@@ -69,6 +68,7 @@
                 </div>
             </div>
 
+            <!-- Botones acción -->
             <div class="flex flex-wrap justify-between items-center gap-4 mb-8">
                 <div class="flex gap-3">
                     <button id="exportBackupBtn" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg shadow transition flex items-center gap-2"><i class="fas fa-download"></i> Exportar respaldo</button>
@@ -77,6 +77,7 @@
                 <button id="agregarSeccionBtn" class="bg-green-800 hover:bg-green-900 text-white px-5 py-2 rounded-lg shadow flex items-center gap-2"><i class="fas fa-plus"></i> Agregar Sección</button>
             </div>
 
+            <!-- Filtros -->
             <div class="bg-white p-6 border border-gray-200 rounded-xl shadow-sm mb-8">
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                     <div><label class="block text-sm font-semibold text-gray-700 mb-1"> Institución </label><select id="filtroInstitucion" class="w-full border-gray-300 rounded-lg py-2"><option value="todos">Todas las Instituciones</option></select></div>
@@ -85,11 +86,12 @@
                 </div>
             </div>
 
+            <!-- Contenedor de grupos -->
             <div id="gruposContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
         </main>
     </div>
 
-    <!-- Modal para crear/editar grupo (con períodos) -->
+    <!-- Modal para crear/editar grupo -->
     <div id="modalGrupo" class="modal">
         <div class="modal-content">
             <span class="close" id="closeModalGrupo">&times;</span>
@@ -128,9 +130,7 @@
             </div>
             <div id="estudiantesLista" class="overflow-x-auto">
                 <table class="student-table w-full">
-                    <thead>
-                        <tr><th>Nombre</th><th>Apellido1</th><th>Apellido2</th><th>Email</th><th>Teléfono</th><th>Acciones</th></tr>
-                    </thead>
+                    <thead><tr><th>Nombre</th><th>Apellido1</th><th>Apellido2</th><th>Email</th><th>Teléfono</th><th>Acciones</th></tr></thead>
                     <tbody id="tablaEstudiantes"></tbody>
                 </table>
             </div>
@@ -164,7 +164,7 @@
         let currentPage = 1;
         const itemsPerPage = 10;
 
-        // Datos de ejemplo predefinidos
+        // Datos de ejemplo predefinidos (solo se añaden si no existen)
         const datosEjemplo = {
             centros: [{ id: 1001, nombre: 'Escuela Tranquilino Sáenz Rojas', codigo: 'CE1', activo: true }],
             years: [{ id: 2026, nombre: '2026', activo: true }],
@@ -203,7 +203,7 @@
             const filtrados = periodos.filter(p => p.schoolYearId == yearId);
             const container = document.getElementById('periodosLista');
             if (filtrados.length === 0) {
-                container.innerHTML = '<p class="text-gray-500 text-sm">No hay períodos configurados para este año.</p>';
+                container.innerHTML = '<p class="text-gray-500 text-sm">No hay períodos configurados para este año. Por favor, ve a Configuración > Períodos para crearlos.</p>';
                 return;
             }
             container.innerHTML = filtrados.map(p => `
@@ -370,7 +370,7 @@
             XLSX.writeFile(wb, `estudiantes_${currentGroupId}.xlsx`);
         }
 
-        // --- Funciones de grupos (igual que antes, pero con actualización de contador) ---
+        // --- Funciones de grupos ---
         async function renderGrupos() {
             const grupos = await getAll('groups');
             const estudiantes = await getAll('students');
@@ -385,9 +385,9 @@
                 const count = estudiantes.filter(s => s.groupId === g.id).length;
                 return `
                     <div class="bg-white rounded-xl shadow-md border border-gray-200 p-5 group-card">
-                        <div class="flex justify-between items-start"><h3 class="text-xl font-semibold text-gray-800">${g.seccion}</h3><span class="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">${g.anio}</span></div>
-                        <div class="mt-2 text-sm text-gray-600"><i class="fas fa-school w-4 text-green-700"></i> ${centro ? centro.nombre : ''}</div>
-                        <div class="mt-1 text-sm text-gray-600"><i class="fas fa-graduation-cap w-4 text-green-700"></i> ${g.nivel}</div>
+                        <div class="flex justify-between items-start"><h3 class="text-xl font-semibold text-gray-800">${escapeHtml(g.seccion)}</h3><span class="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">${escapeHtml(g.anio)}</span></div>
+                        <div class="mt-2 text-sm text-gray-600"><i class="fas fa-school w-4 text-green-700"></i> ${centro ? escapeHtml(centro.nombre) : ''}</div>
+                        <div class="mt-1 text-sm text-gray-600"><i class="fas fa-graduation-cap w-4 text-green-700"></i> ${escapeHtml(g.nivel)}</div>
                         <div class="mt-1 text-sm text-gray-600"><i class="fas fa-users w-4 text-green-700"></i> Estudiantes: ${count}</div>
                         <div class="flex gap-2 mt-4 border-t pt-3">
                             <button class="ver-estudiantes text-sm bg-gray-100 hover:bg-gray-200 rounded-full px-3 py-1 transition" data-id="${g.id}"><i class="fas fa-users"></i> Ver estudiantes</button>
@@ -452,25 +452,27 @@
         function abrirModalEdicion(grupo = null) {
             currentGroupId = grupo ? grupo.id : null;
             document.getElementById('modalTitulo').innerText = grupo ? 'Editar Sección' : 'Agregar Sección';
-            cargarSelects();
-            if (grupo) {
-                document.getElementById('grupoInstitucion').value = grupo.centroId;
-                document.getElementById('grupoSeccion').value = grupo.seccion;
-                document.getElementById('grupoNivel').value = grupo.nivel;
-                document.getElementById('grupoAnio').value = grupo.anioId;
-                document.getElementById('grupoDiasAlerta').value = grupo.diasAlerta || 3;
-                cargarPeriodos(grupo.anioId).then(() => {
-                    if (grupo.periodosPorcentajes) {
-                        Object.entries(grupo.periodosPorcentajes).forEach(([id, val]) => {
-                            const input = document.querySelector(`.porcentaje-periodo[data-id="${id}"]`);
-                            if (input) input.value = val;
-                        });
-                    }
-                });
-            } else {
-                document.getElementById('formGrupo').reset();
-                cargarPeriodos(document.getElementById('grupoAnio').value);
-            }
+            cargarSelects().then(() => {
+                if (grupo) {
+                    document.getElementById('grupoInstitucion').value = grupo.centroId;
+                    document.getElementById('grupoSeccion').value = grupo.seccion;
+                    document.getElementById('grupoNivel').value = grupo.nivel;
+                    document.getElementById('grupoAnio').value = grupo.anioId;
+                    document.getElementById('grupoDiasAlerta').value = grupo.diasAlerta || 3;
+                    cargarPeriodos(grupo.anioId).then(() => {
+                        if (grupo.periodosPorcentajes) {
+                            Object.entries(grupo.periodosPorcentajes).forEach(([id, val]) => {
+                                const input = document.querySelector(`.porcentaje-periodo[data-id="${id}"]`);
+                                if (input) input.value = val;
+                            });
+                        }
+                    });
+                } else {
+                    document.getElementById('formGrupo').reset();
+                    const yearSelect = document.getElementById('grupoAnio');
+                    if (yearSelect.value) cargarPeriodos(yearSelect.value);
+                }
+            });
             document.getElementById('modalGrupo').style.display = 'block';
         }
 
@@ -482,6 +484,7 @@
             const anioId = parseInt(document.getElementById('grupoAnio').value);
             const diasAlerta = parseInt(document.getElementById('grupoDiasAlerta').value) || 3;
             const anioObj = await getById('school_years', anioId);
+            if (!anioObj) { alert('Error: Año no encontrado'); return; }
             const periodosPorcentajes = {};
             document.querySelectorAll('.porcentaje-periodo').forEach(inp => { periodosPorcentajes[inp.dataset.id] = parseInt(inp.value) || 0; });
             const grupo = {
@@ -498,13 +501,14 @@
             await put('groups', grupo);
             await renderGrupos();
             closeModal();
+            alert('Sección guardada correctamente.');
         });
 
         function closeModal() { document.getElementById('modalGrupo').style.display = 'none'; currentGroupId = null; }
         document.getElementById('closeModalGrupo').onclick = closeModal;
         document.getElementById('cancelarGrupoBtn').onclick = closeModal;
 
-        // --- Backup y filtros (igual que antes) ---
+        // --- Backup y filtros ---
         async function exportarBackup() {
             const stores = ['centros_educativos', 'school_years', 'periods_enhanced', 'components', 'groups', 'students', 'attendance', 'grades'];
             const backup = {};
@@ -567,9 +571,9 @@
                 const count = estudiantes.filter(s => s.groupId === g.id).length;
                 return `
                     <div class="bg-white rounded-xl shadow-md border border-gray-200 p-5 group-card">
-                        <div class="flex justify-between items-start"><h3 class="text-xl font-semibold text-gray-800">${g.seccion}</h3><span class="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">${g.anio}</span></div>
-                        <div class="mt-2 text-sm text-gray-600"><i class="fas fa-school"></i> ${centro ? centro.nombre : ''}</div>
-                        <div class="mt-1 text-sm text-gray-600"><i class="fas fa-graduation-cap"></i> ${g.nivel}</div>
+                        <div class="flex justify-between items-start"><h3 class="text-xl font-semibold text-gray-800">${escapeHtml(g.seccion)}</h3><span class="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">${escapeHtml(g.anio)}</span></div>
+                        <div class="mt-2 text-sm text-gray-600"><i class="fas fa-school"></i> ${centro ? escapeHtml(centro.nombre) : ''}</div>
+                        <div class="mt-1 text-sm text-gray-600"><i class="fas fa-graduation-cap"></i> ${escapeHtml(g.nivel)}</div>
                         <div class="mt-1 text-sm text-gray-600"><i class="fas fa-users"></i> Estudiantes: ${count}</div>
                         <div class="flex gap-2 mt-4 border-t pt-3">
                             <button class="ver-estudiantes text-sm bg-gray-100 hover:bg-gray-200 rounded-full px-3 py-1 transition" data-id="${g.id}"><i class="fas fa-users"></i> Ver estudiantes</button>
@@ -591,11 +595,11 @@
         async function cargarFiltros() {
             const centros = await getAll('centros_educativos');
             const filtroInst = document.getElementById('filtroInstitucion');
-            filtroInst.innerHTML = '<option value="todos">Todas las Instituciones</option>' + centros.map(c => `<option value="${c.id}">${c.nombre}</option>`).join('');
+            filtroInst.innerHTML = '<option value="todos">Todas las Instituciones</option>' + centros.map(c => `<option value="${c.id}">${escapeHtml(c.nombre)}</option>`).join('');
             const grupos = await getAll('groups');
             const niveles = [...new Set(grupos.map(g => g.nivel))];
             const filtroNivel = document.getElementById('filtroNivel');
-            filtroNivel.innerHTML = '<option value="todos">Todos los Niveles</option>' + niveles.map(n => `<option value="${n}">${n}</option>`).join('');
+            filtroNivel.innerHTML = '<option value="todos">Todos los Niveles</option>' + niveles.map(n => `<option value="${n}">${escapeHtml(n)}</option>`).join('');
         }
 
         // Inicialización
