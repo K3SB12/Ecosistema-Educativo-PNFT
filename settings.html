@@ -307,7 +307,7 @@
     <script>
         // Configuración de IndexedDB
         const DB_NAME = 'PNFT_DB';
-        const DB_VERSION = 4; // Aumentamos versión para nuevos stores
+        const DB_VERSION = 4;
         let db = null;
 
         // Helper: abrir DB con upgrade
@@ -322,12 +322,12 @@
                     if (!db.objectStoreNames.contains('school_years')) {
                         db.createObjectStore('school_years', { keyPath: 'id' });
                     }
-                    // Store de períodos (mejorado)
+                    // Store de períodos mejorado
                     if (!db.objectStoreNames.contains('periods_enhanced')) {
                         const periodsStore = db.createObjectStore('periods_enhanced', { keyPath: 'id' });
                         periodsStore.createIndex('schoolYearId', 'schoolYearId', { unique: false });
                     } else {
-                        // Si ya existe pero no tiene índices, agregamos
+                        // Si ya existe pero no tiene índice, lo creamos
                         const store = event.target.transaction.objectStore('periods_enhanced');
                         if (!store.indexNames.contains('schoolYearId')) {
                             store.createIndex('schoolYearId', 'schoolYearId', { unique: false });
@@ -337,90 +337,129 @@
                     if (!db.objectStoreNames.contains('components')) {
                         db.createObjectStore('components', { keyPath: 'id' });
                     }
-                    // Mantener stores anteriores (plannings, profile, groups, periods, evaluation_indicators) sin cambios
                 };
             });
         }
 
-        // --- Funciones CRUD Años Lectivos ---
-        async function getSchoolYears() {
-            const tx = db.transaction(['school_years'], 'readonly');
-            const store = tx.objectStore('school_years');
-            return store.getAll();
-        }
-        async function saveSchoolYear(schoolYear) {
-            const tx = db.transaction(['school_years'], 'readwrite');
-            const store = tx.objectStore('school_years');
-            await store.put(schoolYear);
-        }
-        async function deleteSchoolYear(id) {
-            const tx = db.transaction(['school_years'], 'readwrite');
-            const store = tx.objectStore('school_years');
-            await store.delete(id);
+        // Funciones de lectura con promesas correctas
+        function getSchoolYears() {
+            return new Promise((resolve, reject) => {
+                const tx = db.transaction(['school_years'], 'readonly');
+                const store = tx.objectStore('school_years');
+                const req = store.getAll();
+                req.onsuccess = () => resolve(req.result || []);
+                req.onerror = () => reject(req.error);
+            });
         }
 
-        // --- Períodos ---
-        async function getPeriods(schoolYearId = null) {
-            const tx = db.transaction(['periods_enhanced'], 'readonly');
-            const store = tx.objectStore('periods_enhanced');
-            if (schoolYearId) {
-                const index = store.index('schoolYearId');
-                return index.getAll(schoolYearId);
-            }
-            return store.getAll();
-        }
-        async function savePeriod(period) {
-            const tx = db.transaction(['periods_enhanced'], 'readwrite');
-            const store = tx.objectStore('periods_enhanced');
-            await store.put(period);
-        }
-        async function deletePeriod(id) {
-            const tx = db.transaction(['periods_enhanced'], 'readwrite');
-            const store = tx.objectStore('periods_enhanced');
-            await store.delete(id);
+        function saveSchoolYear(schoolYear) {
+            return new Promise((resolve, reject) => {
+                const tx = db.transaction(['school_years'], 'readwrite');
+                const store = tx.objectStore('school_years');
+                const req = store.put(schoolYear);
+                req.onsuccess = () => resolve();
+                req.onerror = () => reject(req.error);
+            });
         }
 
-        // --- Componentes ---
-        async function getComponents() {
-            const tx = db.transaction(['components'], 'readonly');
-            const store = tx.objectStore('components');
-            return store.getAll();
+        function deleteSchoolYear(id) {
+            return new Promise((resolve, reject) => {
+                const tx = db.transaction(['school_years'], 'readwrite');
+                const store = tx.objectStore('school_years');
+                const req = store.delete(id);
+                req.onsuccess = () => resolve();
+                req.onerror = () => reject(req.error);
+            });
         }
-        async function saveComponent(component) {
-            const tx = db.transaction(['components'], 'readwrite');
-            const store = tx.objectStore('components');
-            await store.put(component);
+
+        function getPeriods(schoolYearId = null) {
+            return new Promise((resolve, reject) => {
+                const tx = db.transaction(['periods_enhanced'], 'readonly');
+                const store = tx.objectStore('periods_enhanced');
+                let req;
+                if (schoolYearId !== null && schoolYearId !== 'todos') {
+                    const index = store.index('schoolYearId');
+                    req = index.getAll(parseInt(schoolYearId));
+                } else {
+                    req = store.getAll();
+                }
+                req.onsuccess = () => resolve(req.result || []);
+                req.onerror = () => reject(req.error);
+            });
         }
-        async function deleteComponent(id) {
-            const tx = db.transaction(['components'], 'readwrite');
-            const store = tx.objectStore('components');
-            await store.delete(id);
+
+        function savePeriod(period) {
+            return new Promise((resolve, reject) => {
+                const tx = db.transaction(['periods_enhanced'], 'readwrite');
+                const store = tx.objectStore('periods_enhanced');
+                const req = store.put(period);
+                req.onsuccess = () => resolve();
+                req.onerror = () => reject(req.error);
+            });
+        }
+
+        function deletePeriod(id) {
+            return new Promise((resolve, reject) => {
+                const tx = db.transaction(['periods_enhanced'], 'readwrite');
+                const store = tx.objectStore('periods_enhanced');
+                const req = store.delete(id);
+                req.onsuccess = () => resolve();
+                req.onerror = () => reject(req.error);
+            });
+        }
+
+        function getComponents() {
+            return new Promise((resolve, reject) => {
+                const tx = db.transaction(['components'], 'readonly');
+                const store = tx.objectStore('components');
+                const req = store.getAll();
+                req.onsuccess = () => resolve(req.result || []);
+                req.onerror = () => reject(req.error);
+            });
+        }
+
+        function saveComponent(component) {
+            return new Promise((resolve, reject) => {
+                const tx = db.transaction(['components'], 'readwrite');
+                const store = tx.objectStore('components');
+                const req = store.put(component);
+                req.onsuccess = () => resolve();
+                req.onerror = () => reject(req.error);
+            });
+        }
+
+        function deleteComponent(id) {
+            return new Promise((resolve, reject) => {
+                const tx = db.transaction(['components'], 'readwrite');
+                const store = tx.objectStore('components');
+                const req = store.delete(id);
+                req.onsuccess = () => resolve();
+                req.onerror = () => reject(req.error);
+            });
         }
 
         // --- Renderización de UI ---
-        function renderSchoolYears() {
-            getSchoolYears().then(years => {
-                const container = document.getElementById('schoolYearsList');
-                if (years.length === 0) {
-                    container.innerHTML = '<p class="empty-table">No hay años lectivos. Cree uno nuevo.</p>';
-                } else {
-                    container.innerHTML = years.map(year => `
-                        <div class="entity-card">
-                            <div class="entity-header">
-                                <span class="entity-title">${escapeHtml(year.nombre)}</span>
-                                <span class="entity-badge">${year.activo ? 'Activo' : 'Inactivo'}</span>
-                                <div class="action-icons">
-                                    <i class="fas fa-edit" data-id="${year.id}" data-action="editYear"></i>
-                                    <i class="fas fa-trash-alt" data-id="${year.id}" data-action="deleteYear"></i>
-                                </div>
+        async function renderSchoolYears() {
+            const years = await getSchoolYears();
+            const container = document.getElementById('schoolYearsList');
+            if (!years.length) {
+                container.innerHTML = '<p class="empty-table">No hay años lectivos. Cree uno nuevo.</p>';
+            } else {
+                container.innerHTML = years.map(year => `
+                    <div class="entity-card">
+                        <div class="entity-header">
+                            <span class="entity-title">${escapeHtml(year.nombre)}</span>
+                            <span class="entity-badge">${year.activo ? 'Activo' : 'Inactivo'}</span>
+                            <div class="action-icons">
+                                <i class="fas fa-edit" data-id="${year.id}" data-action="editYear"></i>
+                                <i class="fas fa-trash-alt" data-id="${year.id}" data-action="deleteYear"></i>
                             </div>
                         </div>
-                    `).join('');
-                    attachYearActions();
-                }
-                // Actualizar select de años en períodos y componentes (si es necesario)
-                updateYearSelects();
-            });
+                    </div>
+                `).join('');
+                attachYearActions();
+            }
+            await updateYearSelects();
         }
 
         function attachYearActions() {
@@ -446,31 +485,30 @@
             });
         }
 
-        function renderPeriods() {
+        async function renderPeriods() {
             const yearFilter = document.getElementById('yearFilterPeriods').value;
-            getPeriods(yearFilter === 'todos' ? null : parseInt(yearFilter)).then(periods => {
-                const container = document.getElementById('periodsList');
-                if (periods.length === 0) {
-                    container.innerHTML = '<p class="empty-table">No hay períodos para este año. Cree uno nuevo.</p>';
-                } else {
-                    container.innerHTML = periods.map(p => `
-                        <div class="entity-card">
-                            <div class="entity-header">
-                                <span class="entity-title">${escapeHtml(p.nombre)} (${p.tipo})</span>
-                                <span class="entity-badge">${p.activo ? 'Activo' : 'Inactivo'}</span>
-                                <div class="action-icons">
-                                    <i class="fas fa-edit" data-id="${p.id}" data-action="editPeriod"></i>
-                                    <i class="fas fa-trash-alt" data-id="${p.id}" data-action="deletePeriod"></i>
-                                </div>
-                            </div>
-                            <div class="entity-details">
-                                <i class="fas fa-calendar-alt"></i> ${p.fechaInicio || 'sin fecha'} - ${p.fechaFin || 'sin fecha'}
+            const periods = await getPeriods(yearFilter === 'todos' ? null : parseInt(yearFilter));
+            const container = document.getElementById('periodsList');
+            if (!periods.length) {
+                container.innerHTML = '<p class="empty-table">No hay períodos para este año. Cree uno nuevo.</p>';
+            } else {
+                container.innerHTML = periods.map(p => `
+                    <div class="entity-card">
+                        <div class="entity-header">
+                            <span class="entity-title">${escapeHtml(p.nombre)} (${p.tipo})</span>
+                            <span class="entity-badge">${p.activo ? 'Activo' : 'Inactivo'}</span>
+                            <div class="action-icons">
+                                <i class="fas fa-edit" data-id="${p.id}" data-action="editPeriod"></i>
+                                <i class="fas fa-trash-alt" data-id="${p.id}" data-action="deletePeriod"></i>
                             </div>
                         </div>
-                    `).join('');
-                    attachPeriodActions();
-                }
-            });
+                        <div class="entity-details">
+                            <i class="fas fa-calendar-alt"></i> ${p.fechaInicio || 'sin fecha'} - ${p.fechaFin || 'sin fecha'}
+                        </div>
+                    </div>
+                `).join('');
+                attachPeriodActions();
+            }
         }
 
         function attachPeriodActions() {
@@ -493,37 +531,36 @@
             });
         }
 
-        function renderComponents() {
-            getComponents().then(components => {
-                const container = document.getElementById('componentsList');
-                if (components.length === 0) {
-                    container.innerHTML = '<p class="empty-table">No hay componentes de evaluación. Cree uno nuevo o precargue por modalidad.</p>';
-                } else {
-                    container.innerHTML = components.map(comp => `
-                        <div class="entity-card">
-                            <div class="entity-header">
-                                <span class="entity-title">${escapeHtml(comp.nombre)}</span>
-                                <div class="action-icons">
-                                    <i class="fas fa-edit" data-id="${comp.id}" data-action="editComponent"></i>
-                                    <i class="fas fa-trash-alt" data-id="${comp.id}" data-action="deleteComponent"></i>
-                                </div>
-                            </div>
-                            <div class="subcomponent-list">
-                                ${comp.subcomponentes.map(sub => `
-                                    <div class="subcomponent-item">
-                                        <span>${escapeHtml(sub.nombre)}</span>
-                                        <span>${sub.porcentaje}%</span>
-                                    </div>
-                                `).join('')}
-                            </div>
-                            <div class="total-percent">
-                                Total: ${comp.subcomponentes.reduce((s, sub) => s + sub.porcentaje, 0)}%
+        async function renderComponents() {
+            const components = await getComponents();
+            const container = document.getElementById('componentsList');
+            if (!components.length) {
+                container.innerHTML = '<p class="empty-table">No hay componentes de evaluación. Cree uno nuevo o precargue por modalidad.</p>';
+            } else {
+                container.innerHTML = components.map(comp => `
+                    <div class="entity-card">
+                        <div class="entity-header">
+                            <span class="entity-title">${escapeHtml(comp.nombre)}</span>
+                            <div class="action-icons">
+                                <i class="fas fa-edit" data-id="${comp.id}" data-action="editComponent"></i>
+                                <i class="fas fa-trash-alt" data-id="${comp.id}" data-action="deleteComponent"></i>
                             </div>
                         </div>
-                    `).join('');
-                    attachComponentActions();
-                }
-            });
+                        <div class="subcomponent-list">
+                            ${comp.subcomponentes.map(sub => `
+                                <div class="subcomponent-item">
+                                    <span>${escapeHtml(sub.nombre)}</span>
+                                    <span>${sub.porcentaje}%</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                        <div class="total-percent">
+                            Total: ${comp.subcomponentes.reduce((s, sub) => s + sub.porcentaje, 0)}%
+                        </div>
+                    </div>
+                `).join('');
+                attachComponentActions();
+            }
         }
 
         function attachComponentActions() {
@@ -546,16 +583,17 @@
             });
         }
 
-        function updateYearSelects() {
-            getSchoolYears().then(years => {
-                const selectPeriodYear = document.getElementById('periodYearId');
-                const selectFilter = document.getElementById('yearFilterPeriods');
-                const options = '<option value="todos">Todos los años</option>' + years.map(y => `<option value="${y.id}">${escapeHtml(y.nombre)}</option>`).join('');
-                selectPeriodYear.innerHTML = options;
-                selectFilter.innerHTML = options;
-                if (years.length) selectPeriodYear.value = years[0].id;
-                renderPeriods();
-            });
+        async function updateYearSelects() {
+            const years = await getSchoolYears();
+            const selectPeriodYear = document.getElementById('periodYearId');
+            const selectFilter = document.getElementById('yearFilterPeriods');
+            const options = '<option value="todos">Todos los años</option>' + years.map(y => `<option value="${y.id}">${escapeHtml(y.nombre)}</option>`).join('');
+            selectPeriodYear.innerHTML = options;
+            selectFilter.innerHTML = options;
+            if (years.length) {
+                selectPeriodYear.value = years[0].id;
+            }
+            renderPeriods();
         }
 
         // --- Modales para Años ---
@@ -705,7 +743,7 @@
         document.getElementById('cancelComponentBtn').onclick = () => closeAllModals();
         document.getElementById('closeComponentModal').onclick = () => closeAllModals();
 
-        // --- Precarga por modalidad (datos oficiales MEP) ---
+        // --- Precarga por modalidad ---
         const modalidadesData = {
             'I Ciclo': [
                 { nombre: 'Trabajo cotidiano', porcentaje: 30 },
@@ -792,9 +830,9 @@
             if (years.length === 0) {
                 await saveSchoolYear({ id: Date.now(), nombre: '2026', activo: true });
             }
-            renderSchoolYears();
-            renderComponents();
-            updateYearSelects();
+            await renderSchoolYears();
+            await renderComponents();
+            await updateYearSelects(); // ya llama a renderPeriods
         })();
 
         window.onclick = (e) => {
