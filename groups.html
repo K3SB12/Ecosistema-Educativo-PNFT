@@ -1,16 +1,15 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Secciones - PNFT Articulador</title>
-    <!-- Tailwind CSS CDN (como en Registra Profe) -->
+    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <!-- Estilos personalizados adicionales -->
+    <!-- Estilos adicionales para mantener el diseño de Registra Profe -->
     <style>
-        /* Ajustes adicionales para que los estilos de Tailwind se complementen */
         body {
             background-color: #f8fafc;
         }
@@ -58,7 +57,7 @@
             padding: 2rem;
             border-radius: 24px;
             width: 90%;
-            max-width: 600px;
+            max-width: 800px;
             box-shadow: 0 20px 40px rgba(0,0,0,0.2);
             position: relative;
         }
@@ -71,6 +70,20 @@
         }
         .close:hover {
             color: black;
+        }
+        .group-card {
+            transition: all 0.2s;
+        }
+        .group-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 20px 30px -10px rgba(46,125,50,0.15);
+        }
+        .periodo-item {
+            background: #f9fafb;
+            border-radius: 12px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border: 1px solid #e5e7eb;
         }
         .group-action-btn {
             background: #f1f5f9;
@@ -116,13 +129,6 @@
         .group-main-actions .btn-danger:hover {
             background: #fecaca;
         }
-        .group-card {
-            transition: all 0.2s;
-        }
-        .group-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 20px 30px -10px rgba(46,125,50,0.15);
-        }
     </style>
 </head>
 <body class="font-sans antialiased">
@@ -137,60 +143,23 @@
                 <p class="text-sm opacity-80">MEP Costa Rica</p>
             </div>
             <ul class="mt-6 space-y-1 px-4">
-                <a href="index.html" class="block">
-                    <li class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10 transition-colors">
-                        <i class="fas fa-chart-pie w-5"></i> Tablero
-                    </li>
-                </a>
-                <a href="planning.html" class="block">
-                    <li class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10 transition-colors">
-                        <i class="fas fa-clipboard-list w-5"></i> Planeamiento
-                    </li>
-                </a>
-                <a href="progresion.html" class="block">
-                    <li class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10 transition-colors">
-                        <i class="fas fa-road w-5"></i> Progresión
-                    </li>
-                </a>
-                <a href="evaluation.html" class="block">
-                    <li class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10 transition-colors">
-                        <i class="fas fa-check-circle w-5"></i> Evaluación
-                    </li>
-                </a>
-                <a href="logbook.html" class="block">
-                    <li class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10 transition-colors">
-                        <i class="fas fa-book-open w-5"></i> Bitácora
-                    </li>
-                </a>
-                <a href="students.html" class="block">
-                    <li class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10 transition-colors">
-                        <i class="fas fa-users w-5"></i> Estudiantes
-                    </li>
-                </a>
-                <a href="groups.html" class="block">
-                    <li class="flex items-center gap-3 px-4 py-3 rounded-xl bg-white text-green-800 font-semibold shadow-md">
-                        <i class="fas fa-layer-group w-5"></i> Secciones
-                    </li>
-                </a>
-                <a href="settings.html" class="block">
-                    <li class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10 transition-colors">
-                        <i class="fas fa-cog w-5"></i> Configuración
-                    </li>
-                </a>
+                <a href="index.html"><li class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10 transition-colors"><i class="fas fa-chart-pie w-5"></i> Tablero</li></a>
+                <a href="planning.html"><li class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10 transition-colors"><i class="fas fa-clipboard-list w-5"></i> Planeamiento</li></a>
+                <a href="progresion.html"><li class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10 transition-colors"><i class="fas fa-road w-5"></i> Progresión</li></a>
+                <a href="evaluation.html"><li class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10 transition-colors"><i class="fas fa-check-circle w-5"></i> Evaluación</li></a>
+                <a href="logbook.html"><li class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10 transition-colors"><i class="fas fa-book-open w-5"></i> Bitácora</li></a>
+                <a href="students.html"><li class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10 transition-colors"><i class="fas fa-users w-5"></i> Estudiantes</li></a>
+                <a href="groups.html"><li class="flex items-center gap-3 px-4 py-3 rounded-xl bg-white text-green-800 font-semibold shadow-md"><i class="fas fa-layer-group w-5"></i> Secciones</li></a>
+                <a href="settings.html"><li class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10 transition-colors"><i class="fas fa-cog w-5"></i> Configuración</li></a>
             </ul>
         </aside>
 
-        <!-- Main Content -->
         <main class="flex-1 p-8 bg-gray-50">
             <div class="flex justify-between items-center mb-8 bg-white p-4 rounded-2xl shadow-sm">
                 <h1 class="text-2xl font-bold text-gray-800">Secciones</h1>
                 <div class="flex gap-4">
-                    <span class="bg-green-100 text-green-800 px-4 py-2 rounded-full text-sm font-medium flex items-center gap-2">
-                        <i class="fas fa-user-graduate"></i> Docente
-                    </span>
-                    <span class="bg-green-100 text-green-800 px-4 py-2 rounded-full text-sm font-medium flex items-center gap-2">
-                        <i class="fas fa-calendar-alt"></i> 2026
-                    </span>
+                    <span class="bg-green-100 text-green-800 px-4 py-2 rounded-full text-sm font-medium flex items-center gap-2"><i class="fas fa-user-graduate"></i> Docente</span>
+                    <span class="bg-green-100 text-green-800 px-4 py-2 rounded-full text-sm font-medium flex items-center gap-2"><i class="fas fa-calendar-alt"></i> 2026</span>
                 </div>
             </div>
 
@@ -199,9 +168,18 @@
                     <i class="fas fa-info-circle"></i>
                     <span> ¿Necesitas ayuda? Consulta la <a href="#" class="underline hover:text-blue-900 font-medium"> guía del módulo Secciones</a>. </span>
                 </div>
-                <button id="agregarSeccionBtn" class="bg-green-800 hover:bg-green-900 text-white px-5 py-2 rounded-lg shadow transition duration-200 flex items-center gap-2">
-                    <i class="fas fa-plus"></i> Agregar Sección
-                </button>
+                <div class="flex gap-2">
+                    <button id="exportarBackupBtn" class="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-lg shadow transition duration-200 flex items-center gap-2">
+                        <i class="fas fa-download"></i> Exportar respaldo
+                    </button>
+                    <button id="importarBackupBtn" class="bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded-lg shadow transition duration-200 flex items-center gap-2">
+                        <i class="fas fa-upload"></i> Importar respaldo
+                    </button>
+                    <input type="file" id="importarArchivo" accept=".json" style="display: none;">
+                    <button id="agregarSeccionBtn" class="bg-green-800 hover:bg-green-900 text-white px-5 py-2 rounded-lg shadow transition duration-200 flex items-center gap-2">
+                        <i class="fas fa-plus"></i> Agregar Sección
+                    </button>
+                </div>
             </div>
 
             <div class="bg-white p-6 border border-gray-200 rounded-xl shadow-sm mb-8">
@@ -230,46 +208,51 @@
         </main>
     </div>
 
-    <!-- Modal para agregar sección -->
-    <div id="modalAgregarSeccion" class="modal">
+    <!-- Modal para agregar/editar sección (basado en el código original de Registra Profe) -->
+    <div id="modalSeccion" class="modal">
         <div class="modal-content">
-            <span class="close" id="closeAgregarModal">&times;</span>
-            <h2 class="text-xl font-bold mb-4">Crear Nueva Sección</h2>
-            <form id="formAgregarSeccion">
-                <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Año Lectivo *</label>
-                    <select id="anioLectivoSelect" required class="w-full border rounded-lg p-2"></select>
+            <span class="close" id="closeModalSeccion">&times;</span>
+            <h2 class="text-xl font-bold mb-4" id="modalTitulo">Agregar Sección</h2>
+            <form id="formSeccion">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Institución *</label>
+                        <select id="seccionCentro" required class="w-full border rounded-lg p-2"></select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Sección *</label>
+                        <input type="text" id="seccionNombre" placeholder="Ej: 1-1" required class="w-full border rounded-lg p-2">
+                    </div>
                 </div>
-                <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Centro Educativo *</label>
-                    <select id="centroSelect" required class="w-full border rounded-lg p-2"></select>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Nivel *</label>
+                        <select id="seccionNivel" required class="w-full border rounded-lg p-2">
+                            <option value="I Ciclo (1°-3°)">I Ciclo (1°-3°)</option>
+                            <option value="II Ciclo (4°-6°)">II Ciclo (4°-6°)</option>
+                            <option value="III Ciclo (7°-9°)">III Ciclo (7°-9°)</option>
+                            <option value="Diversificada (10°-12°)">Diversificada (10°-12°)</option>
+                            <option value="Educación Adultos">Educación Adultos (CINDEA/IPEC)</option>
+                            <option value="Educación Especial">Educación Especial</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Año *</label>
+                        <select id="seccionAnio" required class="w-full border rounded-lg p-2"></select>
+                    </div>
                 </div>
+
+                <!-- Períodos (dinámicos) -->
+                <div id="periodosContainer"></div>
+
                 <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Materia *</label>
-                    <input type="text" id="materiaInput" value="Formación Tecnológica" readonly class="w-full border rounded-lg p-2 bg-gray-100">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Días de ausencia injustificada para alertas</label>
+                    <input type="number" id="seccionAlertasDias" value="3" class="w-full border rounded-lg p-2">
                 </div>
-                <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Nivel *</label>
-                    <select id="nivelSelect" required class="w-full border rounded-lg p-2">
-                        <option value="I Ciclo (1°-3°)">I Ciclo (1°-3°)</option>
-                        <option value="II Ciclo (4°-6°)">II Ciclo (4°-6°)</option>
-                        <option value="III Ciclo (7°-9°)">III Ciclo (7°-9°)</option>
-                        <option value="Diversificada (10°-12°)">Diversificada (10°-12°)</option>
-                        <option value="Educación Adultos">Educación Adultos (CINDEA/IPEC)</option>
-                        <option value="Educación Especial">Educación Especial</option>
-                    </select>
-                </div>
-                <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Sección *</label>
-                    <input type="text" id="seccionInput" placeholder="Ej: 1-1" required class="w-full border rounded-lg p-2">
-                </div>
-                <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Componente de Evaluación *</label>
-                    <select id="componenteSelect" required class="w-full border rounded-lg p-2"></select>
-                </div>
+
                 <div class="flex justify-end gap-3">
-                    <button type="submit" class="bg-green-800 text-white px-5 py-2 rounded-lg hover:bg-green-900 transition">Crear Sección</button>
-                    <button type="button" id="cancelarAgregarBtn" class="bg-gray-200 text-gray-800 px-5 py-2 rounded-lg hover:bg-gray-300 transition">Cancelar</button>
+                    <button type="submit" class="bg-green-800 text-white px-5 py-2 rounded-lg hover:bg-green-900 transition">Guardar</button>
+                    <button type="button" id="cancelarModalBtn" class="bg-gray-200 text-gray-800 px-5 py-2 rounded-lg hover:bg-gray-300 transition">Cancelar</button>
                 </div>
             </form>
         </div>
@@ -282,13 +265,77 @@
         let grupos = [];
         let instituciones = [];
         let nivelesSet = new Set();
+        let currentEditId = null; // null para crear, id para editar
+
+        // Inicializar datos por defecto si no existen
+        async function initDefaultData() {
+            const centros = await getAll('centros_educativos');
+            if (centros.length === 0) {
+                await put('centros_educativos', {
+                    id: Date.now(),
+                    nombre: 'Escuela Tranquilino Sáenz Rojas',
+                    codigo: 'CE1',
+                    activo: true
+                });
+            }
+            const years = await getAll('school_years');
+            if (years.length === 0) {
+                await put('school_years', {
+                    id: Date.now(),
+                    nombre: '2026',
+                    activo: true
+                });
+            }
+            const periods = await getAll('periods_enhanced');
+            if (periods.length === 0) {
+                const year2026 = (await getAll('school_years')).find(y => y.nombre === '2026');
+                if (year2026) {
+                    await put('periods_enhanced', {
+                        id: Date.now(),
+                        schoolYearId: year2026.id,
+                        nombre: 'I Semestre',
+                        tipo: 'semestre',
+                        fechaInicio: '2026-02-23',
+                        fechaFin: '2026-07-03',
+                        activo: true,
+                        porcentajeAnual: 50
+                    });
+                    await put('periods_enhanced', {
+                        id: Date.now() + 1,
+                        schoolYearId: year2026.id,
+                        nombre: 'II Semestre',
+                        tipo: 'semestre',
+                        fechaInicio: '2026-07-20',
+                        fechaFin: '2026-12-09',
+                        activo: true,
+                        porcentajeAnual: 50
+                    });
+                }
+            }
+            const components = await getAll('components');
+            if (components.length === 0) {
+                // Precargar componentes según modalidades (datos oficiales)
+                const modalidades = [
+                    { nombre: 'I Ciclo', subcomponentes: [{ nombre: 'Trabajo cotidiano', porcentaje: 65 }, { nombre: 'Tareas', porcentaje: 10 }, { nombre: 'Prueba de ejecución', porcentaje: 15 }, { nombre: 'Asistencia', porcentaje: 10 }] },
+                    { nombre: 'II Ciclo', subcomponentes: [{ nombre: 'Trabajo cotidiano', porcentaje: 60 }, { nombre: 'Tareas', porcentaje: 10 }, { nombre: 'Prueba de ejecución', porcentaje: 20 }, { nombre: 'Asistencia', porcentaje: 10 }] },
+                    { nombre: 'III Ciclo', subcomponentes: [{ nombre: 'Trabajo cotidiano', porcentaje: 50 }, { nombre: 'Tareas', porcentaje: 10 }, { nombre: 'Proyecto', porcentaje: 30 }, { nombre: 'Asistencia', porcentaje: 10 }] },
+                    { nombre: 'Diversificada', subcomponentes: [{ nombre: 'Trabajo cotidiano', porcentaje: 50 }, { nombre: 'Tareas', porcentaje: 5 }, { nombre: 'Proyecto', porcentaje: 35 }, { nombre: 'Asistencia', porcentaje: 10 }] },
+                    { nombre: 'Educación Adultos', subcomponentes: [{ nombre: 'Trabajo cotidiano', porcentaje: 50 }, { nombre: 'Tareas', porcentaje: 10 }, { nombre: 'Proyecto', porcentaje: 30 }, { nombre: 'Asistencia', porcentaje: 10 }] },
+                    { nombre: 'Educación Especial', subcomponentes: [{ nombre: 'Trabajo cotidiano', porcentaje: 60 }, { nombre: 'Tareas', porcentaje: 10 }, { nombre: 'Proyecto', porcentaje: 20 }, { nombre: 'Asistencia', porcentaje: 10 }] }
+                ];
+                for (const m of modalidades) {
+                    await put('components', { id: Date.now() + Math.random(), nombre: m.nombre, subcomponentes: m.subcomponentes });
+                }
+            }
+        }
 
         async function cargarDatos() {
             db = await openDB();
+            await initDefaultData();
             await cargarInstituciones();
             await cargarGrupos();
-            await cargarComponentesSelect();
             await cargarAniosSelect();
+            await cargarCentrosSelect();
         }
 
         async function cargarInstituciones() {
@@ -298,10 +345,22 @@
             instituciones.forEach(inst => {
                 filtroInst.innerHTML += `<option value="${inst.id}">${escapeHtml(inst.nombre)}</option>`;
             });
-            const centroSelect = document.getElementById('centroSelect');
-            centroSelect.innerHTML = '';
+        }
+
+        async function cargarCentrosSelect() {
+            const select = document.getElementById('seccionCentro');
+            select.innerHTML = '';
             instituciones.forEach(inst => {
-                centroSelect.innerHTML += `<option value="${inst.id}">${escapeHtml(inst.nombre)}</option>`;
+                select.innerHTML += `<option value="${inst.id}">${escapeHtml(inst.nombre)}</option>`;
+            });
+        }
+
+        async function cargarAniosSelect() {
+            const anios = await getAll('school_years');
+            const select = document.getElementById('seccionAnio');
+            select.innerHTML = '';
+            anios.forEach(anio => {
+                select.innerHTML += `<option value="${anio.id}">${escapeHtml(anio.nombre)}</option>`;
             });
         }
 
@@ -340,7 +399,8 @@
             for (const grupo of gruposList) {
                 const centro = instituciones.find(c => c.id === grupo.centroId);
                 const centroNombre = centro ? centro.nombre : 'Desconocido';
-                const estudiantesCount = 0; // pendiente
+                const estudiantesCount = grupo.estudiantes ? grupo.estudiantes.length : 0;
+                const periodosHtml = grupo.periodos ? grupo.periodos.map(p => `<span class="inline-block bg-gray-100 text-gray-600 text-xs px-2 py-1 rounded mr-1">${escapeHtml(p.nombre)} ${p.porcentajeAnual}%</span>`).join('') : '';
                 html += `
                     <div class="bg-white rounded-xl shadow-md border border-gray-200 p-5 hover:shadow-lg transition-all group-card" data-id="${grupo.id}">
                         <div class="flex justify-between items-start">
@@ -351,6 +411,7 @@
                             <div><i class="fas fa-school w-4 text-green-700"></i> ${escapeHtml(centroNombre)}</div>
                             <div><i class="fas fa-graduation-cap w-4 text-green-700"></i> Nivel: ${escapeHtml(grupo.nivel)}</div>
                             <div><i class="fas fa-users w-4 text-green-700"></i> Estudiantes: ${estudiantesCount}</div>
+                            <div class="mt-1">${periodosHtml}</div>
                         </div>
                         <div class="flex gap-2 mt-4 border-t pt-3">
                             <button class="ver-estudiantes text-sm bg-gray-100 hover:bg-gray-200 rounded-full px-3 py-1 transition" data-id="${grupo.id}"><i class="fas fa-users"></i> Ver estudiantes</button>
@@ -381,13 +442,14 @@
             document.querySelectorAll('.ver-estudiantes').forEach(btn => {
                 btn.addEventListener('click', (e) => {
                     const id = btn.dataset.id;
-                    alert(`Funcionalidad: Ver estudiantes del grupo ${id}`);
+                    alert(`Funcionalidad: Ver estudiantes del grupo ${id} (pendiente de implementar)`);
                 });
             });
             document.querySelectorAll('.editar-grupo').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    const id = btn.dataset.id;
-                    alert(`Funcionalidad: Editar grupo ${id}`);
+                btn.addEventListener('click', async (e) => {
+                    const id = parseInt(btn.dataset.id);
+                    const grupo = grupos.find(g => g.id === id);
+                    if (grupo) openEditarModal(grupo);
                 });
             });
             document.querySelectorAll('.eliminar-grupo').forEach(btn => {
@@ -403,79 +465,129 @@
                 btn.addEventListener('click', (e) => {
                     const action = btn.dataset.action;
                     const id = btn.dataset.id;
-                    alert(`Funcionalidad: ${action} para el grupo ${id} (en desarrollo)`);
+                    alert(`Funcionalidad: ${action} para el grupo ${id} (pendiente de implementar)`);
                 });
             });
         }
 
-        async function cargarComponentesSelect() {
-            const componentes = await getAll('components');
-            const select = document.getElementById('componenteSelect');
-            select.innerHTML = '<option value="">-- Seleccione --</option>';
-            componentes.forEach(comp => {
-                select.innerHTML += `<option value="${comp.id}">${escapeHtml(comp.nombre)}</option>`;
-            });
-        }
-        async function cargarAniosSelect() {
-            const anios = await getAll('school_years');
-            const select = document.getElementById('anioLectivoSelect');
-            select.innerHTML = '';
-            anios.forEach(anio => {
-                select.innerHTML += `<option value="${anio.id}">${escapeHtml(anio.nombre)}</option>`;
-            });
+        // Modal de edición/creación
+        async function openEditarModal(grupo = null) {
+            currentEditId = grupo ? grupo.id : null;
+            document.getElementById('modalTitulo').innerText = grupo ? 'Editar Sección' : 'Agregar Sección';
+            // Cargar selects
+            await cargarCentrosSelect();
+            await cargarAniosSelect();
+
+            if (grupo) {
+                document.getElementById('seccionCentro').value = grupo.centroId;
+                document.getElementById('seccionNombre').value = grupo.seccion || '';
+                document.getElementById('seccionNivel').value = grupo.nivel;
+                document.getElementById('seccionAnio').value = grupo.anioId;
+                document.getElementById('seccionAlertasDias').value = grupo.alertasDias || 3;
+                // Cargar períodos
+                await cargarPeriodosEnModal(grupo.anioId, grupo.periodos);
+            } else {
+                // Valores por defecto
+                const anioSelect = document.getElementById('seccionAnio');
+                if (anioSelect.options.length) anioSelect.selectedIndex = 0;
+                document.getElementById('seccionNombre').value = '';
+                document.getElementById('seccionAlertasDias').value = 3;
+                await cargarPeriodosEnModal(anioSelect.value, null);
+            }
+            document.getElementById('modalSeccion').style.display = 'block';
         }
 
-        document.getElementById('agregarSeccionBtn').onclick = () => {
-            document.getElementById('modalAgregarSeccion').style.display = 'block';
-            cargarComponentesSelect();
-            cargarAniosSelect();
-        };
-        document.getElementById('closeAgregarModal').onclick = () => closeModal();
-        document.getElementById('cancelarAgregarBtn').onclick = () => closeModal();
+        async function cargarPeriodosEnModal(anioId, periodosGuardados) {
+            const periodos = await getPeriodosByYear(parseInt(anioId));
+            const container = document.getElementById('periodosContainer');
+            if (!periodos.length) {
+                container.innerHTML = '<p class="text-gray-500">No hay períodos configurados para este año. Ve a Configuración > Períodos.</p>';
+                return;
+            }
+            let html = '<label class="block text-sm font-medium text-gray-700 mb-2">Períodos</label>';
+            periodos.forEach((p, idx) => {
+                const guardado = periodosGuardados ? periodosGuardados.find(gp => gp.id === p.id) : null;
+                const porcentaje = guardado ? guardado.porcentajeAnual : (p.porcentajeAnual || 0);
+                html += `
+                    <div class="periodo-item">
+                        <div class="font-medium">${escapeHtml(p.nombre)}</div>
+                        <div class="text-sm text-gray-500">${p.fechaInicio || 'sin fecha'} - ${p.fechaFin || 'sin fecha'}</div>
+                        <div class="mt-2">
+                            <label class="text-sm">Porcentaje en nota anual (%)</label>
+                            <input type="number" name="periodo_${p.id}" value="${porcentaje}" step="1" min="0" max="100" class="w-full border rounded p-1 mt-1">
+                        </div>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        }
 
-        document.getElementById('formAgregarSeccion').addEventListener('submit', async (e) => {
+        document.getElementById('seccionAnio').addEventListener('change', (e) => {
+            cargarPeriodosEnModal(e.target.value, null);
+        });
+
+        document.getElementById('formSeccion').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const anioId = parseInt(document.getElementById('anioLectivoSelect').value);
-            const centroId = parseInt(document.getElementById('centroSelect').value);
-            const materia = document.getElementById('materiaInput').value.trim();
-            const nivel = document.getElementById('nivelSelect').value;
-            const seccion = document.getElementById('seccionInput').value.trim();
-            const componenteId = parseInt(document.getElementById('componenteSelect').value);
+            const centroId = parseInt(document.getElementById('seccionCentro').value);
+            const seccion = document.getElementById('seccionNombre').value.trim();
+            const nivel = document.getElementById('seccionNivel').value;
+            const anioId = parseInt(document.getElementById('seccionAnio').value);
+            const alertasDias = parseInt(document.getElementById('seccionAlertasDias').value);
 
-            if (!anioId || !centroId || !materia || !nivel || !seccion || !componenteId) {
+            if (!centroId || !seccion || !nivel || !anioId) {
                 alert('Todos los campos son obligatorios');
                 return;
             }
 
             const anioObj = await getById('school_years', anioId);
             const centroObj = await getById('centros_educativos', centroId);
-            const nombreGrupo = `${materia} - ${seccion}`;
+            const nombreGrupo = `Formación Tecnológica - ${seccion}`;
 
-            const nuevoGrupo = {
-                id: Date.now(),
+            // Recolectar períodos
+            const periodosContainer = document.getElementById('periodosContainer');
+            const inputs = periodosContainer.querySelectorAll('input[name^="periodo_"]');
+            const periodosGuardados = [];
+            for (let inp of inputs) {
+                const periodoId = parseInt(inp.name.split('_')[1]);
+                const porcentaje = parseInt(inp.value) || 0;
+                const periodoOriginal = await getById('periods_enhanced', periodoId);
+                if (periodoOriginal) {
+                    periodosGuardados.push({
+                        id: periodoId,
+                        nombre: periodoOriginal.nombre,
+                        fechaInicio: periodoOriginal.fechaInicio,
+                        fechaFin: periodoOriginal.fechaFin,
+                        porcentajeAnual: porcentaje
+                    });
+                }
+            }
+
+            const grupo = {
+                id: currentEditId || Date.now(),
                 nombre: nombreGrupo,
                 centroId,
                 anio: anioObj.nombre,
                 anioId,
                 nivel,
                 seccion,
-                materia,
-                componenteId,
+                alertasDias,
+                periodos: periodosGuardados,
                 estudiantes: [],
                 createdAt: new Date().toISOString()
             };
-            await put('groups', nuevoGrupo);
+            await put('groups', grupo);
             await cargarGrupos();
             closeModal();
-            alert('Sección creada correctamente');
+            alert(currentEditId ? 'Sección actualizada' : 'Sección creada');
         });
 
         function closeModal() {
-            document.getElementById('modalAgregarSeccion').style.display = 'none';
-            document.getElementById('formAgregarSeccion').reset();
-            document.getElementById('materiaInput').value = 'Formación Tecnológica';
+            document.getElementById('modalSeccion').style.display = 'none';
+            document.getElementById('formSeccion').reset();
+            currentEditId = null;
         }
 
+        // Filtros
         document.getElementById('filtroInstitucion').addEventListener('change', aplicarFiltros);
         document.getElementById('filtroNivel').addEventListener('change', aplicarFiltros);
         document.getElementById('limpiarFiltrosBtn').addEventListener('click', () => {
@@ -483,6 +595,46 @@
             document.getElementById('filtroNivel').value = 'todos';
             aplicarFiltros();
         });
+
+        // Botones de respaldo
+        document.getElementById('exportarBackupBtn').addEventListener('click', async () => {
+            const stores = ['centros_educativos', 'school_years', 'periods_enhanced', 'components', 'groups', 'students', 'attendance', 'grades', 'tasks', 'exams', 'projects', 'portfolio', 'daily_work', 'horarios', 'logbook', 'conduct', 'alertas'];
+            const backup = {};
+            for (const store of stores) {
+                backup[store] = await getAll(store);
+            }
+            const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `pnft_backup_${new Date().toISOString().slice(0,19)}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+        });
+
+        document.getElementById('importarBackupBtn').addEventListener('click', () => {
+            document.getElementById('importarArchivo').click();
+        });
+        document.getElementById('importarArchivo').addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            const text = await file.text();
+            const backup = JSON.parse(text);
+            for (const [store, data] of Object.entries(backup)) {
+                if (Array.isArray(data)) {
+                    for (const item of data) {
+                        await put(store, item);
+                    }
+                }
+            }
+            alert('Respaldo importado. Recargando página...');
+            location.reload();
+        });
+
+        // Abrir modal de creación
+        document.getElementById('agregarSeccionBtn').onclick = () => openEditarModal();
+        document.getElementById('closeModalSeccion').onclick = closeModal;
+        document.getElementById('cancelarModalBtn').onclick = closeModal;
 
         function escapeHtml(str) {
             if (!str) return '';
@@ -494,10 +646,11 @@
             });
         }
 
+        // Inicializar
         cargarDatos();
 
         window.onclick = (e) => {
-            const modal = document.getElementById('modalAgregarSeccion');
+            const modal = document.getElementById('modalSeccion');
             if (e.target === modal) closeModal();
         };
     </script>
