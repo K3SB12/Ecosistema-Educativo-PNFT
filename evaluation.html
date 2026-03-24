@@ -353,13 +353,13 @@
                 }
                 let html = '';
                 currentIndicadores.forEach(ind => {
-                    const mostrarEditar = ind.origen !== 'curriculum';
+                    // Mostrar botón de editar para TODOS los indicadores (tanto manuales como del currículo)
                     html += `
                         <div class="indicador-card" data-id="${ind.id}">
                             <div class="indicador-header">
                                 <div class="indicador-desc">${escapeHtml(ind.descripcion)}</div>
                                 <div class="indicador-actions">
-                                    ${mostrarEditar ? `<button class="edit-indicador" data-id="${ind.id}" title="Editar"><i class="fas fa-edit"></i></button>` : ''}
+                                    <button class="edit-indicador" data-id="${ind.id}" title="Editar"><i class="fas fa-edit"></i></button>
                                     <button class="delete-indicador" data-id="${ind.id}" title="Eliminar"><i class="fas fa-trash-alt"></i></button>
                                 </div>
                             </div>
@@ -440,9 +440,8 @@
                 if (indicador) abrirModalEditar(indicador);
             });
 
-            // ---------- Modal de importación desde currículo (reutilizable) ----------
+            // ---------- Modal de importación desde currículo ----------
             function abrirModalCurriculum() {
-                // Resetear selectores y contenedor
                 cicloCurr.value = '';
                 nivelCurr.innerHTML = '<option value="">-- Primero seleccione ciclo --</option>';
                 moduloCurr.value = '1';
