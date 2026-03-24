@@ -1,98 +1,32 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Secciones - PNFT Articulador</title>
+    <!-- Tailwind CSS CDN (como en Registra Profe) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <link rel="stylesheet" href="css/style.css">
+    <!-- Estilos personalizados adicionales -->
     <style>
-        /* Estilos adicionales para los 11 botones */
-        .group-actions {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.5rem;
-            margin-top: 1rem;
-            border-top: 1px solid #e2e8f0;
-            padding-top: 0.75rem;
+        /* Ajustes adicionales para que los estilos de Tailwind se complementen */
+        body {
+            background-color: #f8fafc;
         }
-        .group-action-btn {
-            background: #f1f5f9;
-            border: none;
-            border-radius: 30px;
-            padding: 0.4rem 0.7rem;
-            font-size: 0.75rem;
-            cursor: pointer;
-            transition: all 0.2s;
-            color: #1e293b;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.4rem;
+        .sidebar {
+            background: linear-gradient(180deg, #1e5a20 0%, #2E7D32 100%);
         }
-        .group-action-btn i {
-            font-size: 0.8rem;
+        .nav-item.active {
+            background: white;
             color: #2E7D32;
+            box-shadow: 0 10px 20px -5px rgba(0,0,0,0.2);
         }
-        .group-action-btn:hover {
-            background: #e2e8f0;
-            transform: translateY(-2px);
-        }
-        .group-main-actions {
-            display: flex;
-            gap: 0.5rem;
-            margin-top: 0.5rem;
-            flex-wrap: wrap;
-        }
-        .group-main-actions .btn-sm {
-            background: #f1f5f9;
-            border: 1px solid #e2e8f0;
-            border-radius: 20px;
-            padding: 0.3rem 0.8rem;
-            font-size: 0.75rem;
-            cursor: pointer;
-        }
-        .group-main-actions .btn-sm i {
-            margin-right: 0.3rem;
-        }
-        .group-main-actions .btn-sm:hover {
-            background: #e2e8f0;
-        }
-        .group-main-actions .btn-danger {
-            background: #fee2e2;
-            border-color: #fecaca;
-            color: #b91c1c;
-        }
-        .group-main-actions .btn-danger:hover {
-            background: #fecaca;
-        }
-        /* Ajustes para el modal */
-        .form-group {
-            margin-bottom: 1rem;
-        }
-        .form-group label {
-            display: block;
-            margin-bottom: 0.3rem;
-            font-weight: 500;
+        .nav-item.active i {
             color: #2E7D32;
-        }
-        .form-group input, .form-group select {
-            width: 100%;
-            padding: 0.6rem;
-            border: 1px solid #ccc;
-            border-radius: 8px;
-            font-size: 0.95rem;
         }
         .btn-accion {
             background: #2E7D32;
-            color: white;
-            border: none;
-            padding: 0.7rem 1.5rem;
-            border-radius: 30px;
-            cursor: pointer;
-            font-size: 0.9rem;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
             transition: all 0.2s;
         }
         .btn-accion:hover {
@@ -106,7 +40,6 @@
         }
         .btn-secundario:hover {
             background: #e0e0e0;
-            transform: translateY(-1px);
         }
         .modal {
             display: none;
@@ -123,7 +56,7 @@
             background-color: white;
             margin: 5% auto;
             padding: 2rem;
-            border-radius: 20px;
+            border-radius: 24px;
             width: 90%;
             max-width: 600px;
             box-shadow: 0 20px 40px rgba(0,0,0,0.2);
@@ -139,285 +72,159 @@
         .close:hover {
             color: black;
         }
-        /* ===== ESTILOS MEJORADOS PARA SECCIONES ===== */
-
-/* Tarjetas de grupos */
-.entity-card, .group-card {
-    background: white;
-    border-radius: 16px;
-    padding: 1.2rem;
-    margin-bottom: 1rem;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-    transition: all 0.2s;
-    border-left: 4px solid #2E7D32;
-}
-.entity-card:hover, .group-card:hover {
-    box-shadow: 0 8px 20px rgba(0,0,0,0.08);
-    transform: translateY(-2px);
-}
-.entity-header, .group-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-    margin-bottom: 0.8rem;
-}
-.entity-title, .group-title {
-    font-weight: 600;
-    font-size: 1.2rem;
-    color: #1e293b;
-}
-.entity-badge, .group-badge {
-    background: #e8f5e9;
-    color: #2E7D32;
-    padding: 0.2rem 0.6rem;
-    border-radius: 30px;
-    font-size: 0.7rem;
-    font-weight: 500;
-}
-.entity-details, .group-details {
-    font-size: 0.85rem;
-    color: #64748b;
-    margin-top: 0.5rem;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 1rem;
-}
-.group-actions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-    margin-top: 1rem;
-    border-top: 1px solid #e2e8f0;
-    padding-top: 0.75rem;
-}
-.group-action-btn {
-    background: #f1f5f9;
-    border: none;
-    border-radius: 30px;
-    padding: 0.4rem 0.8rem;
-    font-size: 0.75rem;
-    cursor: pointer;
-    transition: all 0.2s;
-    color: #1e293b;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.4rem;
-}
-.group-action-btn i {
-    font-size: 0.8rem;
-    color: #2E7D32;
-}
-.group-action-btn:hover {
-    background: #e2e8f0;
-    transform: translateY(-2px);
-}
-.group-main-actions {
-    display: flex;
-    gap: 0.5rem;
-    margin-top: 0.5rem;
-    flex-wrap: wrap;
-}
-.group-main-actions .btn-sm {
-    background: #f1f5f9;
-    border: 1px solid #e2e8f0;
-    border-radius: 20px;
-    padding: 0.3rem 0.8rem;
-    font-size: 0.75rem;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-.group-main-actions .btn-sm i {
-    margin-right: 0.3rem;
-}
-.group-main-actions .btn-sm:hover {
-    background: #e2e8f0;
-}
-.group-main-actions .btn-danger {
-    background: #fee2e2;
-    border-color: #fecaca;
-    color: #b91c1c;
-}
-.group-main-actions .btn-danger:hover {
-    background: #fecaca;
-}
-
-/* Filtros */
-.bg-white.p-6.border {
-    background: white;
-    border-radius: 16px;
-    margin-bottom: 2rem;
-}
-select, input[type="text"], input[type="number"], input[type="date"], textarea {
-    border: 1px solid #e2e8f0;
-    border-radius: 8px;
-    padding: 0.6rem;
-    font-size: 0.9rem;
-    width: 100%;
-    transition: all 0.2s;
-}
-select:focus, input:focus, textarea:focus {
-    outline: none;
-    border-color: #2E7D32;
-    box-shadow: 0 0 0 3px rgba(46,125,50,0.1);
-}
-button.bg-cyan-800 {
-    background: #2E7D32;
-}
-button.bg-cyan-800:hover {
-    background: #1e5a20;
-}
-
-/* Modal */
-.modal {
-    display: none;
-    position: fixed;
-    z-index: 1000;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0,0,0,0.5);
-    overflow: auto;
-}
-.modal-content {
-    background-color: white;
-    margin: 5% auto;
-    padding: 2rem;
-    border-radius: 24px;
-    width: 90%;
-    max-width: 600px;
-    box-shadow: 0 20px 40px rgba(0,0,0,0.2);
-    position: relative;
-}
-.close {
-    color: #aaa;
-    float: right;
-    font-size: 28px;
-    font-weight: bold;
-    cursor: pointer;
-}
-.close:hover {
-    color: black;
-}
-.form-group {
-    margin-bottom: 1.2rem;
-}
-.form-group label {
-    display: block;
-    font-weight: 500;
-    margin-bottom: 0.3rem;
-    color: #2E7D32;
-}
-.btn-accion {
-    background: #2E7D32;
-    color: white;
-    border: none;
-    padding: 0.7rem 1.5rem;
-    border-radius: 30px;
-    cursor: pointer;
-    font-size: 0.9rem;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    transition: all 0.2s;
-}
-.btn-accion:hover {
-    background: #1e5a20;
-    transform: translateY(-2px);
-}
-.btn-secundario {
-    background: #f0f0f0;
-    color: #333;
-    border: 1px solid #ccc;
-    padding: 0.7rem 1.5rem;
-    border-radius: 30px;
-    cursor: pointer;
-    font-size: 0.9rem;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-.btn-secundario:hover {
-    background: #e0e0e0;
-    transform: translateY(-1px);
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-    .group-actions {
-        justify-content: center;
-    }
-    .group-action-btn {
-        font-size: 0.7rem;
-        padding: 0.3rem 0.6rem;
-    }
-    .modal-content {
-        width: 95%;
-        margin: 10% auto;
-        padding: 1.5rem;
-    }
-}
+        .group-action-btn {
+            background: #f1f5f9;
+            border: none;
+            border-radius: 30px;
+            padding: 0.4rem 0.8rem;
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #1e293b;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+        .group-action-btn i {
+            font-size: 0.8rem;
+            color: #2E7D32;
+        }
+        .group-action-btn:hover {
+            background: #e2e8f0;
+            transform: translateY(-2px);
+        }
+        .group-main-actions .btn-sm {
+            background: #f1f5f9;
+            border: 1px solid #e2e8f0;
+            border-radius: 20px;
+            padding: 0.3rem 0.8rem;
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .group-main-actions .btn-sm i {
+            margin-right: 0.3rem;
+        }
+        .group-main-actions .btn-sm:hover {
+            background: #e2e8f0;
+        }
+        .group-main-actions .btn-danger {
+            background: #fee2e2;
+            border-color: #fecaca;
+            color: #b91c1c;
+        }
+        .group-main-actions .btn-danger:hover {
+            background: #fecaca;
+        }
+        .group-card {
+            transition: all 0.2s;
+        }
+        .group-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 20px 30px -10px rgba(46,125,50,0.15);
+        }
     </style>
 </head>
-<body>
-    <div class="app">
-        <aside class="sidebar">
-            <div class="sidebar-header">
-                <div class="logo">PNFT</div>
-                <h2>Articulador 2026</h2>
-                <p>MEP Costa Rica</p>
+<body class="font-sans antialiased">
+    <div class="flex min-h-screen">
+        <!-- Sidebar -->
+        <aside class="w-72 bg-gradient-to-b from-green-800 to-green-700 text-white flex-shrink-0 sticky top-0 h-screen overflow-y-auto">
+            <div class="text-center py-8 border-b border-white/20">
+                <div class="w-20 h-20 bg-white/10 rounded-full flex items-center justify-center text-3xl font-bold mx-auto mb-4 border-2 border-white/20">
+                    PNFT
+                </div>
+                <h2 class="text-xl font-semibold">Articulador 2026</h2>
+                <p class="text-sm opacity-80">MEP Costa Rica</p>
             </div>
-            <ul class="nav-menu">
-                <a href="index.html"><li class="nav-item"><i class="fas fa-chart-pie"></i> Tablero</li></a>
-                <a href="planning.html"><li class="nav-item"><i class="fas fa-clipboard-list"></i> Planeamiento</li></a>
-                <a href="progresion.html"><li class="nav-item"><i class="fas fa-road"></i> Progresión</li></a>
-                <a href="evaluation.html"><li class="nav-item"><i class="fas fa-check-circle"></i> Evaluación</li></a>
-                <a href="logbook.html"><li class="nav-item"><i class="fas fa-book-open"></i> Bitácora</li></a>
-                <a href="students.html"><li class="nav-item"><i class="fas fa-users"></i> Estudiantes</li></a>
-                <a href="groups.html"><li class="nav-item active"><i class="fas fa-layer-group"></i> Grupos</li></a>
-                <a href="settings.html"><li class="nav-item"><i class="fas fa-cog"></i> Configuración</li></a>
+            <ul class="mt-6 space-y-1 px-4">
+                <a href="index.html" class="block">
+                    <li class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10 transition-colors">
+                        <i class="fas fa-chart-pie w-5"></i> Tablero
+                    </li>
+                </a>
+                <a href="planning.html" class="block">
+                    <li class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10 transition-colors">
+                        <i class="fas fa-clipboard-list w-5"></i> Planeamiento
+                    </li>
+                </a>
+                <a href="progresion.html" class="block">
+                    <li class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10 transition-colors">
+                        <i class="fas fa-road w-5"></i> Progresión
+                    </li>
+                </a>
+                <a href="evaluation.html" class="block">
+                    <li class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10 transition-colors">
+                        <i class="fas fa-check-circle w-5"></i> Evaluación
+                    </li>
+                </a>
+                <a href="logbook.html" class="block">
+                    <li class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10 transition-colors">
+                        <i class="fas fa-book-open w-5"></i> Bitácora
+                    </li>
+                </a>
+                <a href="students.html" class="block">
+                    <li class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10 transition-colors">
+                        <i class="fas fa-users w-5"></i> Estudiantes
+                    </li>
+                </a>
+                <a href="groups.html" class="block">
+                    <li class="flex items-center gap-3 px-4 py-3 rounded-xl bg-white text-green-800 font-semibold shadow-md">
+                        <i class="fas fa-layer-group w-5"></i> Secciones
+                    </li>
+                </a>
+                <a href="settings.html" class="block">
+                    <li class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10 transition-colors">
+                        <i class="fas fa-cog w-5"></i> Configuración
+                    </li>
+                </a>
             </ul>
         </aside>
 
-        <main class="main-content">
-            <div class="top-bar">
-                <h1 class="page-title">Secciones</h1>
-                <div class="user-info">
-                    <span class="user-badge"><i class="fas fa-user-graduate"></i> Docente</span>
-                    <span class="user-badge"><i class="fas fa-calendar-alt"></i> 2026</span>
+        <!-- Main Content -->
+        <main class="flex-1 p-8 bg-gray-50">
+            <div class="flex justify-between items-center mb-8 bg-white p-4 rounded-2xl shadow-sm">
+                <h1 class="text-2xl font-bold text-gray-800">Secciones</h1>
+                <div class="flex gap-4">
+                    <span class="bg-green-100 text-green-800 px-4 py-2 rounded-full text-sm font-medium flex items-center gap-2">
+                        <i class="fas fa-user-graduate"></i> Docente
+                    </span>
+                    <span class="bg-green-100 text-green-800 px-4 py-2 rounded-full text-sm font-medium flex items-center gap-2">
+                        <i class="fas fa-calendar-alt"></i> 2026
+                    </span>
                 </div>
             </div>
 
-            <div class="mb-8 px-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-0">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
                 <div class="flex items-center gap-2 bg-blue-100 text-blue-800 border border-blue-300 rounded-md px-4 py-2 text-sm">
+                    <i class="fas fa-info-circle"></i>
                     <span> ¿Necesitas ayuda? Consulta la <a href="#" class="underline hover:text-blue-900 font-medium"> guía del módulo Secciones</a>. </span>
                 </div>
-                <button id="agregarSeccionBtn" class="bg-cyan-800 text-white px-4 py-2 rounded-lg shadow hover:bg-cyan-900 transition duration-200 w-full sm:w-auto"> Agregar Sección </button>
+                <button id="agregarSeccionBtn" class="bg-green-800 hover:bg-green-900 text-white px-5 py-2 rounded-lg shadow transition duration-200 flex items-center gap-2">
+                    <i class="fas fa-plus"></i> Agregar Sección
+                </button>
             </div>
 
-            <div class="bg-white p-6 border border-gray-300 rounded-lg shadow-md mb-8 mx-4">
+            <div class="bg-white p-6 border border-gray-200 rounded-xl shadow-sm mb-8">
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                    <div class="flex flex-col">
-                        <label class="text-sm font-semibold text-gray-700 mb-1"> Institución </label>
-                        <select id="filtroInstitucion" class="w-full border-gray-300 rounded-lg py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1"> Institución </label>
+                        <select id="filtroInstitucion" class="w-full border-gray-300 rounded-lg py-2 focus:ring-green-500 focus:border-green-500">
                             <option value="todos">Todas las Instituciones</option>
                         </select>
                     </div>
-                    <div class="flex flex-col">
-                        <label class="text-sm font-semibold text-gray-700 mb-1"> Nivel </label>
-                        <select id="filtroNivel" class="w-full border-gray-300 rounded-lg py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1"> Nivel </label>
+                        <select id="filtroNivel" class="w-full border-gray-300 rounded-lg py-2 focus:ring-green-500 focus:border-green-500">
                             <option value="todos">Todos los Niveles</option>
                         </select>
                     </div>
                     <div class="flex items-end">
-                        <button id="limpiarFiltrosBtn" class="w-full sm:w-auto px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg transition"> Limpiar filtros </button>
+                        <button id="limpiarFiltrosBtn" class="w-full px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg transition"> Limpiar filtros </button>
                     </div>
                 </div>
             </div>
 
-            <div id="gruposContainer" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 px-4">
+            <div id="gruposContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <!-- Las tarjetas se cargarán dinámicamente -->
             </div>
         </main>
@@ -427,23 +234,23 @@ button.bg-cyan-800:hover {
     <div id="modalAgregarSeccion" class="modal">
         <div class="modal-content">
             <span class="close" id="closeAgregarModal">&times;</span>
-            <h2>Agregar Sección</h2>
+            <h2 class="text-xl font-bold mb-4">Crear Nueva Sección</h2>
             <form id="formAgregarSeccion">
-                <div class="form-group">
-                    <label>Año Lectivo *</label>
-                    <select id="anioLectivoSelect" required></select>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Año Lectivo *</label>
+                    <select id="anioLectivoSelect" required class="w-full border rounded-lg p-2"></select>
                 </div>
-                <div class="form-group">
-                    <label>Centro Educativo *</label>
-                    <select id="centroSelect" required></select>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Centro Educativo *</label>
+                    <select id="centroSelect" required class="w-full border rounded-lg p-2"></select>
                 </div>
-                <div class="form-group">
-                    <label>Materia *</label>
-                    <input type="text" id="materiaInput" value="Formación Tecnológica" readonly>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Materia *</label>
+                    <input type="text" id="materiaInput" value="Formación Tecnológica" readonly class="w-full border rounded-lg p-2 bg-gray-100">
                 </div>
-                <div class="form-group">
-                    <label>Nivel *</label>
-                    <select id="nivelSelect" required>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Nivel *</label>
+                    <select id="nivelSelect" required class="w-full border rounded-lg p-2">
                         <option value="I Ciclo (1°-3°)">I Ciclo (1°-3°)</option>
                         <option value="II Ciclo (4°-6°)">II Ciclo (4°-6°)</option>
                         <option value="III Ciclo (7°-9°)">III Ciclo (7°-9°)</option>
@@ -452,17 +259,17 @@ button.bg-cyan-800:hover {
                         <option value="Educación Especial">Educación Especial</option>
                     </select>
                 </div>
-                <div class="form-group">
-                    <label>Sección *</label>
-                    <input type="text" id="seccionInput" placeholder="Ej: 1-1" required>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Sección *</label>
+                    <input type="text" id="seccionInput" placeholder="Ej: 1-1" required class="w-full border rounded-lg p-2">
                 </div>
-                <div class="form-group">
-                    <label>Componente de Evaluación *</label>
-                    <select id="componenteSelect" required></select>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Componente de Evaluación *</label>
+                    <select id="componenteSelect" required class="w-full border rounded-lg p-2"></select>
                 </div>
-                <div style="text-align: right;">
-                    <button type="submit" class="btn-accion">Crear Sección</button>
-                    <button type="button" id="cancelarAgregarBtn" class="btn-secundario">Cancelar</button>
+                <div class="flex justify-end gap-3">
+                    <button type="submit" class="bg-green-800 text-white px-5 py-2 rounded-lg hover:bg-green-900 transition">Crear Sección</button>
+                    <button type="button" id="cancelarAgregarBtn" class="bg-gray-200 text-gray-800 px-5 py-2 rounded-lg hover:bg-gray-300 transition">Cancelar</button>
                 </div>
             </form>
         </div>
@@ -474,12 +281,14 @@ button.bg-cyan-800:hover {
         let db = null;
         let grupos = [];
         let instituciones = [];
+        let nivelesSet = new Set();
 
         async function cargarDatos() {
             db = await openDB();
             await cargarInstituciones();
             await cargarGrupos();
-            await cargarSelects();
+            await cargarComponentesSelect();
+            await cargarAniosSelect();
         }
 
         async function cargarInstituciones() {
@@ -498,8 +307,7 @@ button.bg-cyan-800:hover {
 
         async function cargarGrupos() {
             grupos = await getAll('groups');
-            // Extraer niveles únicos para filtros
-            const nivelesSet = new Set();
+            nivelesSet.clear();
             grupos.forEach(g => { if (g.nivel) nivelesSet.add(g.nivel); });
             const filtroNivel = document.getElementById('filtroNivel');
             filtroNivel.innerHTML = '<option value="todos">Todos los Niveles</option>';
@@ -530,24 +338,26 @@ button.bg-cyan-800:hover {
             }
             let html = '';
             for (const grupo of gruposList) {
-                let centroNombre = '';
                 const centro = instituciones.find(c => c.id === grupo.centroId);
-                centroNombre = centro ? centro.nombre : 'Desconocido';
-                // Por ahora estudiantesCount = 0 (luego se implementará)
-                const estudiantesCount = 0;
-
+                const centroNombre = centro ? centro.nombre : 'Desconocido';
+                const estudiantesCount = 0; // pendiente
                 html += `
-                    <div class="p-6 border border-gray-300 rounded-lg shadow-md bg-white hover:shadow-lg transition-shadow duration-200 flex flex-col" data-id="${grupo.id}">
-                        <h3 class="text-2xl font-semibold text-gray-700 mb-3">${escapeHtml(grupo.nombre)}</h3>
-                        <div class="mb-2 text-gray-600"><span class="font-medium">Institución: </span> ${escapeHtml(centroNombre)}</div>
-                        <div class="mb-2 text-gray-600"><span class="font-medium">Año: </span> ${escapeHtml(grupo.anio)}</div>
-                        <div class="mb-4 text-gray-600"><span class="font-medium">Estudiantes: </span> ${estudiantesCount}</div>
-                        <div class="group-main-actions">
-                            <button class="btn-sm ver-estudiantes" data-id="${grupo.id}"><i class="fas fa-users"></i> Ver estudiantes</button>
-                            <button class="btn-sm editar-grupo" data-id="${grupo.id}"><i class="fas fa-edit"></i> Editar</button>
-                            <button class="btn-sm btn-danger eliminar-grupo" data-id="${grupo.id}"><i class="fas fa-trash-alt"></i> Eliminar</button>
+                    <div class="bg-white rounded-xl shadow-md border border-gray-200 p-5 hover:shadow-lg transition-all group-card" data-id="${grupo.id}">
+                        <div class="flex justify-between items-start">
+                            <h3 class="text-xl font-semibold text-gray-800">${escapeHtml(grupo.nombre)}</h3>
+                            <span class="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">${escapeHtml(grupo.anio)}</span>
                         </div>
-                        <div class="group-actions">
+                        <div class="mt-2 text-sm text-gray-600 flex flex-col gap-1">
+                            <div><i class="fas fa-school w-4 text-green-700"></i> ${escapeHtml(centroNombre)}</div>
+                            <div><i class="fas fa-graduation-cap w-4 text-green-700"></i> Nivel: ${escapeHtml(grupo.nivel)}</div>
+                            <div><i class="fas fa-users w-4 text-green-700"></i> Estudiantes: ${estudiantesCount}</div>
+                        </div>
+                        <div class="flex gap-2 mt-4 border-t pt-3">
+                            <button class="ver-estudiantes text-sm bg-gray-100 hover:bg-gray-200 rounded-full px-3 py-1 transition" data-id="${grupo.id}"><i class="fas fa-users"></i> Ver estudiantes</button>
+                            <button class="editar-grupo text-sm bg-gray-100 hover:bg-gray-200 rounded-full px-3 py-1 transition" data-id="${grupo.id}"><i class="fas fa-edit"></i> Editar</button>
+                            <button class="eliminar-grupo text-sm bg-red-100 hover:bg-red-200 text-red-700 rounded-full px-3 py-1 transition" data-id="${grupo.id}"><i class="fas fa-trash-alt"></i> Eliminar</button>
+                        </div>
+                        <div class="flex flex-wrap gap-2 mt-3 pt-2 border-t">
                             <button class="group-action-btn" data-action="asistencia" data-id="${grupo.id}"><i class="fas fa-calendar-check"></i> Asistencia</button>
                             <button class="group-action-btn" data-action="estudiantes" data-id="${grupo.id}"><i class="fas fa-user-graduate"></i> Estudiantes</button>
                             <button class="group-action-btn" data-action="calificaciones" data-id="${grupo.id}"><i class="fas fa-chart-line"></i> Calificaciones</button>
@@ -568,29 +378,27 @@ button.bg-cyan-800:hover {
         }
 
         function attachCardEvents() {
-            // Botones principales
             document.querySelectorAll('.ver-estudiantes').forEach(btn => {
                 btn.addEventListener('click', (e) => {
                     const id = btn.dataset.id;
-                    alert(`Funcionalidad: Ver estudiantes del grupo ${id} (en desarrollo)`);
+                    alert(`Funcionalidad: Ver estudiantes del grupo ${id}`);
                 });
             });
             document.querySelectorAll('.editar-grupo').forEach(btn => {
                 btn.addEventListener('click', (e) => {
                     const id = btn.dataset.id;
-                    alert(`Funcionalidad: Editar grupo ${id} (en desarrollo)`);
+                    alert(`Funcionalidad: Editar grupo ${id}`);
                 });
             });
             document.querySelectorAll('.eliminar-grupo').forEach(btn => {
                 btn.addEventListener('click', async (e) => {
                     const id = parseInt(btn.dataset.id);
-                    if (confirm('¿Eliminar esta sección? Se perderán todos los datos asociados.')) {
+                    if (confirm('¿Eliminar esta sección? Se perderán todos los datos asociados (estudiantes, notas, asistencias).')) {
                         await remove('groups', id);
                         await cargarGrupos();
                     }
                 });
             });
-            // 11 botones adicionales
             document.querySelectorAll('.group-action-btn').forEach(btn => {
                 btn.addEventListener('click', (e) => {
                     const action = btn.dataset.action;
@@ -600,26 +408,27 @@ button.bg-cyan-800:hover {
             });
         }
 
-        async function cargarSelects() {
-            // Años lectivos
-            const anios = await getAll('school_years');
-            const anioSelect = document.getElementById('anioLectivoSelect');
-            anioSelect.innerHTML = '';
-            anios.forEach(anio => {
-                anioSelect.innerHTML += `<option value="${anio.id}">${escapeHtml(anio.nombre)}</option>`;
-            });
-            // Componentes
+        async function cargarComponentesSelect() {
             const componentes = await getAll('components');
-            const compSelect = document.getElementById('componenteSelect');
-            compSelect.innerHTML = '<option value="">-- Seleccione --</option>';
+            const select = document.getElementById('componenteSelect');
+            select.innerHTML = '<option value="">-- Seleccione --</option>';
             componentes.forEach(comp => {
-                compSelect.innerHTML += `<option value="${comp.id}">${escapeHtml(comp.nombre)}</option>`;
+                select.innerHTML += `<option value="${comp.id}">${escapeHtml(comp.nombre)}</option>`;
+            });
+        }
+        async function cargarAniosSelect() {
+            const anios = await getAll('school_years');
+            const select = document.getElementById('anioLectivoSelect');
+            select.innerHTML = '';
+            anios.forEach(anio => {
+                select.innerHTML += `<option value="${anio.id}">${escapeHtml(anio.nombre)}</option>`;
             });
         }
 
         document.getElementById('agregarSeccionBtn').onclick = () => {
-            cargarSelects();
             document.getElementById('modalAgregarSeccion').style.display = 'block';
+            cargarComponentesSelect();
+            cargarAniosSelect();
         };
         document.getElementById('closeAgregarModal').onclick = () => closeModal();
         document.getElementById('cancelarAgregarBtn').onclick = () => closeModal();
@@ -664,10 +473,9 @@ button.bg-cyan-800:hover {
         function closeModal() {
             document.getElementById('modalAgregarSeccion').style.display = 'none';
             document.getElementById('formAgregarSeccion').reset();
-            document.getElementById('materiaInput').value = 'Formación Tecnológica'; // reset materia
+            document.getElementById('materiaInput').value = 'Formación Tecnológica';
         }
 
-        // Filtros
         document.getElementById('filtroInstitucion').addEventListener('change', aplicarFiltros);
         document.getElementById('filtroNivel').addEventListener('change', aplicarFiltros);
         document.getElementById('limpiarFiltrosBtn').addEventListener('click', () => {
@@ -686,10 +494,8 @@ button.bg-cyan-800:hover {
             });
         }
 
-        // Inicialización
         cargarDatos();
 
-        // Cerrar modal al hacer clic fuera
         window.onclick = (e) => {
             const modal = document.getElementById('modalAgregarSeccion');
             if (e.target === modal) closeModal();
