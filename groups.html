@@ -8,7 +8,6 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
     <style>
-        /* Estilos existentes (se mantienen) */
         body { background-color: #f8fafc; }
         .sidebar { background: linear-gradient(180deg, #1e5a20 0%, #2E7D32 100%); }
         .nav-item.active { background: white; color: #2E7D32; box-shadow: 0 10px 20px -5px rgba(0,0,0,0.2); }
@@ -130,7 +129,7 @@
             </div>
             <div id="estudiantesLista" class="overflow-x-auto">
                 <table class="student-table w-full">
-                    <thead><tr><th>Nombre</th><th>Apellido1</th><th>Apellido2</th><th>Email</th><th>Teléfono</th><th>Acciones</th></tr></thead>
+                    <thead><tr><th>Nombre</th><th>Apellido1</th><th>Apellido2</th><th>Email</th><th>Teléfono</th><th>Acciones</th></thead>
                     <tbody id="tablaEstudiantes"></tbody>
                 </table>
             </div>
@@ -182,13 +181,17 @@
     <script type="module">
         import { openDB, getAll, put, remove, getById } from './js/db.js';
 
+        // ==================== VARIABLES GLOBALES ====================
         let db;
-        let currentGroupId = null;
+        let currentGroupId = null;            // para edición de grupo
+        let currentAttendanceGroupId = null;   // para asistencia
+        let currentAttendanceDate = new Date().toISOString().slice(0,10);
         let estudiantesList = [];
         let currentPage = 1;
         const itemsPerPage = 10;
+        let attendanceStudents = [];
 
-        // Datos de ejemplo predefinidos (solo se añaden si no existen)
+        // ==================== DATOS DE EJEMPLO (solo si no existen) ====================
         const datosEjemplo = {
             centros: [{ id: 1001, nombre: 'Escuela Tranquilino Sáenz Rojas', codigo: 'CE1', activo: true }],
             years: [{ id: 2026, nombre: '2026', activo: true }],
@@ -213,13 +216,25 @@
             }
         }
 
+        // ==================== UTILIDADES ====================
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/[&<>]/g, function(m) {
+                if (m === '&') return '&amp;';
+                if (m === '<') return '&lt;';
+                if (m === '>') return '&gt;';
+                return m;
+            });
+        }
+
+        // ==================== GRUPOS (CRUD) ====================
         async function cargarSelects() {
             const centros = await getAll('centros_educativos');
             const selectInst = document.getElementById('grupoInstitucion');
-            selectInst.innerHTML = centros.map(c => `<option value="${c.id}">${c.nombre}</option>`).join('');
+            selectInst.innerHTML = centros.map(c => `<option value="${c.id}">${escapeHtml(c.nombre)}</option>`).join('');
             const anios = await getAll('school_years');
             const selectAnio = document.getElementById('grupoAnio');
-            selectAnio.innerHTML = anios.map(a => `<option value="${a.id}">${a.nombre}</option>`).join('');
+            selectAnio.innerHTML = anios.map(a => `<option value="${a.id}">${escapeHtml(a.nombre)}</option>`).join('');
         }
 
         async function cargarPeriodos(yearId) {
@@ -232,169 +247,13 @@
             }
             container.innerHTML = filtrados.map(p => `
                 <div class="periodo-item">
-                    <div class="font-medium">${p.nombre}</div>
+                    <div class="font-medium">${escapeHtml(p.nombre)}</div>
                     <div class="text-sm text-gray-600">${p.fechaInicio || 'sin fecha'} - ${p.fechaFin || 'sin fecha'}</div>
                     <div class="mt-2"><label class="text-sm">% en nota anual</label><input type="number" class="porcentaje-periodo w-24 ml-2 border rounded p-1" data-id="${p.id}" value="${p.porcentajeAnual || 0}" step="1" min="0" max="100"></div>
                 </div>
             `).join('');
         }
 
-        // Funciones para estudiantes
-        async function cargarEstudiantes(groupId) {
-            const all = await getAll('students');
-            estudiantesList = all.filter(s => s.groupId === groupId);
-            renderTablaEstudiantes();
-        }
-
-        function renderTablaEstudiantes() {
-            const search = document.getElementById('buscarEstudiante').value.toLowerCase();
-            let filtered = estudiantesList;
-            if (search) {
-                filtered = estudiantesList.filter(s => 
-                    s.nombre.toLowerCase().includes(search) || 
-                    s.apellido1.toLowerCase().includes(search) ||
-                    (s.apellido2 && s.apellido2.toLowerCase().includes(search))
-                );
-            }
-            const start = (currentPage - 1) * itemsPerPage;
-            const paginated = filtered.slice(start, start + itemsPerPage);
-            const tbody = document.getElementById('tablaEstudiantes');
-            if (paginated.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="6" class="text-center text-gray-500">No hay estudiantes</td></tr>';
-                return;
-            }
-            tbody.innerHTML = paginated.map(s => `
-                <tr>
-                    <td>${escapeHtml(s.nombre)}</td>
-                    <td>${escapeHtml(s.apellido1)}</td>
-                    <td>${escapeHtml(s.apellido2 || '')}</td>
-                    <td>${escapeHtml(s.email || '')}</td>
-                    <td>${escapeHtml(s.telefono || '')}</td>
-                    <td class="whitespace-nowrap">
-                        <button class="editar-estudiante text-blue-600 hover:text-blue-800 mr-2" data-id="${s.id}"><i class="fas fa-edit"></i></button>
-                        <button class="eliminar-estudiante text-red-600 hover:text-red-800" data-id="${s.id}"><i class="fas fa-trash-alt"></i></button>
-                    </td>
-                </tr>
-            `).join('');
-            // Paginación
-            const totalPages = Math.ceil(filtered.length / itemsPerPage);
-            const pagContainer = document.getElementById('paginacionEstudiantes');
-            if (totalPages <= 1) { pagContainer.innerHTML = ''; return; }
-            let pagHtml = '';
-            for (let i = 1; i <= totalPages; i++) {
-                pagHtml += `<button class="pag-btn px-3 py-1 rounded ${i === currentPage ? 'bg-green-600 text-white' : 'bg-gray-200'}" data-page="${i}">${i}</button>`;
-            }
-            pagContainer.innerHTML = pagHtml;
-            document.querySelectorAll('.pag-btn').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    currentPage = parseInt(btn.dataset.page);
-                    renderTablaEstudiantes();
-                });
-            });
-            // Asignar eventos a los botones de editar/eliminar después de renderizar
-            document.querySelectorAll('.editar-estudiante').forEach(btn => {
-                btn.addEventListener('click', async (e) => {
-                    const id = parseInt(btn.dataset.id);
-                    const estudiante = estudiantesList.find(s => s.id === id);
-                    if (estudiante) abrirFormEstudiante(estudiante);
-                });
-            });
-            document.querySelectorAll('.eliminar-estudiante').forEach(btn => {
-                btn.addEventListener('click', async (e) => {
-                    const id = parseInt(btn.dataset.id);
-                    if (confirm('¿Eliminar este estudiante?')) {
-                        await remove('students', id);
-                        await cargarEstudiantes(currentGroupId);
-                        await renderGrupos(); // actualizar contador en tarjeta
-                    }
-                });
-            });
-        }
-
-        function abrirFormEstudiante(estudiante = null) {
-            document.getElementById('formEstudianteTitulo').innerText = estudiante ? 'Editar Estudiante' : 'Agregar Estudiante';
-            document.getElementById('estudianteId').value = estudiante ? estudiante.id : '';
-            document.getElementById('estNombre').value = estudiante ? estudiante.nombre : '';
-            document.getElementById('estApellido1').value = estudiante ? estudiante.apellido1 : '';
-            document.getElementById('estApellido2').value = estudiante ? estudiante.apellido2 : '';
-            document.getElementById('estEmail').value = estudiante ? estudiante.email : '';
-            document.getElementById('estTelefono').value = estudiante ? estudiante.telefono : '';
-            document.getElementById('modalFormEstudiante').style.display = 'block';
-        }
-
-        document.getElementById('formEstudiante').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const id = document.getElementById('estudianteId').value;
-            const estudiante = {
-                id: id ? parseInt(id) : Date.now(),
-                groupId: currentGroupId,
-                nombre: document.getElementById('estNombre').value.trim(),
-                apellido1: document.getElementById('estApellido1').value.trim(),
-                apellido2: document.getElementById('estApellido2').value.trim(),
-                email: document.getElementById('estEmail').value.trim(),
-                telefono: document.getElementById('estTelefono').value.trim()
-            };
-            await put('students', estudiante);
-            await cargarEstudiantes(currentGroupId);
-            await renderGrupos(); // actualizar contador
-            closeModalFormEstudiante();
-        });
-
-        function closeModalFormEstudiante() {
-            document.getElementById('modalFormEstudiante').style.display = 'none';
-            document.getElementById('formEstudiante').reset();
-        }
-
-        // Importar Excel
-        async function importarExcel(file) {
-            const data = await file.arrayBuffer();
-            const workbook = XLSX.read(data);
-            const sheet = workbook.Sheets[workbook.SheetNames[0]];
-            const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
-            if (rows.length < 2) { alert('El archivo no contiene datos.'); return; }
-            const headers = rows[0];
-            const nameIdx = headers.findIndex(h => h?.toLowerCase().includes('nombre'));
-            const ap1Idx = headers.findIndex(h => h?.toLowerCase().includes('primer') && h?.toLowerCase().includes('apellido'));
-            const ap2Idx = headers.findIndex(h => h?.toLowerCase().includes('segundo') && h?.toLowerCase().includes('apellido'));
-            const emailIdx = headers.findIndex(h => h?.toLowerCase() === 'email');
-            const phoneIdx = headers.findIndex(h => h?.toLowerCase() === 'teléfono' || h?.toLowerCase() === 'telefono');
-            if (nameIdx === -1 || ap1Idx === -1) { alert('El Excel debe tener columnas "Nombre" y "Primer Apellido".'); return; }
-            const nuevos = [];
-            for (let i = 1; i < rows.length; i++) {
-                const row = rows[i];
-                if (!row[nameIdx] || !row[ap1Idx]) continue;
-                nuevos.push({
-                    id: Date.now() + i,
-                    groupId: currentGroupId,
-                    nombre: row[nameIdx].toString().trim(),
-                    apellido1: row[ap1Idx].toString().trim(),
-                    apellido2: ap2Idx !== -1 ? row[ap2Idx]?.toString().trim() : '',
-                    email: emailIdx !== -1 ? row[emailIdx]?.toString().trim() : '',
-                    telefono: phoneIdx !== -1 ? row[phoneIdx]?.toString().trim() : ''
-                });
-            }
-            if (nuevos.length === 0) { alert('No se encontraron estudiantes válidos.'); return; }
-            for (let s of nuevos) await put('students', s);
-            await cargarEstudiantes(currentGroupId);
-            await renderGrupos();
-            alert(`${nuevos.length} estudiantes importados.`);
-        }
-
-        // Exportar Excel
-        async function exportarExcel() {
-            const estudiantes = await getAll('students');
-            const groupStudents = estudiantes.filter(s => s.groupId === currentGroupId);
-            const data = [['Nombre', 'Primer Apellido', 'Segundo Apellido', 'Email', 'Teléfono']];
-            for (let s of groupStudents) {
-                data.push([s.nombre, s.apellido1, s.apellido2 || '', s.email || '', s.telefono || '']);
-            }
-            const ws = XLSX.utils.aoa_to_sheet(data);
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, 'Estudiantes');
-            XLSX.writeFile(wb, `estudiantes_${currentGroupId}.xlsx`);
-        }
-
-        // --- Funciones de grupos ---
         async function renderGrupos() {
             const grupos = await getAll('groups');
             const estudiantes = await getAll('students');
@@ -448,7 +307,6 @@
                     const id = parseInt(btn.dataset.id);
                     if (confirm('¿Eliminar esta sección? Se perderán todos los datos asociados (estudiantes, notas, asistencias).')) {
                         await remove('groups', id);
-                        // Eliminar también estudiantes asociados
                         const estudiantes = await getAll('students');
                         for (let s of estudiantes.filter(s => s.groupId === id)) {
                             await remove('students', s.id);
@@ -460,11 +318,13 @@
             document.querySelectorAll('.group-action-btn').forEach(btn => {
                 btn.addEventListener('click', (e) => {
                     const action = btn.dataset.action;
-                    const id = btn.dataset.id;
+                    const id = parseInt(btn.dataset.id);
                     if (action === 'estudiantes') {
-                        currentGroupId = parseInt(id);
+                        currentGroupId = id;
                         cargarEstudiantes(currentGroupId);
                         document.getElementById('modalEstudiantes').style.display = 'block';
+                    } else if (action === 'asistencia') {
+                        abrirModalAsistencia(id);
                     } else {
                         alert(`Funcionalidad: ${action} para el grupo ${id} (en desarrollo)`);
                     }
@@ -472,7 +332,6 @@
             });
         }
 
-        // --- Funciones de grupos (modal) ---
         function abrirModalEdicion(grupo = null) {
             currentGroupId = grupo ? grupo.id : null;
             document.getElementById('modalTitulo').innerText = grupo ? 'Editar Sección' : 'Agregar Sección';
@@ -500,39 +359,231 @@
             document.getElementById('modalGrupo').style.display = 'block';
         }
 
-        document.getElementById('formGrupo').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const centroId = parseInt(document.getElementById('grupoInstitucion').value);
-            const seccion = document.getElementById('grupoSeccion').value.trim();
-            const nivel = document.getElementById('grupoNivel').value;
-            const anioId = parseInt(document.getElementById('grupoAnio').value);
-            const diasAlerta = parseInt(document.getElementById('grupoDiasAlerta').value) || 3;
-            const anioObj = await getById('school_years', anioId);
-            if (!anioObj) { alert('Error: Año no encontrado'); return; }
-            const periodosPorcentajes = {};
-            document.querySelectorAll('.porcentaje-periodo').forEach(inp => { periodosPorcentajes[inp.dataset.id] = parseInt(inp.value) || 0; });
-            const grupo = {
-                id: currentGroupId || Date.now(),
-                centroId,
-                seccion,
-                nivel,
-                anioId,
-                anio: anioObj.nombre,
-                diasAlerta,
-                periodosPorcentajes,
-                createdAt: new Date().toISOString()
-            };
-            await put('groups', grupo);
-            await renderGrupos();
-            closeModal();
-            alert('Sección guardada correctamente.');
-        });
-
         function closeModal() { document.getElementById('modalGrupo').style.display = 'none'; currentGroupId = null; }
-        document.getElementById('closeModalGrupo').onclick = closeModal;
-        document.getElementById('cancelarGrupoBtn').onclick = closeModal;
 
-        // --- Backup y filtros ---
+        // ==================== ESTUDIANTES ====================
+        async function cargarEstudiantes(groupId) {
+            const all = await getAll('students');
+            estudiantesList = all.filter(s => s.groupId === groupId);
+            renderTablaEstudiantes();
+        }
+
+        function renderTablaEstudiantes() {
+            const search = document.getElementById('buscarEstudiante').value.toLowerCase();
+            let filtered = estudiantesList;
+            if (search) {
+                filtered = estudiantesList.filter(s => 
+                    s.nombre.toLowerCase().includes(search) || 
+                    s.apellido1.toLowerCase().includes(search) ||
+                    (s.apellido2 && s.apellido2.toLowerCase().includes(search))
+                );
+            }
+            const start = (currentPage - 1) * itemsPerPage;
+            const paginated = filtered.slice(start, start + itemsPerPage);
+            const tbody = document.getElementById('tablaEstudiantes');
+            if (paginated.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" class="text-center text-gray-500">No hay estudiantes</td></tr>';
+                return;
+            }
+            tbody.innerHTML = paginated.map(s => `
+                <tr>
+                    <td>${escapeHtml(s.nombre)}</td>
+                    <td>${escapeHtml(s.apellido1)}</td>
+                    <td>${escapeHtml(s.apellido2 || '')}</td>
+                    <td>${escapeHtml(s.email || '')}</td>
+                    <td>${escapeHtml(s.telefono || '')}</td>
+                    <td class="whitespace-nowrap">
+                        <button class="editar-estudiante text-blue-600 hover:text-blue-800 mr-2" data-id="${s.id}"><i class="fas fa-edit"></i></button>
+                        <button class="eliminar-estudiante text-red-600 hover:text-red-800" data-id="${s.id}"><i class="fas fa-trash-alt"></i></button>
+                    </td>
+                </tr>
+            `).join('');
+            // Paginación
+            const totalPages = Math.ceil(filtered.length / itemsPerPage);
+            const pagContainer = document.getElementById('paginacionEstudiantes');
+            if (totalPages <= 1) { pagContainer.innerHTML = ''; return; }
+            let pagHtml = '';
+            for (let i = 1; i <= totalPages; i++) {
+                pagHtml += `<button class="pag-btn px-3 py-1 rounded ${i === currentPage ? 'bg-green-600 text-white' : 'bg-gray-200'}" data-page="${i}">${i}</button>`;
+            }
+            pagContainer.innerHTML = pagHtml;
+            document.querySelectorAll('.pag-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    currentPage = parseInt(btn.dataset.page);
+                    renderTablaEstudiantes();
+                });
+            });
+            // Eventos editar/eliminar
+            document.querySelectorAll('.editar-estudiante').forEach(btn => {
+                btn.addEventListener('click', async (e) => {
+                    const id = parseInt(btn.dataset.id);
+                    const estudiante = estudiantesList.find(s => s.id === id);
+                    if (estudiante) abrirFormEstudiante(estudiante);
+                });
+            });
+            document.querySelectorAll('.eliminar-estudiante').forEach(btn => {
+                btn.addEventListener('click', async (e) => {
+                    const id = parseInt(btn.dataset.id);
+                    if (confirm('¿Eliminar este estudiante?')) {
+                        await remove('students', id);
+                        await cargarEstudiantes(currentGroupId);
+                        await renderGrupos();
+                    }
+                });
+            });
+        }
+
+        function abrirFormEstudiante(estudiante = null) {
+            document.getElementById('formEstudianteTitulo').innerText = estudiante ? 'Editar Estudiante' : 'Agregar Estudiante';
+            document.getElementById('estudianteId').value = estudiante ? estudiante.id : '';
+            document.getElementById('estNombre').value = estudiante ? estudiante.nombre : '';
+            document.getElementById('estApellido1').value = estudiante ? estudiante.apellido1 : '';
+            document.getElementById('estApellido2').value = estudiante ? estudiante.apellido2 : '';
+            document.getElementById('estEmail').value = estudiante ? estudiante.email : '';
+            document.getElementById('estTelefono').value = estudiante ? estudiante.telefono : '';
+            document.getElementById('modalFormEstudiante').style.display = 'block';
+        }
+
+        function closeModalFormEstudiante() {
+            document.getElementById('modalFormEstudiante').style.display = 'none';
+            document.getElementById('formEstudiante').reset();
+        }
+
+        // Importar/Exportar Excel
+        async function importarExcel(file) {
+            const data = await file.arrayBuffer();
+            const workbook = XLSX.read(data);
+            const sheet = workbook.Sheets[workbook.SheetNames[0]];
+            const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
+            if (rows.length < 2) { alert('El archivo no contiene datos.'); return; }
+            const headers = rows[0];
+            const nameIdx = headers.findIndex(h => h?.toLowerCase().includes('nombre'));
+            const ap1Idx = headers.findIndex(h => h?.toLowerCase().includes('primer') && h?.toLowerCase().includes('apellido'));
+            const ap2Idx = headers.findIndex(h => h?.toLowerCase().includes('segundo') && h?.toLowerCase().includes('apellido'));
+            const emailIdx = headers.findIndex(h => h?.toLowerCase() === 'email');
+            const phoneIdx = headers.findIndex(h => h?.toLowerCase() === 'teléfono' || h?.toLowerCase() === 'telefono');
+            if (nameIdx === -1 || ap1Idx === -1) { alert('El Excel debe tener columnas "Nombre" y "Primer Apellido".'); return; }
+            const nuevos = [];
+            for (let i = 1; i < rows.length; i++) {
+                const row = rows[i];
+                if (!row[nameIdx] || !row[ap1Idx]) continue;
+                nuevos.push({
+                    id: Date.now() + i,
+                    groupId: currentGroupId,
+                    nombre: row[nameIdx].toString().trim(),
+                    apellido1: row[ap1Idx].toString().trim(),
+                    apellido2: ap2Idx !== -1 ? row[ap2Idx]?.toString().trim() : '',
+                    email: emailIdx !== -1 ? row[emailIdx]?.toString().trim() : '',
+                    telefono: phoneIdx !== -1 ? row[phoneIdx]?.toString().trim() : ''
+                });
+            }
+            if (nuevos.length === 0) { alert('No se encontraron estudiantes válidos.'); return; }
+            for (let s of nuevos) await put('students', s);
+            await cargarEstudiantes(currentGroupId);
+            await renderGrupos();
+            alert(`${nuevos.length} estudiantes importados.`);
+        }
+
+        async function exportarExcel() {
+            const estudiantes = await getAll('students');
+            const groupStudents = estudiantes.filter(s => s.groupId === currentGroupId);
+            const data = [['Nombre', 'Primer Apellido', 'Segundo Apellido', 'Email', 'Teléfono']];
+            for (let s of groupStudents) {
+                data.push([s.nombre, s.apellido1, s.apellido2 || '', s.email || '', s.telefono || '']);
+            }
+            const ws = XLSX.utils.aoa_to_sheet(data);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, 'Estudiantes');
+            XLSX.writeFile(wb, `estudiantes_${currentGroupId}.xlsx`);
+        }
+
+        // ==================== ASISTENCIA ====================
+        async function abrirModalAsistencia(groupId) {
+            currentAttendanceGroupId = groupId;
+            const allStudents = await getAll('students');
+            attendanceStudents = allStudents.filter(s => s.groupId === groupId);
+            const allAttendance = await getAll('attendance');
+            const existing = allAttendance.filter(a => a.groupId === groupId && a.fecha === currentAttendanceDate);
+            const attendanceMap = {};
+            existing.forEach(a => { attendanceMap[a.estudianteId] = a; });
+            renderTablaAsistencia(attendanceMap);
+            document.getElementById('modalAsistencia').style.display = 'block';
+        }
+
+        function renderTablaAsistencia(attendanceMap) {
+            const tbody = document.getElementById('tablaAsistencia');
+            if (attendanceStudents.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="3" class="text-center text-gray-500">No hay estudiantes en este grupo</td></tr>';
+                return;
+            }
+            tbody.innerHTML = attendanceStudents.map(s => {
+                const att = attendanceMap[s.id] || { estado: 'presente', observaciones: '' };
+                return `
+                    <tr>
+                        <td class="p-2">${escapeHtml(s.nombre)} ${escapeHtml(s.apellido1)}</td>
+                        <td class="p-2">
+                            <select class="estado-select" data-id="${s.id}" class="w-full border rounded p-1">
+                                <option value="presente" ${att.estado === 'presente' ? 'selected' : ''}>Presente</option>
+                                <option value="ausente" ${att.estado === 'ausente' ? 'selected' : ''}>Ausente</option>
+                                <option value="ausente_injustificado" ${att.estado === 'ausente_injustificado' ? 'selected' : ''}>Ausente injustificado</option>
+                                <option value="incapacidad" ${att.estado === 'incapacidad' ? 'selected' : ''}>Incapacidad</option>
+                            </select>
+                        </td>
+                        <td class="p-2">
+                            <input type="text" class="observacion-input" data-id="${s.id}" value="${escapeHtml(att.observaciones || '')}" placeholder="Observaciones" class="w-full border rounded p-1">
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+            // Eventos para guardar cada estudiante individualmente
+            document.querySelectorAll('.estado-select, .observacion-input').forEach(el => {
+                el.addEventListener('change', async (e) => {
+                    const estudianteId = parseInt(el.dataset.id);
+                    const row = el.closest('tr');
+                    const estado = row.querySelector('.estado-select').value;
+                    const observaciones = row.querySelector('.observacion-input').value;
+                    await guardarAsistencia(estudianteId, estado, observaciones);
+                });
+            });
+        }
+
+        async function guardarAsistencia(estudianteId, estado, observaciones) {
+            const attendance = {
+                id: Date.now() + estudianteId,
+                groupId: currentAttendanceGroupId,
+                estudianteId,
+                fecha: currentAttendanceDate,
+                estado,
+                observaciones,
+                updatedAt: new Date().toISOString()
+            };
+            const all = await getAll('attendance');
+            const existing = all.find(a => a.groupId === currentAttendanceGroupId && a.estudianteId === estudianteId && a.fecha === currentAttendanceDate);
+            if (existing) attendance.id = existing.id;
+            await put('attendance', attendance);
+        }
+
+        async function guardarTodaAsistencia() {
+            const rows = document.querySelectorAll('#tablaAsistencia tr');
+            for (let row of rows) {
+                const estadoSelect = row.querySelector('.estado-select');
+                const obsInput = row.querySelector('.observacion-input');
+                if (!estadoSelect || !obsInput) continue;
+                const estudianteId = parseInt(estadoSelect.dataset.id);
+                const estado = estadoSelect.value;
+                const observaciones = obsInput.value;
+                await guardarAsistencia(estudianteId, estado, observaciones);
+            }
+            alert('Toda la asistencia guardada');
+        }
+
+        function cambiarFechaAsistencia() {
+            const nuevaFecha = document.getElementById('fechaAsistencia').value;
+            currentAttendanceDate = nuevaFecha;
+            if (currentAttendanceGroupId) abrirModalAsistencia(currentAttendanceGroupId);
+        }
+
+        // ==================== BACKUP ====================
         async function exportarBackup() {
             const stores = ['centros_educativos', 'school_years', 'periods_enhanced', 'components', 'groups', 'students', 'attendance', 'grades'];
             const backup = {};
@@ -569,17 +620,7 @@
             reader.readAsText(file);
         }
 
-        document.getElementById('exportBackupBtn').onclick = exportarBackup;
-        document.getElementById('importBackupBtn').onclick = () => {
-            const input = document.createElement('input');
-            input.type = 'file';
-            input.accept = 'application/json';
-            input.onchange = (e) => { if (e.target.files[0]) importarBackup(e.target.files[0]); };
-            input.click();
-        };
-        document.getElementById('agregarSeccionBtn').onclick = () => abrirModalEdicion();
-        document.getElementById('limpiarFiltrosBtn').onclick = () => { document.getElementById('filtroInstitucion').value = 'todos'; document.getElementById('filtroNivel').value = 'todos'; renderGrupos(); };
-
+        // ==================== FILTROS ====================
         async function aplicarFiltros() {
             const instId = document.getElementById('filtroInstitucion').value;
             const nivel = document.getElementById('filtroNivel').value;
@@ -587,7 +628,10 @@
             if (instId !== 'todos') grupos = grupos.filter(g => g.centroId == instId);
             if (nivel !== 'todos') grupos = grupos.filter(g => g.nivel === nivel);
             const container = document.getElementById('gruposContainer');
-            if (grupos.length === 0) { container.innerHTML = '<div class="col-span-full text-center text-gray-500 py-8">No hay secciones.</div>'; return; }
+            if (grupos.length === 0) {
+                container.innerHTML = '<div class="col-span-full text-center text-gray-500 py-8">No hay secciones.</div>';
+                return;
+            }
             const estudiantes = await getAll('students');
             const centros = await getAll('centros_educativos');
             container.innerHTML = grupos.map(g => {
@@ -613,9 +657,6 @@
             attachCardEvents();
         }
 
-        document.getElementById('filtroInstitucion').addEventListener('change', aplicarFiltros);
-        document.getElementById('filtroNivel').addEventListener('change', aplicarFiltros);
-
         async function cargarFiltros() {
             const centros = await getAll('centros_educativos');
             const filtroInst = document.getElementById('filtroInstitucion');
@@ -626,771 +667,129 @@
             filtroNivel.innerHTML = '<option value="todos">Todos los Niveles</option>' + niveles.map(n => `<option value="${n}">${escapeHtml(n)}</option>`).join('');
         }
 
-        // Inicialización
-        await openDB();
-        await cargarDatosEjemplo();
-        await cargarFiltros();
-        await renderGrupos();
+        // ==================== EVENTOS GLOBALES ====================
+        function configurarEventos() {
+            document.getElementById('exportBackupBtn').onclick = exportarBackup;
+            document.getElementById('importBackupBtn').onclick = () => {
+                const input = document.createElement('input');
+                input.type = 'file';
+                input.accept = 'application/json';
+                input.onchange = (e) => { if (e.target.files[0]) importarBackup(e.target.files[0]); };
+                input.click();
+            };
+            document.getElementById('agregarSeccionBtn').onclick = () => abrirModalEdicion();
+            document.getElementById('limpiarFiltrosBtn').onclick = () => {
+                document.getElementById('filtroInstitucion').value = 'todos';
+                document.getElementById('filtroNivel').value = 'todos';
+                renderGrupos();
+            };
+            document.getElementById('filtroInstitucion').addEventListener('change', aplicarFiltros);
+            document.getElementById('filtroNivel').addEventListener('change', aplicarFiltros);
 
-        // Eventos de modales de estudiantes
-        document.getElementById('closeModalEstudiantes').onclick = () => document.getElementById('modalEstudiantes').style.display = 'none';
-        document.getElementById('closeFormEstudiante').onclick = closeModalFormEstudiante;
-        document.getElementById('cancelarFormEstudiante').onclick = closeModalFormEstudiante;
-        document.getElementById('btnAgregarEstudiante').onclick = () => abrirFormEstudiante();
-        document.getElementById('btnImportarExcel').onclick = () => {
-            const input = document.createElement('input');
-            input.type = 'file';
-            input.accept = '.xlsx, .xls';
-            input.onchange = (e) => { if (e.target.files[0]) importarExcel(e.target.files[0]); };
-            input.click();
-        };
-        document.getElementById('btnExportarExcel').onclick = exportarExcel;
-        document.getElementById('buscarEstudiante').addEventListener('input', () => { currentPage = 1; renderTablaEstudiantes(); });
-
-        window.onclick = (e) => {
-            if (e.target.classList.contains('modal')) closeModal();
-            if (e.target.id === 'modalEstudiantes') document.getElementById('modalEstudiantes').style.display = 'none';
-            if (e.target.id === 'modalFormEstudiante') closeModalFormEstudiante();
-        };
-
-        function escapeHtml(str) {
-            if (!str) return '';
-            return str.replace(/[&<>]/g, function(m) {
-                if (m === '&') return '&amp;';
-                if (m === '<') return '&lt;';
-                if (m === '>') return '&gt;';
-                return m;
-            });
-        }
-
-        // ==================== MÓDULO ASISTENCIA ====================
-
-    import { openDB, getAll, put, remove, getById } from './js/db.js';
-
-    let db;
-    let currentGroupId = null;
-    let currentAttendanceGroupId = null;
-    let currentAttendanceDate = new Date().toISOString().slice(0,10);
-    let attendanceStudents = [];
-    let estudiantesList = [];
-    let currentPage = 1;
-    const itemsPerPage = 10;
-
-    // ==================== DATOS DE EJEMPLO ====================
-    const datosEjemplo = {
-        centros: [{ id: 1001, nombre: 'Escuela Tranquilino Sáenz Rojas', codigo: 'CE1', activo: true }],
-        years: [{ id: 2026, nombre: '2026', activo: true }],
-        periodos: [
-            { id: 1, schoolYearId: 2026, nombre: 'I Semestre', tipo: 'semestre', fechaInicio: '2026-02-23', fechaFin: '2026-07-03', activo: true, porcentajeAnual: 50 },
-            { id: 2, schoolYearId: 2026, nombre: 'II Semestre', tipo: 'semestre', fechaInicio: '2026-07-20', fechaFin: '2026-12-09', activo: true, porcentajeAnual: 50 }
-        ]
-    };
-
-    async function cargarDatosEjemplo() {
-        const centros = await getAll('centros_educativos');
-        if (centros.length === 0) {
-            for (let c of datosEjemplo.centros) await put('centros_educativos', c);
-        }
-        const years = await getAll('school_years');
-        if (years.length === 0) {
-            for (let y of datosEjemplo.years) await put('school_years', y);
-        }
-        const periodos = await getAll('periods_enhanced');
-        if (periodos.length === 0) {
-            for (let p of datosEjemplo.periodos) await put('periods_enhanced', p);
-        }
-    }
-
-    // ==================== GRUPOS (CRUD) ====================
-    async function cargarSelects() {
-        const centros = await getAll('centros_educativos');
-        const selectInst = document.getElementById('grupoInstitucion');
-        selectInst.innerHTML = centros.map(c => `<option value="${c.id}">${escapeHtml(c.nombre)}</option>`).join('');
-        const anios = await getAll('school_years');
-        const selectAnio = document.getElementById('grupoAnio');
-        selectAnio.innerHTML = anios.map(a => `<option value="${a.id}">${escapeHtml(a.nombre)}</option>`).join('');
-    }
-
-    async function cargarPeriodos(yearId) {
-        const periodos = await getAll('periods_enhanced');
-        const filtrados = periodos.filter(p => p.schoolYearId == yearId);
-        const container = document.getElementById('periodosLista');
-        if (filtrados.length === 0) {
-            container.innerHTML = '<p class="text-gray-500 text-sm">No hay períodos configurados para este año.</p>';
-            return;
-        }
-        container.innerHTML = filtrados.map(p => `
-            <div class="periodo-item">
-                <div class="font-medium">${escapeHtml(p.nombre)}</div>
-                <div class="text-sm text-gray-600">${p.fechaInicio || 'sin fecha'} - ${p.fechaFin || 'sin fecha'}</div>
-                <div class="mt-2"><label class="text-sm">% en nota anual</label>
-                    <input type="number" class="porcentaje-periodo w-24 ml-2 border rounded p-1" data-id="${p.id}" value="${p.porcentajeAnual || 0}" step="1" min="0" max="100">
-                </div>
-            </div>
-        `).join('');
-    }
-
-    async function renderGrupos() {
-        const grupos = await getAll('groups');
-        const estudiantes = await getAll('students');
-        const centros = await getAll('centros_educativos');
-        const container = document.getElementById('gruposContainer');
-        if (grupos.length === 0) {
-            container.innerHTML = '<div class="col-span-full text-center text-gray-500 py-8">No hay secciones. Crea una nueva.</div>';
-            return;
-        }
-        container.innerHTML = grupos.map(g => {
-            const centro = centros.find(c => c.id == g.centroId);
-            const count = estudiantes.filter(s => s.groupId === g.id).length;
-            return `
-                <div class="bg-white rounded-xl shadow-md border border-gray-200 p-5 group-card" data-id="${g.id}">
-                    <div class="flex justify-between items-start">
-                        <h3 class="text-xl font-semibold text-gray-800">${escapeHtml(g.seccion)}</h3>
-                        <span class="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">${escapeHtml(g.anio)}</span>
-                    </div>
-                    <div class="mt-2 text-sm text-gray-600"><i class="fas fa-school w-4 text-green-700"></i> ${centro ? escapeHtml(centro.nombre) : ''}</div>
-                    <div class="mt-1 text-sm text-gray-600"><i class="fas fa-graduation-cap w-4 text-green-700"></i> ${escapeHtml(g.nivel)}</div>
-                    <div class="mt-1 text-sm text-gray-600"><i class="fas fa-users w-4 text-green-700"></i> Estudiantes: ${count}</div>
-                    <div class="flex gap-2 mt-4 border-t pt-3">
-                        <button class="ver-estudiantes text-sm bg-gray-100 hover:bg-gray-200 rounded-full px-3 py-1 transition" data-id="${g.id}"><i class="fas fa-users"></i> Ver estudiantes</button>
-                        <button class="editar-grupo text-sm bg-gray-100 hover:bg-gray-200 rounded-full px-3 py-1 transition" data-id="${g.id}"><i class="fas fa-edit"></i> Editar</button>
-                        <button class="eliminar-grupo text-sm bg-red-100 hover:bg-red-200 text-red-700 rounded-full px-3 py-1 transition" data-id="${g.id}"><i class="fas fa-trash-alt"></i> Eliminar</button>
-                    </div>
-                    <div class="flex flex-wrap gap-2 mt-3 pt-2 border-t">
-                        ${['asistencia','estudiantes','calificaciones','pruebas','tareas','proyecto','portafolio','cotidiano','horario','ver-detalle','eliminar-grupo'].map(acc => `
-                            <button class="group-action-btn" data-action="${acc}" data-id="${g.id}">
-                                <i class="fas ${acc === 'asistencia' ? 'fa-calendar-check' : acc === 'estudiantes' ? 'fa-user-graduate' : acc === 'calificaciones' ? 'fa-chart-line' : acc === 'pruebas' ? 'fa-pen' : acc === 'tareas' ? 'fa-tasks' : acc === 'proyecto' ? 'fa-project-diagram' : acc === 'portafolio' ? 'fa-folder-open' : acc === 'cotidiano' ? 'fa-chalkboard-user' : acc === 'horario' ? 'fa-clock' : acc === 'ver-detalle' ? 'fa-chart-simple' : 'fa-trash'}"></i> ${acc.replace('-',' ')}
-                            </button>
-                        `).join('')}
-                    </div>
-                </div>
-            `;
-        }).join('');
-        attachCardEvents();
-    }
-
-    function attachCardEvents() {
-        // Ver estudiantes
-        document.querySelectorAll('.ver-estudiantes').forEach(btn => {
-            btn.addEventListener('click', async (e) => {
-                currentGroupId = parseInt(btn.dataset.id);
-                await cargarEstudiantes(currentGroupId);
-                document.getElementById('modalEstudiantes').style.display = 'block';
-            });
-        });
-        // Editar grupo
-        document.querySelectorAll('.editar-grupo').forEach(btn => {
-            btn.addEventListener('click', async (e) => {
-                const id = parseInt(btn.dataset.id);
-                const grupos = await getAll('groups');
-                const grupo = grupos.find(g => g.id === id);
-                if (grupo) abrirModalEdicion(grupo);
-            });
-        });
-        // Eliminar grupo
-        document.querySelectorAll('.eliminar-grupo').forEach(btn => {
-            btn.addEventListener('click', async (e) => {
-                const id = parseInt(btn.dataset.id);
-                if (confirm('¿Eliminar esta sección? Se perderán todos los datos asociados (estudiantes, notas, asistencias).')) {
-                    await remove('groups', id);
-                    const estudiantes = await getAll('students');
-                    for (let s of estudiantes.filter(s => s.groupId === id)) {
-                        await remove('students', s.id);
-                    }
-                    await renderGrupos();
-                }
-            });
-        });
-        // Botones de acción (11 botones)
-        document.querySelectorAll('.group-action-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                const action = btn.dataset.action;
-                const id = parseInt(btn.dataset.id);
-                if (action === 'estudiantes') {
-                    currentGroupId = id;
-                    cargarEstudiantes(currentGroupId);
-                    document.getElementById('modalEstudiantes').style.display = 'block';
-                } else if (action === 'asistencia') {
-                    abrirModalAsistencia(id);
-                } else {
-                    alert(`Funcionalidad: ${action} para el grupo ${id} (en desarrollo)`);
-                }
-            });
-        });
-    }
-
-    // ==================== ESTUDIANTES ====================
-    async function cargarEstudiantes(groupId) {
-        const all = await getAll('students');
-        estudiantesList = all.filter(s => s.groupId === groupId);
-        renderTablaEstudiantes();
-    }
-
-    function renderTablaEstudiantes() {
-        const search = document.getElementById('buscarEstudiante').value.toLowerCase();
-        let filtered = estudiantesList;
-        if (search) {
-            filtered = estudiantesList.filter(s => 
-                s.nombre.toLowerCase().includes(search) || 
-                s.apellido1.toLowerCase().includes(search) ||
-                (s.apellido2 && s.apellido2.toLowerCase().includes(search))
-            );
-        }
-        const start = (currentPage - 1) * itemsPerPage;
-        const paginated = filtered.slice(start, start + itemsPerPage);
-        const tbody = document.getElementById('tablaEstudiantes');
-        if (paginated.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="6" class="text-center text-gray-500">No hay estudiantes</td></tr>';
-            return;
-        }
-        tbody.innerHTML = paginated.map(s => `
-            <tr>
-                <td class="border p-2">${escapeHtml(s.nombre)}</td>
-                <td class="border p-2">${escapeHtml(s.apellido1)}</td>
-                <td class="border p-2">${escapeHtml(s.apellido2 || '')}</td>
-                <td class="border p-2">${escapeHtml(s.email || '')}</td>
-                <td class="border p-2">${escapeHtml(s.telefono || '')}</td>
-                <td class="border p-2 whitespace-nowrap">
-                    <button class="editar-estudiante text-blue-600 hover:text-blue-800 mr-2" data-id="${s.id}"><i class="fas fa-edit"></i></button>
-                    <button class="eliminar-estudiante text-red-600 hover:text-red-800" data-id="${s.id}"><i class="fas fa-trash-alt"></i></button>
-                </td>
-            </tr>
-        `).join('');
-        // Paginación
-        const totalPages = Math.ceil(filtered.length / itemsPerPage);
-        const pagContainer = document.getElementById('paginacionEstudiantes');
-        if (totalPages <= 1) { pagContainer.innerHTML = ''; return; }
-        let pagHtml = '';
-        for (let i = 1; i <= totalPages; i++) {
-            pagHtml += `<button class="pag-btn px-3 py-1 rounded ${i === currentPage ? 'bg-green-600 text-white' : 'bg-gray-200'}" data-page="${i}">${i}</button>`;
-        }
-        pagContainer.innerHTML = pagHtml;
-        document.querySelectorAll('.pag-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                currentPage = parseInt(btn.dataset.page);
-                renderTablaEstudiantes();
-            });
-        });
-        // Eventos editar/eliminar
-        document.querySelectorAll('.editar-estudiante').forEach(btn => {
-            btn.addEventListener('click', async (e) => {
-                const id = parseInt(btn.dataset.id);
-                const estudiante = estudiantesList.find(s => s.id === id);
-                if (estudiante) abrirFormEstudiante(estudiante);
-            });
-        });
-        document.querySelectorAll('.eliminar-estudiante').forEach(btn => {
-            btn.addEventListener('click', async (e) => {
-                const id = parseInt(btn.dataset.id);
-                if (confirm('¿Eliminar este estudiante?')) {
-                    await remove('students', id);
-                    await cargarEstudiantes(currentGroupId);
-                    await renderGrupos();
-                }
-            });
-        });
-    }
-
-    function abrirFormEstudiante(estudiante = null) {
-        document.getElementById('formEstudianteTitulo').innerText = estudiante ? 'Editar Estudiante' : 'Agregar Estudiante';
-        document.getElementById('estudianteId').value = estudiante ? estudiante.id : '';
-        document.getElementById('estNombre').value = estudiante ? estudiante.nombre : '';
-        document.getElementById('estApellido1').value = estudiante ? estudiante.apellido1 : '';
-        document.getElementById('estApellido2').value = estudiante ? estudiante.apellido2 : '';
-        document.getElementById('estEmail').value = estudiante ? estudiante.email : '';
-        document.getElementById('estTelefono').value = estudiante ? estudiante.telefono : '';
-        document.getElementById('modalFormEstudiante').style.display = 'block';
-    }
-
-    // ==================== ASISTENCIA ====================
-    async function abrirModalAsistencia(groupId) {
-        currentAttendanceGroupId = groupId;
-        const allStudents = await getAll('students');
-        attendanceStudents = allStudents.filter(s => s.groupId === groupId);
-        const allAttendance = await getAll('attendance');
-        const existing = allAttendance.filter(a => a.groupId === groupId && a.fecha === currentAttendanceDate);
-        const attendanceMap = {};
-        existing.forEach(a => { attendanceMap[a.estudianteId] = a; });
-        renderTablaAsistencia(attendanceMap);
-        document.getElementById('modalAsistencia').style.display = 'block';
-    }
-
-    function renderTablaAsistencia(attendanceMap) {
-        const tbody = document.getElementById('tablaAsistenciaBody');
-        if (attendanceStudents.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="4" class="text-center text-gray-500">No hay estudiantes en este grupo</td></tr>';
-            return;
-        }
-        tbody.innerHTML = attendanceStudents.map(s => {
-            const att = attendanceMap[s.id] || { estado: 'presente', observaciones: '' };
-            return `
-                <tr>
-                    <td class="border p-2">${escapeHtml(s.nombre)} ${escapeHtml(s.apellido1)}</td>
-                    <td class="border p-2">
-                        <select class="estado-select" data-id="${s.id}" class="w-full border rounded p-1">
-                            <option value="presente" ${att.estado === 'presente' ? 'selected' : ''}>Presente</option>
-                            <option value="ausente" ${att.estado === 'ausente' ? 'selected' : ''}>Ausente</option>
-                            <option value="ausente_injustificado" ${att.estado === 'ausente_injustificado' ? 'selected' : ''}>Ausente injustificado</option>
-                            <option value="incapacidad" ${att.estado === 'incapacidad' ? 'selected' : ''}>Incapacidad</option>
-                        </select>
-                    </td>
-                    <td class="border p-2">
-                        <input type="text" class="observacion-input" data-id="${s.id}" value="${escapeHtml(att.observaciones || '')}" placeholder="Observaciones" class="w-full border rounded p-1">
-                    </td>
-                    <td class="border p-2 text-center">
-                        <button class="guardar-estudiante-asistencia text-green-600 hover:text-green-800" data-id="${s.id}"><i class="fas fa-save"></i> Guardar</button>
-                    </td>
-                </tr>
-            `;
-        }).join('');
-        document.querySelectorAll('.guardar-estudiante-asistencia').forEach(btn => {
-            btn.addEventListener('click', async (e) => {
-                const estudianteId = parseInt(btn.dataset.id);
-                const row = btn.closest('tr');
-                const estado = row.querySelector('.estado-select').value;
-                const observaciones = row.querySelector('.observacion-input').value;
-                await guardarAsistencia(estudianteId, estado, observaciones);
-                alert('Asistencia guardada');
-            });
-        });
-    }
-
-    async function guardarAsistencia(estudianteId, estado, observaciones) {
-        const attendance = {
-            id: Date.now() + estudianteId,
-            groupId: currentAttendanceGroupId,
-            estudianteId,
-            fecha: currentAttendanceDate,
-            estado,
-            observaciones,
-            updatedAt: new Date().toISOString()
-        };
-        const all = await getAll('attendance');
-        const existing = all.find(a => a.groupId === currentAttendanceGroupId && a.estudianteId === estudianteId && a.fecha === currentAttendanceDate);
-        if (existing) attendance.id = existing.id;
-        await put('attendance', attendance);
-    }
-
-    async function guardarTodaAsistencia() {
-        const rows = document.querySelectorAll('#tablaAsistenciaBody tr');
-        for (let row of rows) {
-            const btn = row.querySelector('.guardar-estudiante-asistencia');
-            if (!btn) continue;
-            const estudianteId = parseInt(btn.dataset.id);
-            const estado = row.querySelector('.estado-select').value;
-            const observaciones = row.querySelector('.observacion-input').value;
-            await guardarAsistencia(estudianteId, estado, observaciones);
-        }
-        alert('Toda la asistencia guardada');
-    }
-
-    function cambiarFechaAsistencia() {
-        const nuevaFecha = document.getElementById('fechaAsistencia').value;
-        currentAttendanceDate = nuevaFecha;
-        abrirModalAsistencia(currentAttendanceGroupId);
-    }
-
-    // ==================== MODALES Y EVENTOS ====================
-    function abrirModalEdicion(grupo = null) {
-        currentGroupId = grupo ? grupo.id : null;
-        document.getElementById('modalTitulo').innerText = grupo ? 'Editar Sección' : 'Agregar Sección';
-        cargarSelects();
-        if (grupo) {
-            document.getElementById('grupoInstitucion').value = grupo.centroId;
-            document.getElementById('grupoSeccion').value = grupo.seccion;
-            document.getElementById('grupoNivel').value = grupo.nivel;
-            document.getElementById('grupoAnio').value = grupo.anioId;
-            document.getElementById('grupoDiasAlerta').value = grupo.diasAlerta || 3;
-            cargarPeriodos(grupo.anioId).then(() => {
-                if (grupo.periodosPorcentajes) {
-                    Object.entries(grupo.periodosPorcentajes).forEach(([id, val]) => {
-                        const input = document.querySelector(`.porcentaje-periodo[data-id="${id}"]`);
-                        if (input) input.value = val;
-                    });
-                }
-            });
-        } else {
-            document.getElementById('formGrupo').reset();
-            cargarPeriodos(document.getElementById('grupoAnio').value);
-        }
-        document.getElementById('modalGrupo').style.display = 'block';
-    }
-
-    function closeModal() {
-        document.getElementById('modalGrupo').style.display = 'none';
-        currentGroupId = null;
-    }
-
-    // ==================== BACKUP ====================
-    async function exportarBackup() {
-        const stores = ['centros_educativos', 'school_years', 'periods_enhanced', 'components', 'groups', 'students', 'attendance', 'grades'];
-        const backup = {};
-        for (let store of stores) {
-            backup[store] = await getAll(store);
-        }
-        const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `pnft_backup_${new Date().toISOString().slice(0,19)}.json`;
-        a.click();
-        URL.revokeObjectURL(url);
-        alert('Respaldo exportado correctamente.');
-    }
-
-    async function importarBackup(file) {
-        const reader = new FileReader();
-        reader.onload = async (e) => {
-            try {
-                const backup = JSON.parse(e.target.result);
-                for (let [storeName, data] of Object.entries(backup)) {
-                    if (!data.length) continue;
-                    for (let item of data) {
-                        await put(storeName, item);
-                    }
-                }
-                alert('Respaldo importado correctamente.');
+            // Formulario grupo
+            document.getElementById('formGrupo').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const centroId = parseInt(document.getElementById('grupoInstitucion').value);
+                const seccion = document.getElementById('grupoSeccion').value.trim();
+                const nivel = document.getElementById('grupoNivel').value;
+                const anioId = parseInt(document.getElementById('grupoAnio').value);
+                const diasAlerta = parseInt(document.getElementById('grupoDiasAlerta').value) || 3;
+                const anioObj = await getById('school_years', anioId);
+                if (!anioObj) { alert('Error: Año no encontrado'); return; }
+                const periodosPorcentajes = {};
+                document.querySelectorAll('.porcentaje-periodo').forEach(inp => { periodosPorcentajes[inp.dataset.id] = parseInt(inp.value) || 0; });
+                const grupo = {
+                    id: currentGroupId || Date.now(),
+                    centroId,
+                    seccion,
+                    nivel,
+                    anioId,
+                    anio: anioObj.nombre,
+                    diasAlerta,
+                    periodosPorcentajes,
+                    createdAt: new Date().toISOString()
+                };
+                await put('groups', grupo);
                 await renderGrupos();
-            } catch (err) {
-                alert('Error al importar el archivo: ' + err.message);
-            }
-        };
-        reader.readAsText(file);
-    }
+                closeModal();
+                alert('Sección guardada correctamente.');
+            });
 
-    // ==================== FILTROS ====================
-    async function aplicarFiltros() {
-        const instId = document.getElementById('filtroInstitucion').value;
-        const nivel = document.getElementById('filtroNivel').value;
-        let grupos = await getAll('groups');
-        if (instId !== 'todos') grupos = grupos.filter(g => g.centroId == instId);
-        if (nivel !== 'todos') grupos = grupos.filter(g => g.nivel === nivel);
-        const container = document.getElementById('gruposContainer');
-        if (grupos.length === 0) {
-            container.innerHTML = '<div class="col-span-full text-center text-gray-500 py-8">No hay secciones.</div>';
-            return;
-        }
-        const estudiantes = await getAll('students');
-        const centros = await getAll('centros_educativos');
-        container.innerHTML = grupos.map(g => {
-            const centro = centros.find(c => c.id == g.centroId);
-            const count = estudiantes.filter(s => s.groupId === g.id).length;
-            return `
-                <div class="bg-white rounded-xl shadow-md border border-gray-200 p-5 group-card">
-                    <div class="flex justify-between items-start"><h3 class="text-xl font-semibold text-gray-800">${escapeHtml(g.seccion)}</h3><span class="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">${escapeHtml(g.anio)}</span></div>
-                    <div class="mt-2 text-sm text-gray-600"><i class="fas fa-school"></i> ${centro ? escapeHtml(centro.nombre) : ''}</div>
-                    <div class="mt-1 text-sm text-gray-600"><i class="fas fa-graduation-cap"></i> ${escapeHtml(g.nivel)}</div>
-                    <div class="mt-1 text-sm text-gray-600"><i class="fas fa-users"></i> Estudiantes: ${count}</div>
-                    <div class="flex gap-2 mt-4 border-t pt-3">
-                        <button class="ver-estudiantes text-sm bg-gray-100 hover:bg-gray-200 rounded-full px-3 py-1 transition" data-id="${g.id}"><i class="fas fa-users"></i> Ver estudiantes</button>
-                        <button class="editar-grupo text-sm bg-gray-100 hover:bg-gray-200 rounded-full px-3 py-1 transition" data-id="${g.id}"><i class="fas fa-edit"></i> Editar</button>
-                        <button class="eliminar-grupo text-sm bg-red-100 hover:bg-red-200 text-red-700 rounded-full px-3 py-1 transition" data-id="${g.id}"><i class="fas fa-trash-alt"></i> Eliminar</button>
-                    </div>
-                    <div class="flex flex-wrap gap-2 mt-3 pt-2 border-t">
-                        ${['asistencia','estudiantes','calificaciones','pruebas','tareas','proyecto','portafolio','cotidiano','horario','ver-detalle','eliminar-grupo'].map(acc => `
-                            <button class="group-action-btn" data-action="${acc}" data-id="${g.id}">
-                                <i class="fas ${acc === 'asistencia' ? 'fa-calendar-check' : acc === 'estudiantes' ? 'fa-user-graduate' : acc === 'calificaciones' ? 'fa-chart-line' : acc === 'pruebas' ? 'fa-pen' : acc === 'tareas' ? 'fa-tasks' : acc === 'proyecto' ? 'fa-project-diagram' : acc === 'portafolio' ? 'fa-folder-open' : acc === 'cotidiano' ? 'fa-chalkboard-user' : acc === 'horario' ? 'fa-clock' : acc === 'ver-detalle' ? 'fa-chart-simple' : 'fa-trash'}"></i> ${acc.replace('-',' ')}
-                            </button>
-                        `).join('')}
-                    </div>
-                </div>
-            `;
-        }).join('');
-        attachCardEvents();
-    }
+            // Cerrar modales
+            document.getElementById('closeModalGrupo').onclick = closeModal;
+            document.getElementById('cancelarGrupoBtn').onclick = closeModal;
+            document.getElementById('closeModalEstudiantes').onclick = () => document.getElementById('modalEstudiantes').style.display = 'none';
+            document.getElementById('closeFormEstudiante').onclick = closeModalFormEstudiante;
+            document.getElementById('cancelarFormEstudiante').onclick = closeModalFormEstudiante;
+            document.getElementById('closeModalAsistencia').onclick = () => document.getElementById('modalAsistencia').style.display = 'none';
 
-    async function cargarFiltros() {
-        const centros = await getAll('centros_educativos');
-        const filtroInst = document.getElementById('filtroInstitucion');
-        filtroInst.innerHTML = '<option value="todos">Todas las Instituciones</option>' + centros.map(c => `<option value="${c.id}">${escapeHtml(c.nombre)}</option>`).join('');
-        const grupos = await getAll('groups');
-        const niveles = [...new Set(grupos.map(g => g.nivel))];
-        const filtroNivel = document.getElementById('filtroNivel');
-        filtroNivel.innerHTML = '<option value="todos">Todos los Niveles</option>' + niveles.map(n => `<option value="${n}">${escapeHtml(n)}</option>`).join('');
-    }
+            // Botones estudiantes
+            document.getElementById('btnAgregarEstudiante').onclick = () => abrirFormEstudiante();
+            document.getElementById('btnImportarExcel').onclick = () => {
+                const input = document.createElement('input');
+                input.type = 'file';
+                input.accept = '.xlsx, .xls';
+                input.onchange = (e) => { if (e.target.files[0]) importarExcel(e.target.files[0]); };
+                input.click();
+            };
+            document.getElementById('btnExportarExcel').onclick = exportarExcel;
+            document.getElementById('buscarEstudiante').addEventListener('input', () => { currentPage = 1; renderTablaEstudiantes(); });
 
-    // ==================== IMPORTAR/EXPORTAR EXCEL ESTUDIANTES ====================
-    async function importarExcel(file) {
-        const data = await file.arrayBuffer();
-        const workbook = XLSX.read(data);
-        const sheet = workbook.Sheets[workbook.SheetNames[0]];
-        const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
-        if (rows.length < 2) { alert('El archivo no contiene datos.'); return; }
-        const headers = rows[0];
-        const nameIdx = headers.findIndex(h => h?.toLowerCase().includes('nombre'));
-        const ap1Idx = headers.findIndex(h => h?.toLowerCase().includes('primer') && h?.toLowerCase().includes('apellido'));
-        const ap2Idx = headers.findIndex(h => h?.toLowerCase().includes('segundo') && h?.toLowerCase().includes('apellido'));
-        const emailIdx = headers.findIndex(h => h?.toLowerCase() === 'email');
-        const phoneIdx = headers.findIndex(h => h?.toLowerCase() === 'teléfono' || h?.toLowerCase() === 'telefono');
-        if (nameIdx === -1 || ap1Idx === -1) { alert('El Excel debe tener columnas "Nombre" y "Primer Apellido".'); return; }
-        const nuevos = [];
-        for (let i = 1; i < rows.length; i++) {
-            const row = rows[i];
-            if (!row[nameIdx] || !row[ap1Idx]) continue;
-            nuevos.push({
-                id: Date.now() + i,
-                groupId: currentGroupId,
-                nombre: row[nameIdx].toString().trim(),
-                apellido1: row[ap1Idx].toString().trim(),
-                apellido2: ap2Idx !== -1 ? row[ap2Idx]?.toString().trim() : '',
-                email: emailIdx !== -1 ? row[emailIdx]?.toString().trim() : '',
-                telefono: phoneIdx !== -1 ? row[phoneIdx]?.toString().trim() : ''
+            // Formulario estudiante
+            document.getElementById('formEstudiante').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const id = document.getElementById('estudianteId').value;
+                const estudiante = {
+                    id: id ? parseInt(id) : Date.now(),
+                    groupId: currentGroupId,
+                    nombre: document.getElementById('estNombre').value.trim(),
+                    apellido1: document.getElementById('estApellido1').value.trim(),
+                    apellido2: document.getElementById('estApellido2').value.trim(),
+                    email: document.getElementById('estEmail').value.trim(),
+                    telefono: document.getElementById('estTelefono').value.trim()
+                };
+                await put('students', estudiante);
+                await cargarEstudiantes(currentGroupId);
+                await renderGrupos();
+                closeModalFormEstudiante();
+                alert('Estudiante guardado');
+            });
+
+            // Eventos asistencia
+            document.getElementById('btnGuardarAsistencia').addEventListener('click', guardarTodaAsistencia);
+            document.getElementById('fechaAsistencia').addEventListener('change', cambiarFechaAsistencia);
+            document.getElementById('btnMarcarTodosPresente').addEventListener('click', async () => {
+                if (!currentAttendanceGroupId) return;
+                const allStudents = await getAll('students');
+                const groupStudents = allStudents.filter(s => s.groupId === currentAttendanceGroupId);
+                for (let s of groupStudents) {
+                    await guardarAsistencia(s.id, 'presente', '');
+                }
+                if (currentAttendanceGroupId) abrirModalAsistencia(currentAttendanceGroupId);
+                alert('Todos marcados como presentes');
+            });
+            document.getElementById('btnLimpiarAsistencia').addEventListener('click', async () => {
+                if (!currentAttendanceGroupId) return;
+                const allAttendance = await getAll('attendance');
+                const toDelete = allAttendance.filter(a => a.groupId === currentAttendanceGroupId && a.fecha === currentAttendanceDate);
+                for (let a of toDelete) {
+                    await remove('attendance', a.id);
+                }
+                if (currentAttendanceGroupId) abrirModalAsistencia(currentAttendanceGroupId);
+                alert('Asistencia limpiada para esta fecha');
             });
         }
-        if (nuevos.length === 0) { alert('No se encontraron estudiantes válidos.'); return; }
-        for (let s of nuevos) await put('students', s);
-        await cargarEstudiantes(currentGroupId);
-        await renderGrupos();
-        alert(`${nuevos.length} estudiantes importados.`);
-    }
 
-    async function exportarExcel() {
-        const estudiantes = await getAll('students');
-        const groupStudents = estudiantes.filter(s => s.groupId === currentGroupId);
-        const data = [['Nombre', 'Primer Apellido', 'Segundo Apellido', 'Email', 'Teléfono']];
-        for (let s of groupStudents) {
-            data.push([s.nombre, s.apellido1, s.apellido2 || '', s.email || '', s.telefono || '']);
-        }
-        const ws = XLSX.utils.aoa_to_sheet(data);
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, 'Estudiantes');
-        XLSX.writeFile(wb, `estudiantes_${currentGroupId}.xlsx`);
-    }
-
-    // ==================== INSERTAR MODALES FALTANTES ====================
-    function insertarModales() {
-        // Modal Asistencia (si no existe)
-        if (!document.getElementById('modalAsistencia')) {
-            const modalAsistenciaHTML = `
-            <div id="modalAsistencia" class="modal">
-                <div class="modal-content" style="max-width: 1000px;">
-                    <span class="close" id="closeAsistenciaModal">&times;</span>
-                    <h2 class="text-xl font-bold mb-4">Registro de Asistencia</h2>
-                    <div class="flex justify-between items-center mb-4">
-                        <div>
-                            <label class="mr-2">Fecha:</label>
-                            <input type="date" id="fechaAsistencia" value="${new Date().toISOString().slice(0,10)}" class="border rounded p-1">
-                            <button id="btnCambiarFecha" class="bg-blue-500 text-white px-3 py-1 rounded ml-2">Cambiar fecha</button>
-                        </div>
-                        <button id="btnGuardarTodaAsistencia" class="bg-green-600 text-white px-4 py-2 rounded">Guardar toda la asistencia</button>
-                    </div>
-                    <div class="overflow-x-auto">
-                        <table class="w-full border-collapse">
-                            <thead>
-                                <tr class="bg-gray-100">
-                                    <th class="border p-2 text-left">Estudiante</th>
-                                    <th class="border p-2 text-left">Estado</th>
-                                    <th class="border p-2 text-left">Observaciones</th>
-                                    <th class="border p-2 text-center">Acción</th>
-                                </tr>
-                            </thead>
-                            <tbody id="tablaAsistenciaBody">
-                                <tr><td colspan="4" class="text-center p-4">Cargando...</td></tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>`;
-            document.body.insertAdjacentHTML('beforeend', modalAsistenciaHTML);
-        }
-
-        // Modal Estudiantes (si no existe)
-        if (!document.getElementById('modalEstudiantes')) {
-            const modalEstudiantesHTML = `
-            <div id="modalEstudiantes" class="modal">
-                <div class="modal-content" style="max-width: 900px;">
-                    <span class="close" id="closeModalEstudiantes">&times;</span>
-                    <h2 class="text-xl font-bold mb-4">Estudiantes</h2>
-                    <div class="flex justify-between items-center mb-4">
-                        <div class="flex gap-2">
-                            <button id="btnAgregarEstudiante" class="bg-green-600 text-white px-3 py-1 rounded-lg text-sm flex items-center gap-1"><i class="fas fa-plus"></i> Agregar manual</button>
-                            <button id="btnImportarExcel" class="bg-blue-600 text-white px-3 py-1 rounded-lg text-sm flex items-center gap-1"><i class="fas fa-file-excel"></i> Importar Excel</button>
-                            <button id="btnExportarExcel" class="bg-purple-600 text-white px-3 py-1 rounded-lg text-sm flex items-center gap-1"><i class="fas fa-download"></i> Exportar Excel</button>
-                        </div>
-                        <input type="text" id="buscarEstudiante" placeholder="Buscar estudiante..." class="border rounded-lg px-3 py-1 text-sm w-64">
-                    </div>
-                    <div id="estudiantesLista" class="overflow-x-auto">
-                        <table class="w-full border-collapse">
-                            <thead>
-                                <tr class="bg-gray-100">
-                                    <th class="border p-2">Nombre</th><th class="border p-2">Apellido1</th><th class="border p-2">Apellido2</th><th class="border p-2">Email</th><th class="border p-2">Teléfono</th><th class="border p-2">Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody id="tablaEstudiantes"></tbody>
-                        </table>
-                    </div>
-                    <div id="paginacionEstudiantes" class="flex justify-center gap-2 mt-4"></div>
-                </div>
-            </div>`;
-            document.body.insertAdjacentHTML('beforeend', modalEstudiantesHTML);
-        }
-
-        // Modal Form Estudiante (si no existe)
-        if (!document.getElementById('modalFormEstudiante')) {
-            const modalFormEstudianteHTML = `
-            <div id="modalFormEstudiante" class="modal">
-                <div class="modal-content" style="max-width: 500px;">
-                    <span class="close" id="closeFormEstudiante">&times;</span>
-                    <h2 id="formEstudianteTitulo" class="text-xl font-bold mb-4">Agregar Estudiante</h2>
-                    <form id="formEstudiante">
-                        <input type="hidden" id="estudianteId">
-                        <div class="mb-3"><label class="block text-sm font-medium">Nombre *</label><input type="text" id="estNombre" required class="w-full border rounded p-2"></div>
-                        <div class="mb-3"><label class="block text-sm font-medium">Primer Apellido *</label><input type="text" id="estApellido1" required class="w-full border rounded p-2"></div>
-                        <div class="mb-3"><label class="block text-sm font-medium">Segundo Apellido</label><input type="text" id="estApellido2" class="w-full border rounded p-2"></div>
-                        <div class="mb-3"><label class="block text-sm font-medium">Email</label><input type="email" id="estEmail" class="w-full border rounded p-2"></div>
-                        <div class="mb-3"><label class="block text-sm font-medium">Teléfono</label><input type="text" id="estTelefono" class="w-full border rounded p-2"></div>
-                        <div class="flex justify-end gap-2"><button type="submit" class="bg-green-600 text-white px-4 py-2 rounded-lg">Guardar</button><button type="button" id="cancelarFormEstudiante" class="bg-gray-200 px-4 py-2 rounded-lg">Cancelar</button></div>
-                    </form>
-                </div>
-            </div>`;
-            document.body.insertAdjacentHTML('beforeend', modalFormEstudianteHTML);
-        }
-
-        // Modal Grupo (si no existe)
-        if (!document.getElementById('modalGrupo')) {
-            const modalGrupoHTML = `
-            <div id="modalGrupo" class="modal">
-                <div class="modal-content">
-                    <span class="close" id="closeModalGrupo">&times;</span>
-                    <h2 id="modalTitulo" class="text-xl font-bold mb-4">Agregar Sección</h2>
-                    <form id="formGrupo">
-                        <div class="mb-4"><label class="block text-sm font-medium text-gray-700 mb-1">Institución *</label><select id="grupoInstitucion" required class="w-full border rounded-lg p-2"></select></div>
-                        <div class="mb-4"><label class="block text-sm font-medium text-gray-700 mb-1">Sección *</label><input type="text" id="grupoSeccion" placeholder="Ej: 1-1" required class="w-full border rounded-lg p-2"></div>
-                        <div class="mb-4"><label class="block text-sm font-medium text-gray-700 mb-1">Nivel *</label><select id="grupoNivel" required class="w-full border rounded-lg p-2">
-                            <option value="I Ciclo (1°-3°)">I Ciclo (1°-3°)</option>
-                            <option value="II Ciclo (4°-6°)">II Ciclo (4°-6°)</option>
-                            <option value="III Ciclo (7°-9°)">III Ciclo (7°-9°)</option>
-                            <option value="Diversificada (10°-12°)">Diversificada (10°-12°)</option>
-                            <option value="Educación Adultos">Educación Adultos (CINDEA/IPEC)</option>
-                            <option value="Educación Especial">Educación Especial</option>
-                        </select></div>
-                        <div class="mb-4"><label class="block text-sm font-medium text-gray-700 mb-1">Año *</label><select id="grupoAnio" required class="w-full border rounded-lg p-2"></select></div>
-                        <div id="periodosContainer" class="mb-4"><label class="block text-sm font-medium text-gray-700 mb-2">Períodos</label><div id="periodosLista"></div></div>
-                        <div class="mb-4"><label class="block text-sm font-medium text-gray-700 mb-1">Días de ausencia injustificada para alertas</label><input type="number" id="grupoDiasAlerta" value="3" class="w-full border rounded-lg p-2"></div>
-                        <div class="flex justify-end gap-3"><button type="submit" class="bg-green-800 text-white px-5 py-2 rounded-lg hover:bg-green-900">Guardar</button><button type="button" id="cancelarGrupoBtn" class="bg-gray-200 text-gray-800 px-5 py-2 rounded-lg hover:bg-gray-300">Cancelar</button></div>
-                    </form>
-                </div>
-            </div>`;
-            document.body.insertAdjacentHTML('beforeend', modalGrupoHTML);
-        }
-    }
-
-    // ==================== EVENTOS GLOBALES ====================
-    function configurarEventos() {
-        document.getElementById('exportBackupBtn').onclick = exportarBackup;
-        document.getElementById('importBackupBtn').onclick = () => {
-            const input = document.createElement('input');
-            input.type = 'file';
-            input.accept = 'application/json';
-            input.onchange = (e) => { if (e.target.files[0]) importarBackup(e.target.files[0]); };
-            input.click();
-        };
-        document.getElementById('agregarSeccionBtn').onclick = () => abrirModalEdicion();
-        document.getElementById('limpiarFiltrosBtn').onclick = () => {
-            document.getElementById('filtroInstitucion').value = 'todos';
-            document.getElementById('filtroNivel').value = 'todos';
-            renderGrupos();
-        };
-        document.getElementById('filtroInstitucion').addEventListener('change', aplicarFiltros);
-        document.getElementById('filtroNivel').addEventListener('change', aplicarFiltros);
-
-        // Formulario grupo
-        document.getElementById('formGrupo').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const centroId = parseInt(document.getElementById('grupoInstitucion').value);
-            const seccion = document.getElementById('grupoSeccion').value.trim();
-            const nivel = document.getElementById('grupoNivel').value;
-            const anioId = parseInt(document.getElementById('grupoAnio').value);
-            const diasAlerta = parseInt(document.getElementById('grupoDiasAlerta').value) || 3;
-            const anioObj = await getById('school_years', anioId);
-            const periodosPorcentajes = {};
-            document.querySelectorAll('.porcentaje-periodo').forEach(inp => {
-                periodosPorcentajes[inp.dataset.id] = parseInt(inp.value) || 0;
-            });
-            const grupo = {
-                id: currentGroupId || Date.now(),
-                centroId,
-                seccion,
-                nivel,
-                anioId,
-                anio: anioObj.nombre,
-                diasAlerta,
-                periodosPorcentajes,
-                createdAt: new Date().toISOString()
-            };
-            await put('groups', grupo);
+        // ==================== INICIALIZACIÓN ====================
+        (async function init() {
+            await openDB();
+            await cargarDatosEjemplo();
+            await cargarFiltros();
             await renderGrupos();
-            closeModal();
-            alert('Sección guardada correctamente');
-        });
-
-        // Cerrar modales
-        document.getElementById('closeModalGrupo').onclick = closeModal;
-        document.getElementById('cancelarGrupoBtn').onclick = closeModal;
-        document.getElementById('closeModalEstudiantes').onclick = () => document.getElementById('modalEstudiantes').style.display = 'none';
-        document.getElementById('closeFormEstudiante').onclick = () => document.getElementById('modalFormEstudiante').style.display = 'none';
-        document.getElementById('cancelarFormEstudiante').onclick = () => document.getElementById('modalFormEstudiante').style.display = 'none';
-        document.getElementById('closeAsistenciaModal').onclick = () => document.getElementById('modalAsistencia').style.display = 'none';
-
-        // Botones estudiantes
-        document.getElementById('btnAgregarEstudiante').onclick = () => abrirFormEstudiante();
-        document.getElementById('btnImportarExcel').onclick = () => {
-            const input = document.createElement('input');
-            input.type = 'file';
-            input.accept = '.xlsx, .xls';
-            input.onchange = (e) => { if (e.target.files[0]) importarExcel(e.target.files[0]); };
-            input.click();
-        };
-        document.getElementById('btnExportarExcel').onclick = exportarExcel;
-        document.getElementById('buscarEstudiante').addEventListener('input', () => { currentPage = 1; renderTablaEstudiantes(); });
-
-        // Formulario estudiante
-        document.getElementById('formEstudiante').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const id = document.getElementById('estudianteId').value;
-            const estudiante = {
-                id: id ? parseInt(id) : Date.now(),
-                groupId: currentGroupId,
-                nombre: document.getElementById('estNombre').value.trim(),
-                apellido1: document.getElementById('estApellido1').value.trim(),
-                apellido2: document.getElementById('estApellido2').value.trim(),
-                email: document.getElementById('estEmail').value.trim(),
-                telefono: document.getElementById('estTelefono').value.trim()
-            };
-            await put('students', estudiante);
-            await cargarEstudiantes(currentGroupId);
-            await renderGrupos();
-            document.getElementById('modalFormEstudiante').style.display = 'none';
-            alert('Estudiante guardado');
-        });
-
-        // Eventos asistencia
-        document.getElementById('btnCambiarFecha').addEventListener('click', cambiarFechaAsistencia);
-        document.getElementById('btnGuardarTodaAsistencia').addEventListener('click', guardarTodaAsistencia);
-        document.getElementById('fechaAsistencia').addEventListener('change', cambiarFechaAsistencia);
-    }
-
-    // ==================== UTILIDADES ====================
-    function escapeHtml(str) {
-        if (!str) return '';
-        return str.replace(/[&<>]/g, function(m) {
-            if (m === '&') return '&amp;';
-            if (m === '<') return '&lt;';
-            if (m === '>') return '&gt;';
-            return m;
-        });
-    }
-
-    // ==================== INICIALIZACIÓN ====================
-    (async function init() {
-        await openDB();
-        await cargarDatosEjemplo();
-        insertarModales();
-        await cargarFiltros();
-        await renderGrupos();
-        configurarEventos();
-    })();
-      
+            configurarEventos();
+            // Fecha inicial para asistencia
+            document.getElementById('fechaAsistencia').value = currentAttendanceDate;
+        })();
     </script>
 </body>
 </html>
