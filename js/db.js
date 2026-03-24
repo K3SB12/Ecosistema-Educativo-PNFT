@@ -1,12 +1,9 @@
 // js/db.js
-// Gestor centralizado de IndexedDB para PNFT Articulador
-
 const DB_NAME = 'PNFT_DB';
 const DB_VERSION = 5;
 
 let db = null;
 
-// Abre la base de datos y maneja la actualización
 export async function openDB() {
     return new Promise((resolve, reject) => {
         const request = indexedDB.open(DB_NAME, DB_VERSION);
@@ -17,8 +14,9 @@ export async function openDB() {
         };
         request.onupgradeneeded = (event) => {
             const db = event.target.result;
+            console.log('Actualizando DB a versión', DB_VERSION);
             
-            // Stores existentes (no se tocan)
+            // Crear stores si no existen
             if (!db.objectStoreNames.contains('plannings')) {
                 db.createObjectStore('plannings', { keyPath: 'id' });
             }
@@ -27,6 +25,7 @@ export async function openDB() {
             }
             if (!db.objectStoreNames.contains('groups')) {
                 db.createObjectStore('groups', { keyPath: 'id' });
+                console.log('Store groups creado');
             }
             if (!db.objectStoreNames.contains('periods')) {
                 db.createObjectStore('periods', { keyPath: 'id' });
@@ -36,8 +35,6 @@ export async function openDB() {
                 store.createIndex('groupId', 'groupId', { unique: false });
                 store.createIndex('periodId', 'periodId', { unique: false });
             }
-            
-            // NUEVOS STORES
             if (!db.objectStoreNames.contains('centros_educativos')) {
                 db.createObjectStore('centros_educativos', { keyPath: 'id' });
             }
@@ -54,11 +51,19 @@ export async function openDB() {
             if (!db.objectStoreNames.contains('settings')) {
                 db.createObjectStore('settings', { keyPath: 'key' });
             }
+            if (!db.objectStoreNames.contains('students')) {
+                db.createObjectStore('students', { keyPath: 'id' });
+            }
+            if (!db.objectStoreNames.contains('attendance')) {
+                db.createObjectStore('attendance', { keyPath: 'id' });
+            }
+            if (!db.objectStoreNames.contains('grades')) {
+                db.createObjectStore('grades', { keyPath: 'id' });
+            }
         };
     });
 }
 
-// Obtener todos los elementos de una store
 export async function getAll(storeName) {
     if (!db) await openDB();
     return new Promise((resolve, reject) => {
@@ -70,7 +75,6 @@ export async function getAll(storeName) {
     });
 }
 
-// Obtener por clave
 export async function getById(storeName, id) {
     if (!db) await openDB();
     return new Promise((resolve, reject) => {
@@ -82,7 +86,6 @@ export async function getById(storeName, id) {
     });
 }
 
-// Guardar (insertar o actualizar)
 export async function put(storeName, item) {
     if (!db) await openDB();
     return new Promise((resolve, reject) => {
@@ -94,7 +97,6 @@ export async function put(storeName, item) {
     });
 }
 
-// Eliminar por clave
 export async function remove(storeName, id) {
     if (!db) await openDB();
     return new Promise((resolve, reject) => {
@@ -106,7 +108,6 @@ export async function remove(storeName, id) {
     });
 }
 
-// Obtener períodos por año
 export async function getPeriodsByYear(schoolYearId) {
     if (!db) await openDB();
     return new Promise((resolve, reject) => {
@@ -117,54 +118,4 @@ export async function getPeriodsByYear(schoolYearId) {
         req.onsuccess = () => resolve(req.result || []);
         req.onerror = () => reject(req.error);
     });
-}
-
-// Inicializar datos de ejemplo
-export async function initDefaultData() {
-    // Centro educativo por defecto
-    const centros = await getAll('centros_educativos');
-    if (centros.length === 0) {
-        await put('centros_educativos', {
-            id: Date.now(),
-            nombre: 'Escuela Tranquilino Sáenz Rojas',
-            codigo: 'CE1',
-            activo: true
-        });
-    }
-    
-    // Año lectivo por defecto
-    const years = await getAll('school_years');
-    if (years.length === 0) {
-        await put('school_years', {
-            id: Date.now(),
-            nombre: '2026',
-            activo: true
-        });
-    }
-    
-    // Períodos de ejemplo para el año 2026 (si no existen)
-    const periods = await getAll('periods_enhanced');
-    if (periods.length === 0) {
-        const year2026 = (await getAll('school_years')).find(y => y.nombre === '2026');
-        if (year2026) {
-            await put('periods_enhanced', {
-                id: Date.now(),
-                schoolYearId: year2026.id,
-                nombre: 'I Semestre',
-                tipo: 'semestre',
-                fechaInicio: '2026-02-23',
-                fechaFin: '2026-07-03',
-                activo: true
-            });
-            await put('periods_enhanced', {
-                id: Date.now() + 1,
-                schoolYearId: year2026.id,
-                nombre: 'II Semestre',
-                tipo: 'semestre',
-                fechaInicio: '2026-07-06',
-                fechaFin: '2026-12-18',
-                activo: true
-            });
-        }
-    }
 }
