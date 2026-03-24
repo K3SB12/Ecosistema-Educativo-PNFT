@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="css/style.css">
     <style>
-        /* Estilos específicos para settings.html */
+        /* Estilos específicos para settings */
         .settings-tabs {
             display: flex;
             gap: 0.5rem;
@@ -26,9 +26,7 @@
             transition: all 0.2s;
             color: #64748b;
         }
-        .tab-btn i {
-            margin-right: 0.5rem;
-        }
+        .tab-btn i { margin-right: 0.5rem; }
         .tab-btn.active {
             background: white;
             color: #2E7D32;
@@ -41,9 +39,7 @@
             padding: 1.8rem;
             box-shadow: 0 8px 20px rgba(0,0,0,0.02);
         }
-        .tab-pane.active {
-            display: block;
-        }
+        .tab-pane.active { display: block; }
         .entity-card {
             border: 1px solid #e2e8f0;
             border-radius: 16px;
@@ -52,9 +48,7 @@
             background: #fafcff;
             transition: 0.2s;
         }
-        .entity-card:hover {
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-        }
+        .entity-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
         .entity-header {
             display: flex;
             justify-content: space-between;
@@ -63,11 +57,7 @@
             gap: 0.5rem;
             margin-bottom: 0.5rem;
         }
-        .entity-title {
-            font-weight: 600;
-            font-size: 1.1rem;
-            color: #1e293b;
-        }
+        .entity-title { font-weight: 600; font-size: 1.1rem; color: #1e293b; }
         .entity-badge {
             font-size: 0.7rem;
             background: #e8f5e9;
@@ -98,13 +88,8 @@
             color: #94a3b8;
             transition: 0.2s;
         }
-        .action-icons i:hover {
-            color: #2E7D32;
-        }
-        .btn-sm {
-            padding: 0.3rem 0.8rem;
-            font-size: 0.8rem;
-        }
+        .action-icons i:hover { color: #2E7D32; }
+        .btn-sm { padding: 0.3rem 0.8rem; font-size: 0.8rem; }
         .total-percent {
             font-weight: bold;
             font-size: 0.9rem;
@@ -113,9 +98,7 @@
         }
         .valid { color: #2E7D32; }
         .invalid { color: #c62828; }
-        .modal-content {
-            max-width: 600px;
-        }
+        .modal-content { max-width: 600px; }
         .period-row {
             display: flex;
             gap: 0.5rem;
@@ -123,12 +106,37 @@
             flex-wrap: wrap;
             margin-bottom: 0.5rem;
         }
-        .period-row input, .period-row select {
-            flex: 1;
-            min-width: 120px;
+        .period-row input, .period-row select { flex: 1; min-width: 120px; }
+        hr { margin: 1rem 0; }
+        .btn-accion {
+            background: #2E7D32;
+            color: white;
+            border: none;
+            padding: 0.7rem 1.5rem;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.2s;
         }
-        hr {
-            margin: 1rem 0;
+        .btn-accion:hover { background: #1e5a20; transform: translateY(-2px); }
+        .btn-ia { background: #1976D2; }
+        .btn-ia:hover { background: #0d5a9e; }
+        .btn-secundario {
+            background: #f0f0f0;
+            color: #333;
+            border: 1px solid #ccc;
+        }
+        .btn-secundario:hover { background: #e0e0e0; transform: translateY(-1px); }
+        .flex-between {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
         }
     </style>
 </head>
@@ -162,23 +170,33 @@
             </div>
 
             <div class="settings-tabs">
-                <button class="tab-btn active" data-tab="years"><i class="fas fa-calendar-alt"></i> Años lectivos</button>
+                <button class="tab-btn active" data-tab="centros"><i class="fas fa-school"></i> Centros educativos</button>
+                <button class="tab-btn" data-tab="years"><i class="fas fa-calendar-alt"></i> Años lectivos</button>
                 <button class="tab-btn" data-tab="periods"><i class="fas fa-calendar-week"></i> Períodos</button>
-                <button class="tab-btn" data-tab="components"><i class="fas fa-chart-line"></i> Componentes de evaluación</button>
+                <button class="tab-btn" data-tab="components"><i class="fas fa-chart-line"></i> Componentes</button>
             </div>
 
-            <!-- Panel: Años lectivos -->
-            <div id="yearsPane" class="tab-pane active">
-                <div class="flex-between" style="margin-bottom: 1.5rem;">
-                    <h2><i class="fas fa-calendar-alt"></i> Años lectivos</h2>
-                    <button id="addSchoolYearBtn" class="btn-accion"><i class="fas fa-plus"></i> Nuevo año</button>
+            <!-- CENTROS EDUCATIVOS -->
+            <div id="centrosPane" class="tab-pane active">
+                <div class="flex-between">
+                    <h2><i class="fas fa-school"></i> Centros educativos</h2>
+                    <button id="addCentroBtn" class="btn-accion"><i class="fas fa-plus"></i> Nuevo centro</button>
                 </div>
-                <div id="schoolYearsList"></div>
+                <div id="centrosList"></div>
             </div>
 
-            <!-- Panel: Períodos -->
+            <!-- AÑOS LECTIVOS -->
+            <div id="yearsPane" class="tab-pane">
+                <div class="flex-between">
+                    <h2><i class="fas fa-calendar-alt"></i> Años lectivos</h2>
+                    <button id="addYearBtn" class="btn-accion"><i class="fas fa-plus"></i> Nuevo año</button>
+                </div>
+                <div id="yearsList"></div>
+            </div>
+
+            <!-- PERÍODOS -->
             <div id="periodsPane" class="tab-pane">
-                <div class="flex-between" style="margin-bottom: 1.5rem;">
+                <div class="flex-between">
                     <h2><i class="fas fa-calendar-week"></i> Períodos</h2>
                     <div>
                         <select id="yearFilterPeriods" style="padding:0.5rem; margin-right:0.5rem;"></select>
@@ -188,9 +206,9 @@
                 <div id="periodsList"></div>
             </div>
 
-            <!-- Panel: Componentes de evaluación -->
+            <!-- COMPONENTES -->
             <div id="componentsPane" class="tab-pane">
-                <div class="flex-between" style="margin-bottom: 1.5rem;">
+                <div class="flex-between">
                     <h2><i class="fas fa-chart-line"></i> Componentes de evaluación</h2>
                     <div>
                         <button id="preloadModalidadesBtn" class="btn-accion btn-ia"><i class="fas fa-download"></i> Precargar por modalidad</button>
@@ -202,27 +220,49 @@
         </main>
     </div>
 
-    <!-- Modal para Año Lectivo -->
-    <div id="modalSchoolYear" class="modal">
+    <!-- MODALES -->
+    <div id="modalCentro" class="modal">
         <div class="modal-content">
-            <span class="close" id="closeSchoolYearModal">&times;</span>
-            <h2 id="schoolYearModalTitle">Nuevo año lectivo</h2>
+            <span class="close" id="closeCentroModal">&times;</span>
+            <h2 id="centroModalTitle">Nuevo centro educativo</h2>
             <div class="form-group">
-                <label>Nombre (ej: 2026)</label>
-                <input type="text" id="schoolYearName" placeholder="2026">
+                <label>Nombre completo *</label>
+                <input type="text" id="centroNombre" placeholder="Escuela Tranquilino Sáenz Rojas">
+            </div>
+            <div class="form-group">
+                <label>Código (identificador)</label>
+                <input type="text" id="centroCodigo" placeholder="Ej: CE1">
             </div>
             <div class="form-group">
                 <label>Activo</label>
-                <input type="checkbox" id="schoolYearActive" checked>
+                <input type="checkbox" id="centroActivo" checked>
             </div>
             <div style="text-align: right;">
-                <button id="saveSchoolYearBtn" class="btn-accion">Guardar</button>
-                <button id="cancelSchoolYearBtn" class="btn-secundario">Cancelar</button>
+                <button id="saveCentroBtn" class="btn-accion">Guardar</button>
+                <button id="cancelCentroBtn" class="btn-secundario">Cancelar</button>
             </div>
         </div>
     </div>
 
-    <!-- Modal para Período -->
+    <div id="modalYear" class="modal">
+        <div class="modal-content">
+            <span class="close" id="closeYearModal">&times;</span>
+            <h2 id="yearModalTitle">Nuevo año lectivo</h2>
+            <div class="form-group">
+                <label>Nombre (ej: 2026)</label>
+                <input type="text" id="yearName" placeholder="2026">
+            </div>
+            <div class="form-group">
+                <label>Activo</label>
+                <input type="checkbox" id="yearActive" checked>
+            </div>
+            <div style="text-align: right;">
+                <button id="saveYearBtn" class="btn-accion">Guardar</button>
+                <button id="cancelYearBtn" class="btn-secundario">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
     <div id="modalPeriod" class="modal">
         <div class="modal-content">
             <span class="close" id="closePeriodModal">&times;</span>
@@ -232,7 +272,7 @@
                 <select id="periodYearId"></select>
             </div>
             <div class="form-group">
-                <label>Nombre (ej: I Semestre, II Trimestre)</label>
+                <label>Nombre (ej: I Semestre)</label>
                 <input type="text" id="periodName" placeholder="I Semestre">
             </div>
             <div class="form-group">
@@ -263,17 +303,16 @@
         </div>
     </div>
 
-    <!-- Modal para Componente de Evaluación -->
     <div id="modalComponent" class="modal">
         <div class="modal-content" style="max-width: 700px;">
             <span class="close" id="closeComponentModal">&times;</span>
-            <h2 id="componentModalTitle">Nuevo componente de evaluación</h2>
+            <h2 id="componentModalTitle">Nuevo componente</h2>
             <div class="form-group">
-                <label>Nombre (ej: I Ciclo, II Ciclo, Diversificada)</label>
+                <label>Nombre (ej: I Ciclo, Diversificada)</label>
                 <input type="text" id="componentName" placeholder="Ej: I Ciclo">
             </div>
             <div class="form-group">
-                <label>Subcomponentes (suma total debe ser 100%)</label>
+                <label>Subcomponentes (suma total 100%)</label>
                 <div id="subcomponentsContainer"></div>
                 <button type="button" id="addSubcomponentBtn" class="btn-secundario btn-sm"><i class="fas fa-plus"></i> Agregar subcomponente</button>
                 <div id="totalPercentDisplay" class="total-percent">Total: 0%</div>
@@ -285,12 +324,11 @@
         </div>
     </div>
 
-    <!-- Modal de precarga por modalidad -->
     <div id="modalPreload" class="modal">
         <div class="modal-content">
             <span class="close" id="closePreloadModal">&times;</span>
-            <h2>Precargar componentes por modalidad</h2>
-            <p>Seleccione la modalidad para cargar la plantilla predefinida (basada en lineamientos MEP):</p>
+            <h2>Precargar plantilla por modalidad</h2>
+            <p>Seleccione la modalidad para crear un componente con subcomponentes típicos del MEP:</p>
             <select id="preloadModalidad" style="width:100%; padding:0.5rem; margin:1rem 0;">
                 <option value="I Ciclo">I Ciclo (1°-3°)</option>
                 <option value="II Ciclo">II Ciclo (4°-6°)</option>
@@ -304,190 +342,166 @@
         </div>
     </div>
 
-    <script>
-        // Configuración de IndexedDB
-        const DB_NAME = 'PNFT_DB';
-        const DB_VERSION = 4;
-        let db = null;
+    <script type="module">
+        import { openDB, getAll, put, remove, getPeriodsByYear, initDefaultData } from './js/db.js';
 
-        // Helper: abrir DB con upgrade
-        function abrirDB() {
-            return new Promise((resolve, reject) => {
-                const request = indexedDB.open(DB_NAME, DB_VERSION);
-                request.onerror = () => reject(request.error);
-                request.onsuccess = () => { db = request.result; resolve(db); };
-                request.onupgradeneeded = (event) => {
-                    const db = event.target.result;
-                    // Store de años lectivos
-                    if (!db.objectStoreNames.contains('school_years')) {
-                        db.createObjectStore('school_years', { keyPath: 'id' });
+        // Variables globales para modales
+        let currentCentroId = null;
+        let currentYearId = null;
+        let currentPeriodId = null;
+        let currentComponentId = null;
+        let subcomponents = [];
+
+        // Esperar a que la DB esté lista
+        await openDB();
+        await initDefaultData();
+
+        // ----- CENTROS EDUCATIVOS -----
+        async function renderCentros() {
+            const centros = await getAll('centros_educativos');
+            const container = document.getElementById('centrosList');
+            if (!centros.length) {
+                container.innerHTML = '<p class="empty-table">No hay centros educativos. Cree uno nuevo.</p>';
+            } else {
+                container.innerHTML = centros.map(c => `
+                    <div class="entity-card">
+                        <div class="entity-header">
+                            <span class="entity-title">${escapeHtml(c.nombre)}</span>
+                            <span class="entity-badge">${c.activo ? 'Activo' : 'Inactivo'}</span>
+                            <div class="action-icons">
+                                <i class="fas fa-edit" data-id="${c.id}" data-action="editCentro"></i>
+                                <i class="fas fa-trash-alt" data-id="${c.id}" data-action="deleteCentro"></i>
+                            </div>
+                        </div>
+                        <div class="entity-details">
+                            <i class="fas fa-id-card"></i> ${c.codigo || 'Sin código'}
+                        </div>
+                    </div>
+                `).join('');
+                attachCentroActions();
+            }
+        }
+        function attachCentroActions() {
+            document.querySelectorAll('[data-action="editCentro"]').forEach(btn => {
+                btn.addEventListener('click', async (e) => {
+                    const id = parseInt(e.currentTarget.dataset.id);
+                    const centros = await getAll('centros_educativos');
+                    const centro = centros.find(c => c.id === id);
+                    if (centro) openCentroModal(centro);
+                });
+            });
+            document.querySelectorAll('[data-action="deleteCentro"]').forEach(btn => {
+                btn.addEventListener('click', async (e) => {
+                    const id = parseInt(e.currentTarget.dataset.id);
+                    if (confirm('¿Eliminar este centro educativo? Se perderá la asociación a grupos.')) {
+                        await remove('centros_educativos', id);
+                        renderCentros();
                     }
-                    // Store de períodos mejorado
-                    if (!db.objectStoreNames.contains('periods_enhanced')) {
-                        const periodsStore = db.createObjectStore('periods_enhanced', { keyPath: 'id' });
-                        periodsStore.createIndex('schoolYearId', 'schoolYearId', { unique: false });
-                    } else {
-                        // Si ya existe pero no tiene índice, lo creamos
-                        const store = event.target.transaction.objectStore('periods_enhanced');
-                        if (!store.indexNames.contains('schoolYearId')) {
-                            store.createIndex('schoolYearId', 'schoolYearId', { unique: false });
-                        }
-                    }
-                    // Store de componentes
-                    if (!db.objectStoreNames.contains('components')) {
-                        db.createObjectStore('components', { keyPath: 'id' });
-                    }
-                };
+                });
             });
         }
-
-        // Funciones de lectura con promesas correctas
-        function getSchoolYears() {
-            return new Promise((resolve, reject) => {
-                const tx = db.transaction(['school_years'], 'readonly');
-                const store = tx.objectStore('school_years');
-                const req = store.getAll();
-                req.onsuccess = () => resolve(req.result || []);
-                req.onerror = () => reject(req.error);
-            });
+        function openCentroModal(centro = null) {
+            currentCentroId = centro ? centro.id : null;
+            document.getElementById('centroModalTitle').innerText = centro ? 'Editar centro' : 'Nuevo centro';
+            document.getElementById('centroNombre').value = centro ? centro.nombre : '';
+            document.getElementById('centroCodigo').value = centro ? (centro.codigo || '') : '';
+            document.getElementById('centroActivo').checked = centro ? centro.activo : true;
+            document.getElementById('modalCentro').style.display = 'block';
         }
+        document.getElementById('addCentroBtn').onclick = () => openCentroModal();
+        document.getElementById('saveCentroBtn').onclick = async () => {
+            const nombre = document.getElementById('centroNombre').value.trim();
+            if (!nombre) { alert('El nombre es obligatorio'); return; }
+            const centro = {
+                id: currentCentroId || Date.now(),
+                nombre,
+                codigo: document.getElementById('centroCodigo').value.trim(),
+                activo: document.getElementById('centroActivo').checked
+            };
+            await put('centros_educativos', centro);
+            renderCentros();
+            closeAllModals();
+        };
+        document.getElementById('cancelCentroBtn').onclick = () => closeAllModals();
+        document.getElementById('closeCentroModal').onclick = () => closeAllModals();
 
-        function saveSchoolYear(schoolYear) {
-            return new Promise((resolve, reject) => {
-                const tx = db.transaction(['school_years'], 'readwrite');
-                const store = tx.objectStore('school_years');
-                const req = store.put(schoolYear);
-                req.onsuccess = () => resolve();
-                req.onerror = () => reject(req.error);
-            });
-        }
-
-        function deleteSchoolYear(id) {
-            return new Promise((resolve, reject) => {
-                const tx = db.transaction(['school_years'], 'readwrite');
-                const store = tx.objectStore('school_years');
-                const req = store.delete(id);
-                req.onsuccess = () => resolve();
-                req.onerror = () => reject(req.error);
-            });
-        }
-
-        function getPeriods(schoolYearId = null) {
-            return new Promise((resolve, reject) => {
-                const tx = db.transaction(['periods_enhanced'], 'readonly');
-                const store = tx.objectStore('periods_enhanced');
-                let req;
-                if (schoolYearId !== null && schoolYearId !== 'todos') {
-                    const index = store.index('schoolYearId');
-                    req = index.getAll(parseInt(schoolYearId));
-                } else {
-                    req = store.getAll();
-                }
-                req.onsuccess = () => resolve(req.result || []);
-                req.onerror = () => reject(req.error);
-            });
-        }
-
-        function savePeriod(period) {
-            return new Promise((resolve, reject) => {
-                const tx = db.transaction(['periods_enhanced'], 'readwrite');
-                const store = tx.objectStore('periods_enhanced');
-                const req = store.put(period);
-                req.onsuccess = () => resolve();
-                req.onerror = () => reject(req.error);
-            });
-        }
-
-        function deletePeriod(id) {
-            return new Promise((resolve, reject) => {
-                const tx = db.transaction(['periods_enhanced'], 'readwrite');
-                const store = tx.objectStore('periods_enhanced');
-                const req = store.delete(id);
-                req.onsuccess = () => resolve();
-                req.onerror = () => reject(req.error);
-            });
-        }
-
-        function getComponents() {
-            return new Promise((resolve, reject) => {
-                const tx = db.transaction(['components'], 'readonly');
-                const store = tx.objectStore('components');
-                const req = store.getAll();
-                req.onsuccess = () => resolve(req.result || []);
-                req.onerror = () => reject(req.error);
-            });
-        }
-
-        function saveComponent(component) {
-            return new Promise((resolve, reject) => {
-                const tx = db.transaction(['components'], 'readwrite');
-                const store = tx.objectStore('components');
-                const req = store.put(component);
-                req.onsuccess = () => resolve();
-                req.onerror = () => reject(req.error);
-            });
-        }
-
-        function deleteComponent(id) {
-            return new Promise((resolve, reject) => {
-                const tx = db.transaction(['components'], 'readwrite');
-                const store = tx.objectStore('components');
-                const req = store.delete(id);
-                req.onsuccess = () => resolve();
-                req.onerror = () => reject(req.error);
-            });
-        }
-
-        // --- Renderización de UI ---
-        async function renderSchoolYears() {
-            const years = await getSchoolYears();
-            const container = document.getElementById('schoolYearsList');
+        // ----- AÑOS LECTIVOS -----
+        async function renderYears() {
+            const years = await getAll('school_years');
+            const container = document.getElementById('yearsList');
             if (!years.length) {
                 container.innerHTML = '<p class="empty-table">No hay años lectivos. Cree uno nuevo.</p>';
             } else {
-                container.innerHTML = years.map(year => `
+                container.innerHTML = years.map(y => `
                     <div class="entity-card">
                         <div class="entity-header">
-                            <span class="entity-title">${escapeHtml(year.nombre)}</span>
-                            <span class="entity-badge">${year.activo ? 'Activo' : 'Inactivo'}</span>
+                            <span class="entity-title">${escapeHtml(y.nombre)}</span>
+                            <span class="entity-badge">${y.activo ? 'Activo' : 'Inactivo'}</span>
                             <div class="action-icons">
-                                <i class="fas fa-edit" data-id="${year.id}" data-action="editYear"></i>
-                                <i class="fas fa-trash-alt" data-id="${year.id}" data-action="deleteYear"></i>
+                                <i class="fas fa-edit" data-id="${y.id}" data-action="editYear"></i>
+                                <i class="fas fa-trash-alt" data-id="${y.id}" data-action="deleteYear"></i>
                             </div>
                         </div>
                     </div>
                 `).join('');
                 attachYearActions();
             }
-            await updateYearSelects();
+            updateYearSelects();
         }
-
         function attachYearActions() {
             document.querySelectorAll('[data-action="editYear"]').forEach(btn => {
                 btn.addEventListener('click', async (e) => {
                     const id = parseInt(e.currentTarget.dataset.id);
-                    const years = await getSchoolYears();
+                    const years = await getAll('school_years');
                     const year = years.find(y => y.id === id);
-                    if (year) openSchoolYearModal(year);
+                    if (year) openYearModal(year);
                 });
             });
             document.querySelectorAll('[data-action="deleteYear"]').forEach(btn => {
                 btn.addEventListener('click', async (e) => {
                     const id = parseInt(e.currentTarget.dataset.id);
-                    if (confirm('¿Eliminar este año lectivo? También se eliminarán todos los períodos asociados.')) {
-                        await deleteSchoolYear(id);
-                        const periods = await getPeriods(id);
-                        for (let p of periods) await deletePeriod(p.id);
-                        renderSchoolYears();
+                    if (confirm('¿Eliminar este año lectivo? También se eliminarán todos sus períodos.')) {
+                        await remove('school_years', id);
+                        const periods = await getPeriodsByYear(id);
+                        for (let p of periods) await remove('periods_enhanced', p.id);
+                        renderYears();
                         renderPeriods();
                     }
                 });
             });
         }
+        function openYearModal(year = null) {
+            currentYearId = year ? year.id : null;
+            document.getElementById('yearModalTitle').innerText = year ? 'Editar año' : 'Nuevo año';
+            document.getElementById('yearName').value = year ? year.nombre : '';
+            document.getElementById('yearActive').checked = year ? year.activo : true;
+            document.getElementById('modalYear').style.display = 'block';
+        }
+        document.getElementById('addYearBtn').onclick = () => openYearModal();
+        document.getElementById('saveYearBtn').onclick = async () => {
+            const nombre = document.getElementById('yearName').value.trim();
+            if (!nombre) { alert('El nombre es obligatorio'); return; }
+            const year = {
+                id: currentYearId || Date.now(),
+                nombre,
+                activo: document.getElementById('yearActive').checked
+            };
+            await put('school_years', year);
+            renderYears();
+            closeAllModals();
+        };
+        document.getElementById('cancelYearBtn').onclick = () => closeAllModals();
+        document.getElementById('closeYearModal').onclick = () => closeAllModals();
 
+        // ----- PERÍODOS -----
         async function renderPeriods() {
             const yearFilter = document.getElementById('yearFilterPeriods').value;
-            const periods = await getPeriods(yearFilter === 'todos' ? null : parseInt(yearFilter));
+            let periods;
+            if (yearFilter === 'todos') {
+                periods = await getAll('periods_enhanced');
+            } else {
+                periods = await getPeriodsByYear(parseInt(yearFilter));
+            }
             const container = document.getElementById('periodsList');
             if (!periods.length) {
                 container.innerHTML = '<p class="empty-table">No hay períodos para este año. Cree uno nuevo.</p>';
@@ -510,12 +524,11 @@
                 attachPeriodActions();
             }
         }
-
         function attachPeriodActions() {
             document.querySelectorAll('[data-action="editPeriod"]').forEach(btn => {
                 btn.addEventListener('click', async (e) => {
                     const id = parseInt(e.currentTarget.dataset.id);
-                    const periods = await getPeriods();
+                    const periods = await getAll('periods_enhanced');
                     const period = periods.find(p => p.id === id);
                     if (period) openPeriodModal(period);
                 });
@@ -524,105 +537,12 @@
                 btn.addEventListener('click', async (e) => {
                     const id = parseInt(e.currentTarget.dataset.id);
                     if (confirm('¿Eliminar este período?')) {
-                        await deletePeriod(id);
+                        await remove('periods_enhanced', id);
                         renderPeriods();
                     }
                 });
             });
         }
-
-        async function renderComponents() {
-            const components = await getComponents();
-            const container = document.getElementById('componentsList');
-            if (!components.length) {
-                container.innerHTML = '<p class="empty-table">No hay componentes de evaluación. Cree uno nuevo o precargue por modalidad.</p>';
-            } else {
-                container.innerHTML = components.map(comp => `
-                    <div class="entity-card">
-                        <div class="entity-header">
-                            <span class="entity-title">${escapeHtml(comp.nombre)}</span>
-                            <div class="action-icons">
-                                <i class="fas fa-edit" data-id="${comp.id}" data-action="editComponent"></i>
-                                <i class="fas fa-trash-alt" data-id="${comp.id}" data-action="deleteComponent"></i>
-                            </div>
-                        </div>
-                        <div class="subcomponent-list">
-                            ${comp.subcomponentes.map(sub => `
-                                <div class="subcomponent-item">
-                                    <span>${escapeHtml(sub.nombre)}</span>
-                                    <span>${sub.porcentaje}%</span>
-                                </div>
-                            `).join('')}
-                        </div>
-                        <div class="total-percent">
-                            Total: ${comp.subcomponentes.reduce((s, sub) => s + sub.porcentaje, 0)}%
-                        </div>
-                    </div>
-                `).join('');
-                attachComponentActions();
-            }
-        }
-
-        function attachComponentActions() {
-            document.querySelectorAll('[data-action="editComponent"]').forEach(btn => {
-                btn.addEventListener('click', async (e) => {
-                    const id = parseInt(e.currentTarget.dataset.id);
-                    const components = await getComponents();
-                    const comp = components.find(c => c.id === id);
-                    if (comp) openComponentModal(comp);
-                });
-            });
-            document.querySelectorAll('[data-action="deleteComponent"]').forEach(btn => {
-                btn.addEventListener('click', async (e) => {
-                    const id = parseInt(e.currentTarget.dataset.id);
-                    if (confirm('¿Eliminar este componente?')) {
-                        await deleteComponent(id);
-                        renderComponents();
-                    }
-                });
-            });
-        }
-
-        async function updateYearSelects() {
-            const years = await getSchoolYears();
-            const selectPeriodYear = document.getElementById('periodYearId');
-            const selectFilter = document.getElementById('yearFilterPeriods');
-            const options = '<option value="todos">Todos los años</option>' + years.map(y => `<option value="${y.id}">${escapeHtml(y.nombre)}</option>`).join('');
-            selectPeriodYear.innerHTML = options;
-            selectFilter.innerHTML = options;
-            if (years.length) {
-                selectPeriodYear.value = years[0].id;
-            }
-            renderPeriods();
-        }
-
-        // --- Modales para Años ---
-        let currentYearId = null;
-        function openSchoolYearModal(year = null) {
-            currentYearId = year ? year.id : null;
-            document.getElementById('schoolYearModalTitle').innerText = year ? 'Editar año lectivo' : 'Nuevo año lectivo';
-            document.getElementById('schoolYearName').value = year ? year.nombre : '';
-            document.getElementById('schoolYearActive').checked = year ? year.activo : true;
-            document.getElementById('modalSchoolYear').style.display = 'block';
-        }
-        document.getElementById('addSchoolYearBtn').onclick = () => openSchoolYearModal();
-        document.getElementById('saveSchoolYearBtn').onclick = async () => {
-            const nombre = document.getElementById('schoolYearName').value.trim();
-            if (!nombre) { alert('El nombre es obligatorio'); return; }
-            const year = {
-                id: currentYearId || Date.now(),
-                nombre,
-                activo: document.getElementById('schoolYearActive').checked
-            };
-            await saveSchoolYear(year);
-            renderSchoolYears();
-            closeAllModals();
-        };
-        document.getElementById('cancelSchoolYearBtn').onclick = () => closeAllModals();
-        document.getElementById('closeSchoolYearModal').onclick = () => closeAllModals();
-
-        // --- Modales para Períodos ---
-        let currentPeriodId = null;
         function openPeriodModal(period = null) {
             currentPeriodId = period ? period.id : null;
             document.getElementById('periodModalTitle').innerText = period ? 'Editar período' : 'Nuevo período';
@@ -631,8 +551,8 @@
             document.getElementById('periodStart').value = period ? (period.fechaInicio || '') : '';
             document.getElementById('periodEnd').value = period ? (period.fechaFin || '') : '';
             document.getElementById('periodActive').checked = period ? period.activo : true;
-            // Cargar años en el select
-            getSchoolYears().then(years => {
+            // Llenar select de años
+            getAll('school_years').then(years => {
                 const select = document.getElementById('periodYearId');
                 select.innerHTML = years.map(y => `<option value="${y.id}" ${period && period.schoolYearId === y.id ? 'selected' : ''}>${escapeHtml(y.nombre)}</option>`).join('');
                 if (!period && years.length) select.value = years[0].id;
@@ -654,25 +574,28 @@
                 fechaFin: document.getElementById('periodEnd').value,
                 activo: document.getElementById('periodActive').checked
             };
-            await savePeriod(period);
+            await put('periods_enhanced', period);
             renderPeriods();
             closeAllModals();
         };
         document.getElementById('cancelPeriodBtn').onclick = () => closeAllModals();
         document.getElementById('closePeriodModal').onclick = () => closeAllModals();
 
-        // --- Componentes y subcomponentes ---
-        let currentComponentId = null;
-        let subcomponents = [];
+        async function updateYearSelects() {
+            const years = await getAll('school_years');
+            const selectFilter = document.getElementById('yearFilterPeriods');
+            selectFilter.innerHTML = '<option value="todos">Todos los años</option>' + years.map(y => `<option value="${y.id}">${escapeHtml(y.nombre)}</option>`).join('');
+            selectFilter.addEventListener('change', renderPeriods);
+            renderPeriods();
+        }
+
+        // ----- COMPONENTES -----
         function updateTotalPercent() {
             const total = subcomponents.reduce((s, sub) => s + (sub.porcentaje || 0), 0);
             const display = document.getElementById('totalPercentDisplay');
             display.innerHTML = `Total: ${total}%`;
-            if (total === 100) {
-                display.className = 'total-percent valid';
-            } else {
-                display.className = 'total-percent invalid';
-            }
+            if (total === 100) display.className = 'total-percent valid';
+            else display.className = 'total-percent invalid';
             return total;
         }
         function renderSubcomponentsUI() {
@@ -687,7 +610,6 @@
                         <i class="fas fa-trash-alt" style="cursor:pointer;" data-idx="${idx}" data-action="removeSub"></i>
                     </div>
                 `).join('');
-                // Eventos para editar en vivo
                 container.querySelectorAll('input[data-field="nombre"]').forEach(inp => {
                     inp.addEventListener('change', (e) => {
                         const idx = parseInt(e.target.dataset.idx);
@@ -716,6 +638,56 @@
             subcomponents.push({ nombre: 'Nuevo subcomponente', porcentaje: 0 });
             renderSubcomponentsUI();
         };
+        async function renderComponents() {
+            const components = await getAll('components');
+            const container = document.getElementById('componentsList');
+            if (!components.length) {
+                container.innerHTML = '<p class="empty-table">No hay componentes. Cree uno nuevo o precargue por modalidad.</p>';
+            } else {
+                container.innerHTML = components.map(comp => `
+                    <div class="entity-card">
+                        <div class="entity-header">
+                            <span class="entity-title">${escapeHtml(comp.nombre)}</span>
+                            <div class="action-icons">
+                                <i class="fas fa-edit" data-id="${comp.id}" data-action="editComponent"></i>
+                                <i class="fas fa-trash-alt" data-id="${comp.id}" data-action="deleteComponent"></i>
+                            </div>
+                        </div>
+                        <div class="subcomponent-list">
+                            ${comp.subcomponentes.map(sub => `
+                                <div class="subcomponent-item">
+                                    <span>${escapeHtml(sub.nombre)}</span>
+                                    <span>${sub.porcentaje}%</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                        <div class="total-percent">
+                            Total: ${comp.subcomponentes.reduce((s, sub) => s + sub.porcentaje, 0)}%
+                        </div>
+                    </div>
+                `).join('');
+                attachComponentActions();
+            }
+        }
+        function attachComponentActions() {
+            document.querySelectorAll('[data-action="editComponent"]').forEach(btn => {
+                btn.addEventListener('click', async (e) => {
+                    const id = parseInt(e.currentTarget.dataset.id);
+                    const components = await getAll('components');
+                    const comp = components.find(c => c.id === id);
+                    if (comp) openComponentModal(comp);
+                });
+            });
+            document.querySelectorAll('[data-action="deleteComponent"]').forEach(btn => {
+                btn.addEventListener('click', async (e) => {
+                    const id = parseInt(e.currentTarget.dataset.id);
+                    if (confirm('¿Eliminar este componente? Se perderá la asignación a grupos.')) {
+                        await remove('components', id);
+                        renderComponents();
+                    }
+                });
+            });
+        }
         function openComponentModal(component = null) {
             currentComponentId = component ? component.id : null;
             document.getElementById('componentModalTitle').innerText = component ? 'Editar componente' : 'Nuevo componente';
@@ -736,14 +708,14 @@
                 nombre,
                 subcomponentes: subcomponents
             };
-            await saveComponent(component);
+            await put('components', component);
             renderComponents();
             closeAllModals();
         };
         document.getElementById('cancelComponentBtn').onclick = () => closeAllModals();
         document.getElementById('closeComponentModal').onclick = () => closeAllModals();
 
-        // --- Precarga por modalidad ---
+        // Precarga por modalidad
         const modalidadesData = {
             'I Ciclo': [
                 { nombre: 'Trabajo cotidiano', porcentaje: 30 },
@@ -787,14 +759,14 @@
                 nombre: modalidad,
                 subcomponentes: JSON.parse(JSON.stringify(subcomponentes))
             };
-            await saveComponent(component);
+            await put('components', component);
             renderComponents();
             closeAllModals();
         };
         document.getElementById('cancelPreloadBtn').onclick = () => closeAllModals();
         document.getElementById('closePreloadModal').onclick = () => closeAllModals();
 
-        // --- Utilidades ---
+        // Utilidades
         function escapeHtml(str) {
             if (!str) return '';
             return str.replace(/[&<>]/g, function(m) {
@@ -808,7 +780,7 @@
             document.querySelectorAll('.modal').forEach(modal => modal.style.display = 'none');
         }
 
-        // --- Pestañas ---
+        // Pestañas
         document.querySelectorAll('.tab-btn').forEach(btn => {
             btn.addEventListener('click', () => {
                 document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -816,24 +788,18 @@
                 const paneId = btn.dataset.tab + 'Pane';
                 document.querySelectorAll('.tab-pane').forEach(pane => pane.classList.remove('active'));
                 document.getElementById(paneId).classList.add('active');
-                if (btn.dataset.tab === 'years') renderSchoolYears();
+                if (btn.dataset.tab === 'centros') renderCentros();
+                else if (btn.dataset.tab === 'years') renderYears();
                 else if (btn.dataset.tab === 'periods') renderPeriods();
                 else if (btn.dataset.tab === 'components') renderComponents();
             });
         });
 
-        // --- Inicialización ---
-        (async () => {
-            await abrirDB();
-            // Si no hay años, crear uno por defecto
-            const years = await getSchoolYears();
-            if (years.length === 0) {
-                await saveSchoolYear({ id: Date.now(), nombre: '2026', activo: true });
-            }
-            await renderSchoolYears();
-            await renderComponents();
-            await updateYearSelects(); // ya llama a renderPeriods
-        })();
+        // Inicializar
+        await renderCentros();
+        await renderYears();
+        await updateYearSelects(); // también llama a renderPeriods
+        await renderComponents();
 
         window.onclick = (e) => {
             if (e.target.classList.contains('modal')) closeAllModals();
