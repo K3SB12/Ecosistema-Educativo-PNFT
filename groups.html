@@ -155,6 +155,30 @@
         </div>
     </div>
 
+    <!-- Modal de Asistencia -->
+    <div id="modalAsistencia" class="modal">
+        <div class="modal-content" style="max-width: 900px;">
+            <span class="close" id="closeModalAsistencia">&times;</span>
+            <h2 class="text-xl font-bold mb-4">Registro de Asistencia</h2>
+            <div class="flex justify-between items-center mb-4">
+                <div class="flex gap-2">
+                    <input type="date" id="fechaAsistencia" class="border rounded-lg p-2">
+                    <button id="btnMarcarTodosPresente" class="bg-blue-600 text-white px-3 py-1 rounded-lg text-sm">Marcar todos presente</button>
+                    <button id="btnLimpiarAsistencia" class="bg-gray-500 text-white px-3 py-1 rounded-lg text-sm">Limpiar</button>
+                </div>
+                <button id="btnGuardarAsistencia" class="bg-green-800 text-white px-4 py-2 rounded-lg shadow">Guardar Asistencia</button>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full border-collapse">
+                    <thead class="bg-gray-100">
+                        <tr><th class="p-2 text-left">Estudiante</th><th class="p-2 text-left">Estado</th><th class="p-2 text-left">Observaciones</th></tr>
+                    </thead>
+                    <tbody id="tablaAsistencia"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
     <script type="module">
         import { openDB, getAll, put, remove, getById } from './js/db.js';
 
@@ -638,6 +662,205 @@
                 return m;
             });
         }
+
+        // ==================== MÓDULO ASISTENCIA ====================
+
+        // Variables para el modal de asistencia
+        let currentAttendanceGroupId = null;
+        let currentAttendanceDate = new Date().toISOString().slice(0,10);
+        let attendanceStudents = [];
+        
+        // Función para abrir el modal de asistencia
+        async function abrirModalAsistencia(groupId) {
+            currentAttendanceGroupId = groupId;
+            // Obtener estudiantes del grupo
+            const allStudents = await getAll('students');
+            attendanceStudents = allStudents.filter(s => s.groupId === groupId);
+            
+            // Cargar asistencias existentes para la fecha actual
+            const allAttendance = await getAll('attendance');
+            const existing = allAttendance.filter(a => a.groupId === groupId && a.fecha === currentAttendanceDate);
+            const attendanceMap = {};
+            existing.forEach(a => { attendanceMap[a.estudianteId] = a; });
+            
+            // Renderizar tabla
+            renderTablaAsistencia(attendanceMap);
+            
+            // Mostrar modal
+            document.getElementById('modalAsistencia').style.display = 'block';
+        }
+        
+        function renderTablaAsistencia(attendanceMap) {
+            const tbody = document.getElementById('tablaAsistenciaBody');
+            if (attendanceStudents.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" class="text-center text-gray-500">No hay estudiantes en este grupo</td></tr>';
+                return;
+            }
+            tbody.innerHTML = attendanceStudents.map(s => {
+                const att = attendanceMap[s.id] || { estado: 'presente', observaciones: '' };
+                return `
+                    <tr>
+                        <td class="border p-2">${escapeHtml(s.nombre)} ${escapeHtml(s.apellido1)}</td>
+                        <td class="border p-2">
+                            <select class="estado-select" data-id="${s.id}" class="w-full border rounded p-1">
+                                <option value="presente" ${att.estado === 'presente' ? 'selected' : ''}>Presente</option>
+                                <option value="ausente" ${att.estado === 'ausente' ? 'selected' : ''}>Ausente</option>
+                                <option value="ausente_injustificado" ${att.estado === 'ausente_injustificado' ? 'selected' : ''}>Ausente injustificado</option>
+                                <option value="incapacidad" ${att.estado === 'incapacidad' ? 'selected' : ''}>Incapacidad</option>
+                            </select>
+                        </td>
+                        <td class="border p-2">
+                            <input type="text" class="observacion-input" data-id="${s.id}" value="${escapeHtml(att.observaciones || '')}" placeholder="Observaciones" class="w-full border rounded p-1">
+                        </td>
+                        <td class="border p-2 text-center">
+                            <button class="guardar-estudiante-asistencia text-green-600 hover:text-green-800" data-id="${s.id}"><i class="fas fa-save"></i> Guardar</button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+            
+            // Eventos para botones de guardar individuales
+            document.querySelectorAll('.guardar-estudiante-asistencia').forEach(btn => {
+                btn.addEventListener('click', async (e) => {
+                    const estudianteId = parseInt(btn.dataset.id);
+                    const row = btn.closest('tr');
+                    const estado = row.querySelector('.estado-select').value;
+                    const observaciones = row.querySelector('.observacion-input').value;
+                    await guardarAsistencia(estudianteId, estado, observaciones);
+                    alert('Asistencia guardada');
+                });
+            });
+        }
+        
+        async function guardarAsistencia(estudianteId, estado, observaciones) {
+            const attendance = {
+                id: Date.now() + estudianteId, // simple id
+                groupId: currentAttendanceGroupId,
+                estudianteId,
+                fecha: currentAttendanceDate,
+                estado,
+                observaciones,
+                updatedAt: new Date().toISOString()
+            };
+            // Verificar si ya existe para esa fecha y estudiante
+            const all = await getAll('attendance');
+            const existing = all.find(a => a.groupId === currentAttendanceGroupId && a.estudianteId === estudianteId && a.fecha === currentAttendanceDate);
+            if (existing) {
+                attendance.id = existing.id;
+            }
+            await put('attendance', attendance);
+        }
+        
+        // Guardar toda la asistencia del día
+        async function guardarTodaAsistencia() {
+            const rows = document.querySelectorAll('#tablaAsistenciaBody tr');
+            for (let row of rows) {
+                const estudianteId = parseInt(row.querySelector('.guardar-estudiante-asistencia').dataset.id);
+                const estado = row.querySelector('.estado-select').value;
+                const observaciones = row.querySelector('.observacion-input').value;
+                await guardarAsistencia(estudianteId, estado, observaciones);
+            }
+            alert('Toda la asistencia guardada');
+        }
+        
+        // Cambiar fecha
+        function cambiarFechaAsistencia() {
+            const nuevaFecha = document.getElementById('fechaAsistencia').value;
+            currentAttendanceDate = nuevaFecha;
+            abrirModalAsistencia(currentAttendanceGroupId);
+        }
+        
+        // Modal HTML (debe añadirse al cuerpo del documento)
+        const modalAsistenciaHTML = `
+        <div id="modalAsistencia" class="modal">
+            <div class="modal-content" style="max-width: 1000px;">
+                <span class="close" id="closeAsistenciaModal">&times;</span>
+                <h2 class="text-xl font-bold mb-4">Registro de Asistencia</h2>
+                <div class="flex justify-between items-center mb-4">
+                    <div>
+                        <label class="mr-2">Fecha:</label>
+                        <input type="date" id="fechaAsistencia" value="${new Date().toISOString().slice(0,10)}" class="border rounded p-1">
+                        <button id="btnCambiarFecha" class="bg-blue-500 text-white px-3 py-1 rounded ml-2">Cambiar fecha</button>
+                    </div>
+                    <button id="btnGuardarTodaAsistencia" class="bg-green-600 text-white px-4 py-2 rounded">Guardar toda la asistencia</button>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full border-collapse">
+                        <thead>
+                            <tr class="bg-gray-100">
+                                <th class="border p-2 text-left">Estudiante</th>
+                                <th class="border p-2 text-left">Estado</th>
+                                <th class="border p-2 text-left">Observaciones</th>
+                                <th class="border p-2 text-center">Acción</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tablaAsistenciaBody">
+                            <tr><td colspan="4" class="text-center p-4">Cargando...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        `;
+        
+        // Insertar el modal HTML en el body si no existe
+        if (!document.getElementById('modalAsistencia')) {
+            document.body.insertAdjacentHTML('beforeend', modalAsistenciaHTML);
+        }
+        
+        // Configurar eventos del modal
+        document.addEventListener('click', (e) => {
+            if (e.target.id === 'closeAsistenciaModal' || e.target.classList.contains('close') && e.target.closest('#modalAsistencia')) {
+                document.getElementById('modalAsistencia').style.display = 'none';
+            }
+        });
+        document.getElementById('btnCambiarFecha')?.addEventListener('click', cambiarFechaAsistencia);
+        document.getElementById('btnGuardarTodaAsistencia')?.addEventListener('click', guardarTodaAsistencia);
+        
+        // Asociar el botón "Asistencia" de la tarjeta a esta función
+        // Esta parte debe estar dentro de attachCardEvents() o donde se asignan los botones.
+        // Asegúrate de que en attachCardEvents() haya un event listener para el botón "asistencia" que llame a abrirModalAsistencia(id).
+        // Si no lo tienes, agrega esto en attachCardEvents:
+        /*
+        document.querySelectorAll('.group-action-btn[data-action="asistencia"]').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const id = parseInt(btn.dataset.id);
+                abrirModalAsistencia(id);
+            });
+        });
+        */
+        
+        // Si attachCardEvents ya está definido, debemos agregar la línea correspondiente.
+        // Para no duplicar, puedes agregar dentro de attachCardEvents (después de los otros event listeners):
+        /*
+        document.querySelectorAll('.group-action-btn[data-action="asistencia"]').forEach(btn => {
+            btn.removeEventListener('click', abrirModalAsistencia);
+            btn.addEventListener('click', (e) => {
+                const id = parseInt(btn.dataset.id);
+                abrirModalAsistencia(id);
+            });
+        });
+        */
+        
+        // Como no podemos modificar attachCardEvents directamente desde aquí, 
+        // sobreescribimos la función o la extendemos. Lo más limpio es redefinir attachCardEvents incluyendo este listener.
+        // Pero para no romper lo que ya funciona, vamos a agregar un listener global después de que se rendericen las tarjetas.
+        // Observa que ya hay una función attachCardEvents definida. Vamos a modificarla para que también maneje asistencia.
+        // Guardamos la referencia original y la extendemos.
+        const originalAttachCardEvents = window.attachCardEvents || function() {};
+        window.attachCardEvents = function() {
+            originalAttachCardEvents();
+            document.querySelectorAll('.group-action-btn[data-action="asistencia"]').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const id = parseInt(btn.dataset.id);
+                    abrirModalAsistencia(id);
+                });
+            });
+        };
+        // Ahora llamamos a la nueva función cada vez que se renderizan las tarjetas (ya se hace en renderTarjetas).
+        // Para asegurar, podemos llamarla manualmente después de renderizar, pero ya se llama en renderTarjetas.
+                
     </script>
 </body>
 </html>
