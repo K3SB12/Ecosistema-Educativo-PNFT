@@ -27,9 +27,6 @@
         .action-icons i { margin-left: 0.5rem; cursor: pointer; color: #94a3b8; transition: 0.2s; }
         .action-icons i:hover { color: #2E7D32; }
         .flex-between { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem; }
-        .filter-group { margin-bottom: 1rem; }
-        .filter-group label { font-weight: 500; display: block; margin-bottom: 0.3rem; }
-        .filter-group select, .filter-group input { width: 100%; padding: 0.5rem; border-radius: 8px; border: 1px solid #ccc; }
         .subcomponent-list { margin-top: 0.5rem; padding-left: 0.5rem; border-left: 2px solid #2E7D32; }
         .subcomponent-item { display: flex; justify-content: space-between; align-items: center; padding: 0.2rem 0; font-size: 0.85rem; }
         .porcentaje-preview { font-weight: 600; color: #2E7D32; }
@@ -127,7 +124,6 @@
     <script type="module">
         import { openDB, getAll, put, remove, getById } from './js/db.js';
 
-        let db;
         let currentSubjectId = null;
 
         const container = document.getElementById('asignaturasContainer');
@@ -156,6 +152,7 @@
             
             const componentes = await getAll('components');
             componentesCache = componentes;
+            console.log('Componentes cargados:', componentes.length);
             componenteSelect.innerHTML = '<option value="">-- Seleccione componente --</option>' + componentes.map(c => `<option value="${c.id}">${c.nombre}</option>`).join('');
         }
 
@@ -164,6 +161,8 @@
             const grupos = await getAll('groups');
             const instituciones = await getAll('centros_educativos');
             const componentes = await getAll('components');
+            
+            console.log('Asignaturas:', asignaturas.length, 'Componentes disponibles:', componentes.length);
             
             // Filtros
             const grupoFiltro = filtroGrupo.value;
@@ -202,6 +201,9 @@
                             `).join('')}
                         </div>
                     `;
+                } else if (a.componentId && !componente) {
+                    console.warn(`Componente ${a.componentId} no encontrado para asignatura ${a.id}`);
+                    subcomponentesHtml = `<div class="text-xs text-red-500 mt-1">⚠️ Componente no encontrado (ID: ${a.componentId})</div>`;
                 }
                 return `
                     <div class="bg-white rounded-xl shadow-md border border-gray-200 p-5 entity-card">
@@ -310,22 +312,15 @@
             e.preventDefault();
             const name = nombreInput.value.trim();
             const groupId = parseInt(grupoSelect.value);
-            const componentId = componenteSelect.value ? parseInt(componenteSelect.value) : null;
+            const componentId = parseInt(componenteSelect.value) || null;
             
-            console.log('=== GUARDANDO ASIGNATURA ===');
-            console.log('name:', name);
-            console.log('groupId:', groupId, typeof groupId);
-            console.log('componentId:', componentId, typeof componentId);
-            console.log('currentSubjectId:', currentSubjectId);
-            
-            if (!name || isNaN(groupId) || groupId <= 0) {
+            if (!name || !groupId) {
                 alert('Nombre y grupo son obligatorios');
                 return;
             }
             try {
                 const grupo = await getById('groups', groupId);
-                console.log('Grupo encontrado:', grupo);
-                if (!grupo) throw new Error('Grupo no encontrado con ID ' + groupId);
+                if (!grupo) throw new Error('Grupo no encontrado');
                 
                 const asignatura = {
                     id: currentSubjectId || Date.now(),
@@ -338,10 +333,8 @@
                     updatedAt: new Date().toISOString()
                 };
                 
-                console.log('Objeto a guardar:', asignatura);
                 await put('subjects', asignatura);
-                console.log('Guardado exitoso');
-                
+                console.log('Asignatura guardada:', asignatura);
                 await cargarAsignaturas();
                 modal.style.display = 'none';
                 alert('Asignatura guardada correctamente');
