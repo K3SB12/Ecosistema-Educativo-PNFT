@@ -1,8 +1,8 @@
-// js/db.js - Versión 6
+// js/db.js - Versión 7
 // Gestor centralizado de IndexedDB para PNFT Articulador
 
 const DB_NAME = 'PNFT_DB';
-const DB_VERSION = 6;  // Aumentamos la versión para forzar la actualización
+const DB_VERSION = 7;  // Aumentamos la versión para nuevas stores
 
 let db = null;
 
@@ -33,21 +33,70 @@ export async function openDB() {
                 'settings',
                 'students',
                 'attendance',
-                'grades'
+                'grades',
+                'subjects',                // NUEVA: asignaturas
+                'schedules',               // NUEVA: horario
+                'daily_work_indicators',   // NUEVA: indicadores de trabajo cotidiano
+                'evaluations',             // NUEVA: tareas, pruebas, proyectos, portafolio
+                'bitacoras',               // NUEVA: bitácora de clase
+                'conducta',                // NUEVA: reporte de conducta
+                'alertas'                  // NUEVA: alertas tempranas
             ];
             
             // Crear cada store si no existe
             for (let storeName of stores) {
                 if (!db.objectStoreNames.contains(storeName)) {
                     console.log(`Creando store: ${storeName}`);
+                    
                     if (storeName === 'evaluation_indicators') {
                         const store = db.createObjectStore(storeName, { keyPath: 'id' });
                         store.createIndex('groupId', 'groupId', { unique: false });
                         store.createIndex('periodId', 'periodId', { unique: false });
-                    } else if (storeName === 'periods_enhanced') {
+                    } 
+                    else if (storeName === 'periods_enhanced') {
                         const store = db.createObjectStore(storeName, { keyPath: 'id' });
                         store.createIndex('schoolYearId', 'schoolYearId', { unique: false });
-                    } else {
+                    }
+                    else if (storeName === 'subjects') {
+                        const store = db.createObjectStore(storeName, { keyPath: 'id' });
+                        store.createIndex('groupId', 'groupId', { unique: false });
+                        store.createIndex('componentId', 'componentId', { unique: false });
+                        store.createIndex('institutionId', 'institutionId', { unique: false });
+                    }
+                    else if (storeName === 'schedules') {
+                        const store = db.createObjectStore(storeName, { keyPath: 'id' });
+                        store.createIndex('groupId', 'groupId', { unique: false });
+                    }
+                    else if (storeName === 'daily_work_indicators') {
+                        const store = db.createObjectStore(storeName, { keyPath: 'id' });
+                        store.createIndex('groupId', 'groupId', { unique: false });
+                        store.createIndex('periodId', 'periodId', { unique: false });
+                    }
+                    else if (storeName === 'evaluations') {
+                        const store = db.createObjectStore(storeName, { keyPath: 'id' });
+                        store.createIndex('groupId', 'groupId', { unique: false });
+                        store.createIndex('periodId', 'periodId', { unique: false });
+                        store.createIndex('type', 'type', { unique: false });
+                    }
+                    else if (storeName === 'bitacoras') {
+                        const store = db.createObjectStore(storeName, { keyPath: 'id' });
+                        store.createIndex('groupId', 'groupId', { unique: false });
+                        store.createIndex('studentId', 'studentId', { unique: false });
+                        store.createIndex('date', 'date', { unique: false });
+                    }
+                    else if (storeName === 'conducta') {
+                        const store = db.createObjectStore(storeName, { keyPath: 'id' });
+                        store.createIndex('groupId', 'groupId', { unique: false });
+                        store.createIndex('studentId', 'studentId', { unique: false });
+                        store.createIndex('periodId', 'periodId', { unique: false });
+                    }
+                    else if (storeName === 'alertas') {
+                        const store = db.createObjectStore(storeName, { keyPath: 'id' });
+                        store.createIndex('groupId', 'groupId', { unique: false });
+                        store.createIndex('studentId', 'studentId', { unique: false });
+                        store.createIndex('status', 'status', { unique: false });
+                    }
+                    else {
                         db.createObjectStore(storeName, { keyPath: 'id' });
                     }
                 }
