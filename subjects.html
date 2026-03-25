@@ -311,26 +311,39 @@
             const name = nombreInput.value.trim();
             const groupId = parseInt(grupoSelect.value);
             const componentId = parseInt(componenteSelect.value) || null;
+            
+            console.log('Guardando asignatura:', { name, groupId, componentId, currentSubjectId });
+            
             if (!name || !groupId) {
                 alert('Nombre y grupo son obligatorios');
                 return;
             }
-            const grupo = await getById('groups', groupId);
-            const institucion = await getById('centros_educativos', grupo.centroId);
-            const asignatura = {
-                id: currentSubjectId || Date.now(),
-                name,
-                groupId,
-                year: grupo.anio,
-                institutionId: grupo.centroId,
-                componentId: componentId,
-                createdAt: new Date().toISOString(),
-                updatedAt: new Date().toISOString()
-            };
-            await put('subjects', asignatura);
-            cargarAsignaturas();
-            modal.style.display = 'none';
-            alert('Asignatura guardada');
+            try {
+                const grupo = await getById('groups', groupId);
+                if (!grupo) throw new Error('Grupo no encontrado');
+                
+                const asignatura = {
+                    id: currentSubjectId || Date.now(),
+                    name,
+                    groupId,
+                    year: grupo.anio,
+                    institutionId: grupo.centroId,
+                    componentId: componentId,
+                    createdAt: new Date().toISOString(),
+                    updatedAt: new Date().toISOString()
+                };
+                
+                console.log('Guardando objeto:', asignatura);
+                await put('subjects', asignatura);
+                console.log('Guardado exitoso');
+                
+                await cargarAsignaturas();
+                modal.style.display = 'none';
+                alert('Asignatura guardada correctamente');
+            } catch (error) {
+                console.error('Error al guardar:', error);
+                alert('Error al guardar: ' + error.message);
+            }
         });
         
         duplicarBtn.addEventListener('click', async () => {
