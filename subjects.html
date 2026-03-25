@@ -16,7 +16,7 @@
         .btn-secundario { background: #f0f0f0; color: #333; border: 1px solid #ccc; }
         .btn-secundario:hover { background: #e0e0e0; }
         .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); overflow: auto; }
-        .modal-content { background-color: white; margin: 5% auto; padding: 2rem; border-radius: 24px; width: 90%; max-width: 600px; box-shadow: 0 20px 40px rgba(0,0,0,0.2); position: relative; }
+        .modal-content { background-color: white; margin: 5% auto; padding: 2rem; border-radius: 24px; width: 90%; max-width: 700px; box-shadow: 0 20px 40px rgba(0,0,0,0.2); position: relative; }
         .close { color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer; }
         .close:hover { color: black; }
         .entity-card { border: 1px solid #e2e8f0; border-radius: 16px; padding: 1rem; margin-bottom: 1rem; background: #fafcff; transition: 0.2s; }
@@ -30,6 +30,10 @@
         .filter-group { margin-bottom: 1rem; }
         .filter-group label { font-weight: 500; display: block; margin-bottom: 0.3rem; }
         .filter-group select, .filter-group input { width: 100%; padding: 0.5rem; border-radius: 8px; border: 1px solid #ccc; }
+        .subcomponent-list { margin-top: 0.5rem; padding-left: 0.5rem; border-left: 2px solid #2E7D32; }
+        .subcomponent-item { display: flex; justify-content: space-between; align-items: center; padding: 0.2rem 0; font-size: 0.85rem; }
+        .porcentaje-preview { font-weight: 600; color: #2E7D32; }
+        .component-preview { background: #f1f5f9; border-radius: 12px; padding: 0.5rem; margin-top: 0.5rem; }
     </style>
 </head>
 <body class="font-sans antialiased">
@@ -49,6 +53,9 @@
                 <a href="students.html"><li class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10"><i class="fas fa-users w-5"></i> Estudiantes</li></a>
                 <a href="groups.html"><li class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10"><i class="fas fa-layer-group w-5"></i> Grupos</li></a>
                 <a href="subjects.html"><li class="flex items-center gap-3 px-4 py-3 rounded-xl bg-white text-green-800 font-semibold shadow-md"><i class="fas fa-book w-5"></i> Asignaturas</li></a>
+                <a href="schedules.html"><li class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10"><i class="fas fa-clock w-5"></i> Horario</li></a>
+                <a href="conducta.html"><li class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10"><i class="fas fa-clipboard-list w-5"></i> Conducta</li></a>
+                <a href="alertas.html"><li class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10"><i class="fas fa-exclamation-triangle w-5"></i> Alertas</li></a>
                 <a href="settings.html"><li class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10"><i class="fas fa-cog w-5"></i> Configuración</li></a>
             </ul>
         </aside>
@@ -102,7 +109,11 @@
                 <div class="mb-4">
                     <label class="block text-sm font-medium text-gray-700 mb-1">Componente de evaluación (porcentajes)</label>
                     <select id="componenteAsignatura" required class="w-full border rounded-lg p-2"></select>
-                    <p class="text-xs text-gray-500 mt-1">Define los porcentajes de evaluación (se pueden editar en Configuración > Componentes)</p>
+                    <div id="componentePreview" class="component-preview text-sm mt-2" style="display: none;">
+                        <i class="fas fa-chart-pie"></i> <strong>Porcentajes:</strong>
+                        <div id="subcomponentesPreview" class="subcomponent-list mt-1"></div>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-1">Los porcentajes se definen en Configuración > Componentes.</p>
                 </div>
                 <div class="flex justify-end gap-3">
                     <button type="submit" class="bg-green-800 text-white px-5 py-2 rounded-lg hover:bg-green-900">Guardar</button>
@@ -119,7 +130,6 @@
         let db;
         let currentSubjectId = null;
 
-        // Elementos
         const container = document.getElementById('asignaturasContainer');
         const filtroGrupo = document.getElementById('filtroGrupo');
         const filtroInstitucion = document.getElementById('filtroInstitucion');
@@ -135,12 +145,17 @@
         const nombreInput = document.getElementById('nombreAsignatura');
         const grupoSelect = document.getElementById('grupoAsignatura');
         const componenteSelect = document.getElementById('componenteAsignatura');
+        const componentePreview = document.getElementById('componentePreview');
+        const subcomponentesPreview = document.getElementById('subcomponentesPreview');
+
+        let componentesCache = [];
 
         async function cargarSelects() {
             const grupos = await getAll('groups');
             grupoSelect.innerHTML = '<option value="">-- Seleccione grupo --</option>' + grupos.map(g => `<option value="${g.id}">${g.seccion} (${g.nivel}) - ${g.anio}</option>`).join('');
             
             const componentes = await getAll('components');
+            componentesCache = componentes;
             componenteSelect.innerHTML = '<option value="">-- Seleccione componente --</option>' + componentes.map(c => `<option value="${c.id}">${c.nombre}</option>`).join('');
         }
 
@@ -174,6 +189,20 @@
                 const grupo = grupos.find(g => g.id === a.groupId);
                 const institucion = instituciones.find(i => i.id === a.institutionId);
                 const componente = componentes.find(c => c.id === a.componentId);
+                // Mostrar subcomponentes del componente si existe
+                let subcomponentesHtml = '';
+                if (componente && componente.subcomponentes && componente.subcomponentes.length) {
+                    subcomponentesHtml = `
+                        <div class="subcomponent-list mt-2">
+                            ${componente.subcomponentes.map(sub => `
+                                <div class="subcomponent-item">
+                                    <span>${escapeHtml(sub.nombre)}</span>
+                                    <span class="porcentaje-preview">${sub.porcentaje}%</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    `;
+                }
                 return `
                     <div class="bg-white rounded-xl shadow-md border border-gray-200 p-5 entity-card">
                         <div class="entity-header">
@@ -189,6 +218,7 @@
                             <div><i class="fas fa-school w-4 text-green-700"></i> ${institucion ? institucion.nombre : '—'}</div>
                             <div><i class="fas fa-calendar w-4 text-green-700"></i> ${a.year || '—'}</div>
                             <div><i class="fas fa-chart-line w-4 text-green-700"></i> ${componente ? componente.nombre : 'Sin componente'}</div>
+                            ${subcomponentesHtml}
                         </div>
                     </div>
                 `;
@@ -239,16 +269,39 @@
             filtroAnio.innerHTML = '<option value="todos">Todos los años</option>' + years.map(y => `<option value="${y.nombre}">${y.nombre}</option>`).join('');
         }
         
+        function mostrarPreviewComponente(componentId) {
+            if (!componentId) {
+                componentePreview.style.display = 'none';
+                return;
+            }
+            const componente = componentesCache.find(c => c.id == componentId);
+            if (componente && componente.subcomponentes && componente.subcomponentes.length) {
+                const subHtml = componente.subcomponentes.map(sub => `
+                    <div class="subcomponent-item">
+                        <span>${escapeHtml(sub.nombre)}</span>
+                        <span class="porcentaje-preview">${sub.porcentaje}%</span>
+                    </div>
+                `).join('');
+                subcomponentesPreview.innerHTML = subHtml;
+                componentePreview.style.display = 'block';
+            } else {
+                subcomponentesPreview.innerHTML = '<span class="text-gray-500">No hay subcomponentes definidos para este componente.</span>';
+                componentePreview.style.display = 'block';
+            }
+        }
+        
         function abrirModal(asignatura = null) {
             currentSubjectId = asignatura ? asignatura.id : null;
             modalTitulo.innerText = asignatura ? 'Editar Asignatura' : 'Agregar Asignatura';
             nombreInput.value = asignatura ? asignatura.name : '';
             if (asignatura) {
                 grupoSelect.value = asignatura.groupId;
-                componenteSelect.value = asignatura.componentId;
+                componenteSelect.value = asignatura.componentId || '';
+                mostrarPreviewComponente(asignatura.componentId);
             } else {
                 grupoSelect.value = '';
                 componenteSelect.value = '';
+                componentePreview.style.display = 'none';
             }
             modal.style.display = 'block';
         }
@@ -257,7 +310,7 @@
             e.preventDefault();
             const name = nombreInput.value.trim();
             const groupId = parseInt(grupoSelect.value);
-            const componentId = parseInt(componenteSelect.value);
+            const componentId = parseInt(componenteSelect.value) || null;
             if (!name || !groupId) {
                 alert('Nombre y grupo son obligatorios');
                 return;
@@ -270,7 +323,7 @@
                 groupId,
                 year: grupo.anio,
                 institutionId: grupo.centroId,
-                componentId: componentId || null,
+                componentId: componentId,
                 createdAt: new Date().toISOString(),
                 updatedAt: new Date().toISOString()
             };
@@ -303,10 +356,15 @@
             cargarAsignaturas();
         });
         
+        componenteSelect.addEventListener('change', (e) => {
+            mostrarPreviewComponente(e.target.value);
+        });
+        
         function closeModalHandler() {
             modal.style.display = 'none';
             currentSubjectId = null;
             form.reset();
+            componentePreview.style.display = 'none';
         }
         closeModal.onclick = closeModalHandler;
         cancelarBtn.onclick = closeModalHandler;
@@ -328,7 +386,6 @@
         await cargarFiltros();
         await cargarAsignaturas();
         
-        // Escuchar cambios en filtros
         filtroGrupo.addEventListener('change', cargarAsignaturas);
         filtroInstitucion.addEventListener('change', cargarAsignaturas);
         filtroAnio.addEventListener('change', cargarAsignaturas);
