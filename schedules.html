@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Horario - PNFT Articulador</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background-color: #f8fafc; }
+        .sidebar { background: linear-gradient(180deg, #1e5a20 0%, #2E7D32 100%); }
+        .nav-item.active { background: white; color: #2E7D32; }
+        .btn-accion { background: #2E7D32; transition: all 0.2s; }
+        .btn-accion:hover { background: #1e5a20; transform: translateY(-2px); }
+        .btn-secundario { background: #f0f0f0; color: #333; border: 1px solid #ccc; }
+        .btn-secundario:hover { background: #e0e0e0; }
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); overflow: auto; }
+        .modal-content { background-color: white; margin: 5% auto; padding: 2rem; border-radius: 24px; width: 90%; max-width: 800px; }
+        .close { color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer; }
+        .close:hover { color: black; }
+        .schedule-table { width: 100%; border-collapse: collapse; background: white; border-radius: 16px; overflow: hidden; }
+        .schedule-table th, .schedule-table td { border: 1px solid #e2e8f0; padding: 10px; text-align: left; vertical-align: top; }
+        .schedule-table th { background: #2E7D32; color: white; font-weight: 600; }
+        .schedule-table select { width: 100%; padding: 0.4rem; border-radius: 6px; border: 1px solid #ccc; background: white; }
+    </style>
+</head>
+<body class="font-sans antialiased">
+    <div class="flex min-h-screen">
+        <aside class="w-72 bg-gradient-to-b from-green-800 to-green-700 text-white flex-shrink-0 sticky top-0 h-screen overflow-y-auto">
+            <div class="text-center py-8 border-b border-white/20">
+                <div class="w-20 h-20 bg-white/10 rounded-full flex items-center justify-center text-3xl font-bold mx-auto mb-4 border-2 border-white/20">PNFT</div>
+                <h2 class="text-xl font-semibold">Articulador 2026</h2>
+                <p class="text-sm opacity-80">MEP Costa Rica</p>
+            </div>
+            <ul class="mt-6 space-y-1 px-4">
+                <a href="index.html"><li class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10"><i class="fas fa-chart-pie w-5"></i> Tablero</li></a>
+                <a href="planning.html"><li class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10"><i class="fas fa-clipboard-list w-5"></i> Planeamiento</li></a>
+                <a href="progresion.html"><li class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10"><i class="fas fa-road w-5"></i> Progresión</li></a>
+                <a href="evaluation.html"><li class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10"><i class="fas fa-check-circle w-5"></i> Evaluación</li></a>
+                <a href="logbook.html"><li class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10"><i class="fas fa-book-open w-5"></i> Bitácora</li></a>
+                <a href="students.html"><li class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10"><i class="fas fa-users w-5"></i> Estudiantes</li></a>
+                <a href="groups.html"><li class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10"><i class="fas fa-layer-group w-5"></i> Grupos</li></a>
+                <a href="subjects.html"><li class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10"><i class="fas fa-book w-5"></i> Asignaturas</li></a>
+                <a href="schedules.html"><li class="flex items-center gap-3 px-4 py-3 rounded-xl bg-white text-green-800 font-semibold shadow-md"><i class="fas fa-clock w-5"></i> Horario</li></a>
+                <a href="settings.html"><li class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10"><i class="fas fa-cog w-5"></i> Configuración</li></a>
+            </ul>
+        </aside>
+
+        <main class="flex-1 p-8 bg-gray-50">
+            <div class="flex justify-between items-center mb-8 bg-white p-4 rounded-2xl shadow-sm">
+                <h1 class="text-2xl font-bold text-gray-800">Horario</h1>
+                <div class="flex gap-4">
+                    <span class="bg-green-100 text-green-800 px-4 py-2 rounded-full text-sm font-medium flex items-center gap-2"><i class="fas fa-user-graduate"></i> Docente</span>
+                    <span class="bg-green-100 text-green-800 px-4 py-2 rounded-full text-sm font-medium flex items-center gap-2"><i class="fas fa-calendar-alt"></i> 2026</span>
+                </div>
+            </div>
+
+            <div class="bg-white p-6 border border-gray-200 rounded-xl shadow-sm mb-8">
+                <div class="flex flex-wrap gap-4 items-end">
+                    <div class="flex-1">
+                        <label class="block text-sm font-semibold text-gray-700 mb-1">Seleccionar grupo</label>
+                        <select id="grupoSelect" class="w-full border-gray-300 rounded-lg py-2"></select>
+                    </div>
+                    <div class="flex-1">
+                        <label class="block text-sm font-semibold text-gray-700 mb-1">Máximo de lecciones por día</label>
+                        <input type="number" id="maxLecciones" value="8" min="1" max="12" class="w-full border-gray-300 rounded-lg py-2">
+                    </div>
+                    <div>
+                        <button id="cargarHorarioBtn" class="bg-green-800 text-white px-5 py-2 rounded-lg shadow flex items-center gap-2"><i class="fas fa-sync-alt"></i> Cargar</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="horarioContainer" class="bg-white p-6 border border-gray-200 rounded-xl shadow-sm overflow-x-auto">
+                <p class="text-center text-gray-500">Seleccione un grupo y presione "Cargar".</p>
+            </div>
+
+            <div class="mt-6 flex justify-end gap-4">
+                <button id="guardarHorarioBtn" class="bg-green-800 text-white px-6 py-2 rounded-lg shadow hover:bg-green-900"><i class="fas fa-save"></i> Guardar Horario</button>
+                <button id="restablecerBtn" class="bg-red-500 text-white px-6 py-2 rounded-lg shadow hover:bg-red-600"><i class="fas fa-undo-alt"></i> Restablecer</button>
+            </div>
+        </main>
+    </div>
+
+    <script type="module">
+        import { openDB, getAll, put, remove, getById } from './js/db.js';
+
+        let db;
+        let currentGroupId = null;
+        let schedules = [];
+
+        const grupoSelect = document.getElementById('grupoSelect');
+        const maxLeccionesInput = document.getElementById('maxLecciones');
+        const cargarBtn = document.getElementById('cargarHorarioBtn');
+        const guardarBtn = document.getElementById('guardarHorarioBtn');
+        const restablecerBtn = document.getElementById('restablecerBtn');
+        const horarioContainer = document.getElementById('horarioContainer');
+
+        const dias = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes'];
+
+        async function cargarGrupos() {
+            const grupos = await getAll('groups');
+            grupoSelect.innerHTML = '<option value="">-- Seleccione grupo --</option>' + grupos.map(g => `<option value="${g.id}">${g.seccion} (${g.nivel}) - ${g.anio}</option>`).join('');
+        }
+
+        async function cargarAsignaturas(groupId) {
+            const subjects = await getAll('subjects');
+            return subjects.filter(s => s.groupId === groupId);
+        }
+
+        async function cargarSchedules(groupId) {
+            const all = await getAll('schedules');
+            return all.filter(s => s.groupId === groupId);
+        }
+
+        async function renderHorario() {
+            const groupId = parseInt(grupoSelect.value);
+            if (!groupId) {
+                horarioContainer.innerHTML = '<p class="text-center text-gray-500">Seleccione un grupo.</p>';
+                return;
+            }
+            currentGroupId = groupId;
+            const maxLecciones = parseInt(maxLeccionesInput.value) || 8;
+            const asignaturas = await cargarAsignaturas(groupId);
+            const existingSchedules = await cargarSchedules(groupId);
+            
+            // Crear mapa de horario existente
+            const scheduleMap = {};
+            existingSchedules.forEach(s => {
+                const key = `${s.dayOfWeek}_${s.lessonNumber}`;
+                scheduleMap[key] = s.subjectId;
+            });
+            
+            let html = '<table class="schedule-table"><thead><tr><th>Lección</th>';
+            dias.forEach(dia => html += `<th>${dia}</th>`);
+            html += '</tr></thead><tbody>';
+            
+            for (let lec = 1; lec <= maxLecciones; lec++) {
+                html += `<tr><td class="font-bold text-center">${lec}</td>`;
+                for (let d = 0; d < dias.length; d++) {
+                    const key = `${d}_${lec}`;
+                    const subjectId = scheduleMap[key] || '';
+                    html += `<td>
+                        <select data-day="${d}" data-lesson="${lec}" class="horario-select">
+                            <option value="">-- Sin asignatura --</option>
+                            ${asignaturas.map(a => `<option value="${a.id}" ${a.id == subjectId ? 'selected' : ''}>${escapeHtml(a.name)}</option>`).join('')}
+                        </select>
+                    </td>`;
+                }
+                html += '</tr>';
+            }
+            html += '</tbody></table>';
+            horarioContainer.innerHTML = html;
+            
+            // Guardar cambios automáticos cuando se cambia un select
+            document.querySelectorAll('.horario-select').forEach(select => {
+                select.addEventListener('change', async (e) => {
+                    const day = parseInt(select.dataset.day);
+                    const lesson = parseInt(select.dataset.lesson);
+                    const subjectId = select.value ? parseInt(select.value) : null;
+                    await guardarHorarioCelda(day, lesson, subjectId);
+                });
+            });
+        }
+        
+        async function guardarHorarioCelda(dayOfWeek, lessonNumber, subjectId) {
+            if (!currentGroupId) return;
+            const existing = (await getAll('schedules')).find(s => s.groupId === currentGroupId && s.dayOfWeek === dayOfWeek && s.lessonNumber === lessonNumber);
+            if (subjectId === null) {
+                if (existing) await remove('schedules', existing.id);
+            } else {
+                const schedule = existing || { id: Date.now() + dayOfWeek + lessonNumber, groupId: currentGroupId, dayOfWeek, lessonNumber, subjectId };
+                schedule.subjectId = subjectId;
+                await put('schedules', schedule);
+            }
+        }
+        
+        async function guardarTodoHorario() {
+            // No es necesario, porque cada cambio ya se guarda. Pero por si se quiere un guardado masivo, recorremos todos los selects.
+            const selects = document.querySelectorAll('.horario-select');
+            for (let select of selects) {
+                const day = parseInt(select.dataset.day);
+                const lesson = parseInt(select.dataset.lesson);
+                const subjectId = select.value ? parseInt(select.value) : null;
+                await guardarHorarioCelda(day, lesson, subjectId);
+            }
+            alert('Horario guardado correctamente.');
+        }
+        
+        async function restablecerHorario() {
+            if (!currentGroupId) return;
+            if (confirm('¿Restablecer todo el horario? Se eliminarán todas las asignaturas asignadas.')) {
+                const existing = await getAll('schedules');
+                const toDelete = existing.filter(s => s.groupId === currentGroupId);
+                for (let s of toDelete) {
+                    await remove('schedules', s.id);
+                }
+                await renderHorario();
+                alert('Horario restablecido.');
+            }
+        }
+        
+        cargarBtn.addEventListener('click', renderHorario);
+        guardarBtn.addEventListener('click', guardarTodoHorario);
+        restablecerBtn.addEventListener('click', restablecerHorario);
+        
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/[&<>]/g, function(m) {
+                if (m === '&') return '&amp;';
+                if (m === '<') return '&lt;';
+                if (m === '>') return '&gt;';
+                return m;
+            });
+        }
+        
+        await openDB();
+        await cargarGrupos();
+    </script>
+</body>
+</html>
