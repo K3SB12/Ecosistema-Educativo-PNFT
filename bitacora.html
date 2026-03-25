@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bitácora - PNFT Articulador</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background-color: #f8fafc; }
+        .sidebar { background: linear-gradient(180deg, #1e5a20 0%, #2E7D32 100%); }
+        .nav-item.active { background: white; color: #2E7D32; box-shadow: 0 10px 20px -5px rgba(0,0,0,0.2); }
+        .nav-item.active i { color: #2E7D32; }
+        .btn-accion { background: #2E7D32; transition: all 0.2s; }
+        .btn-accion:hover { background: #1e5a20; transform: translateY(-2px); }
+        .btn-secundario { background: #f0f0f0; color: #333; border: 1px solid #ccc; }
+        .btn-secundario:hover { background: #e0e0e0; }
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); overflow: auto; }
+        .modal-content { background-color: white; margin: 5% auto; padding: 2rem; border-radius: 24px; width: 90%; max-width: 600px; box-shadow: 0 20px 40px rgba(0,0,0,0.2); position: relative; }
+        .close { color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer; }
+        .close:hover { color: black; }
+        .bitacora-card { border: 1px solid #e2e8f0; border-radius: 16px; padding: 1rem; margin-bottom: 1rem; background: #fafcff; }
+        .flex-between { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem; }
+        .filter-group { margin-bottom: 1rem; }
+        .filter-group label { font-weight: 500; display: block; margin-bottom: 0.3rem; }
+        .filter-group select, .filter-group input { width: 100%; padding: 0.5rem; border-radius: 8px; border: 1px solid #ccc; }
+    </style>
+</head>
+<body class="font-sans antialiased">
+    <div class="flex min-h-screen">
+        <aside class="w-72 bg-gradient-to-b from-green-800 to-green-700 text-white flex-shrink-0 sticky top-0 h-screen overflow-y-auto">
+            <div class="text-center py-8 border-b border-white/20">
+                <div class="w-20 h-20 bg-white/10 rounded-full flex items-center justify-center text-3xl font-bold mx-auto mb-4 border-2 border-white/20">PNFT</div>
+                <h2 class="text-xl font-semibold">Articulador 2026</h2>
+                <p class="text-sm opacity-80">MEP Costa Rica</p>
+            </div>
+            <ul class="mt-6 space-y-1 px-4">
+                <a href="index.html"><li class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10"><i class="fas fa-chart-pie w-5"></i> Tablero</li></a>
+                <a href="planning.html"><li class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10"><i class="fas fa-clipboard-list w-5"></i> Planeamiento</li></a>
+                <a href="progresion.html"><li class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10"><i class="fas fa-road w-5"></i> Progresión</li></a>
+                <a href="evaluation.html"><li class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10"><i class="fas fa-check-circle w-5"></i> Evaluación</li></a>
+                <a href="logbook.html"><li class="flex items-center gap-3 px-4 py-3 rounded-xl bg-white text-green-800 font-semibold shadow-md"><i class="fas fa-book-open w-5"></i> Bitácora</li></a>
+                <a href="students.html"><li class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10"><i class="fas fa-users w-5"></i> Estudiantes</li></a>
+                <a href="groups.html"><li class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10"><i class="fas fa-layer-group w-5"></i> Grupos</li></a>
+                <a href="subjects.html"><li class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10"><i class="fas fa-book w-5"></i> Asignaturas</li></a>
+                <a href="schedules.html"><li class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10"><i class="fas fa-clock w-5"></i> Horario</li></a>
+                <a href="settings.html"><li class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10"><i class="fas fa-cog w-5"></i> Configuración</li></a>
+            </ul>
+        </aside>
+
+        <main class="flex-1 p-8 bg-gray-50">
+            <div class="flex justify-between items-center mb-8 bg-white p-4 rounded-2xl shadow-sm">
+                <h1 class="text-2xl font-bold text-gray-800">Bitácora</h1>
+                <div class="flex gap-4">
+                    <span class="bg-green-100 text-green-800 px-4 py-2 rounded-full text-sm font-medium flex items-center gap-2"><i class="fas fa-user-graduate"></i> Docente</span>
+                    <span class="bg-green-100 text-green-800 px-4 py-2 rounded-full text-sm font-medium flex items-center gap-2"><i class="fas fa-calendar-alt"></i> 2026</span>
+                </div>
+            </div>
+
+            <div class="bg-white p-6 border border-gray-200 rounded-xl shadow-sm mb-8">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div><label class="block text-sm font-semibold text-gray-700 mb-1"> Grupo </label><select id="grupoSelect" class="w-full border-gray-300 rounded-lg py-2"></select></div>
+                    <div><label class="block text-sm font-semibold text-gray-700 mb-1"> Estudiante </label><select id="estudianteSelect" class="w-full border-gray-300 rounded-lg py-2"><option value="">Todos</option></select></div>
+                    <div><label class="block text-sm font-semibold text-gray-700 mb-1"> Fecha </label><input type="date" id="fechaFilter" class="w-full border-gray-300 rounded-lg py-2"></div>
+                </div>
+                <div class="mt-4 flex justify-end gap-2">
+                    <button id="filtrarBtn" class="bg-green-800 text-white px-4 py-2 rounded-lg"><i class="fas fa-search"></i> Filtrar</button>
+                    <button id="agregarBtn" class="bg-blue-600 text-white px-4 py-2 rounded-lg"><i class="fas fa-plus"></i> Nueva anotación</button>
+                </div>
+            </div>
+
+            <div id="bitacorasContainer" class="space-y-4"></div>
+        </main>
+    </div>
+
+    <!-- Modal para agregar/editar bitácora -->
+    <div id="modalBitacora" class="modal">
+        <div class="modal-content">
+            <span class="close" id="closeModalBit">&times;</span>
+            <h2 id="modalBitTitulo" class="text-xl font-bold mb-4">Agregar anotación</h2>
+            <form id="formBitacora">
+                <div class="mb-4"><label class="block text-sm font-medium text-gray-700 mb-1">Estudiante *</label><select id="bitEstudiante" required class="w-full border rounded-lg p-2"></select></div>
+                <div class="mb-4"><label class="block text-sm font-medium text-gray-700 mb-1">Fecha *</label><input type="date" id="bitFecha" required class="w-full border rounded-lg p-2"></div>
+                <div class="mb-4"><label class="block text-sm font-medium text-gray-700 mb-1">Anotación *</label><textarea id="bitContenido" rows="4" required class="w-full border rounded-lg p-2"></textarea></div>
+                <div class="flex justify-end gap-3"><button type="submit" class="bg-green-800 text-white px-5 py-2 rounded-lg hover:bg-green-900">Guardar</button><button type="button" id="cancelarBitBtn" class="bg-gray-200 text-gray-800 px-5 py-2 rounded-lg hover:bg-gray-300">Cancelar</button></div>
+            </form>
+        </div>
+    </div>
+
+    <script type="module">
+        import { openDB, getAll, put, remove, getById } from './js/db.js';
+
+        let currentGroupId = null;
+        let bitacoras = [];
+        let estudiantes = [];
+
+        const grupoSelect = document.getElementById('grupoSelect');
+        const estudianteSelect = document.getElementById('estudianteSelect');
+        const fechaFilter = document.getElementById('fechaFilter');
+        const filtrarBtn = document.getElementById('filtrarBtn');
+        const agregarBtn = document.getElementById('agregarBtn');
+        const container = document.getElementById('bitacorasContainer');
+        const modal = document.getElementById('modalBitacora');
+        const closeModal = document.getElementById('closeModalBit');
+        const cancelarBtn = document.getElementById('cancelarBitBtn');
+        const form = document.getElementById('formBitacora');
+        const bitEstudiante = document.getElementById('bitEstudiante');
+        const bitFecha = document.getElementById('bitFecha');
+        const bitContenido = document.getElementById('bitContenido');
+        let currentBitId = null;
+
+        async function cargarGrupos() {
+            const grupos = await getAll('groups');
+            grupoSelect.innerHTML = '<option value="">-- Seleccione grupo --</option>' + grupos.map(g => `<option value="${g.id}">${g.seccion} (${g.nivel}) - ${g.anio}</option>`).join('');
+        }
+
+        async function cargarEstudiantes(groupId) {
+            if (!groupId) return;
+            const all = await getAll('students');
+            estudiantes = all.filter(s => s.groupId === groupId);
+            estudianteSelect.innerHTML = '<option value="">Todos</option>' + estudiantes.map(e => `<option value="${e.id}">${e.nombre} ${e.apellido1}</option>`).join('');
+            bitEstudiante.innerHTML = '<option value="">-- Seleccione estudiante --</option>' + estudiantes.map(e => `<option value="${e.id}">${e.nombre} ${e.apellido1}</option>`).join('');
+        }
+
+        async function cargarBitacoras() {
+            if (!currentGroupId) return;
+            const all = await getAll('bitacoras');
+            bitacoras = all.filter(b => b.groupId === currentGroupId);
+            filtrar();
+        }
+
+        function filtrar() {
+            const estudianteId = estudianteSelect.value;
+            const fecha = fechaFilter.value;
+            let filtered = [...bitacoras];
+            if (estudianteId) filtered = filtered.filter(b => b.studentId == estudianteId);
+            if (fecha) filtered = filtered.filter(b => b.date === fecha);
+            renderBitacoras(filtered);
+        }
+
+        function renderBitacoras(lista) {
+            if (lista.length === 0) {
+                container.innerHTML = '<p class="text-gray-500 text-center">No hay anotaciones para los filtros seleccionados.</p>';
+                return;
+            }
+            container.innerHTML = lista.map(b => {
+                const student = estudiantes.find(s => s.id === b.studentId);
+                return `
+                    <div class="bitacora-card">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <span class="font-semibold">${escapeHtml(student ? student.nombre + ' ' + student.apellido1 : '—')}</span>
+                                <span class="text-sm text-gray-500 ml-2">${b.date}</span>
+                            </div>
+                            <div>
+                                <button class="edit-bit text-blue-600 mr-2" data-id="${b.id}"><i class="fas fa-edit"></i></button>
+                                <button class="delete-bit text-red-600" data-id="${b.id}"><i class="fas fa-trash-alt"></i></button>
+                            </div>
+                        </div>
+                        <div class="mt-2 text-gray-700">${escapeHtml(b.content)}</div>
+                    </div>
+                `;
+            }).join('');
+            attachBitActions();
+        }
+
+        function attachBitActions() {
+            document.querySelectorAll('.edit-bit').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const id = parseInt(btn.dataset.id);
+                    const bit = bitacoras.find(b => b.id === id);
+                    if (bit) abrirModal(bit);
+                });
+            });
+            document.querySelectorAll('.delete-bit').forEach(btn => {
+                btn.addEventListener('click', async () => {
+                    const id = parseInt(btn.dataset.id);
+                    if (confirm('¿Eliminar esta anotación?')) {
+                        await remove('bitacoras', id);
+                        await cargarBitacoras();
+                    }
+                });
+            });
+        }
+
+        function abrirModal(bit = null) {
+            currentBitId = bit ? bit.id : null;
+            document.getElementById('modalBitTitulo').innerText = bit ? 'Editar anotación' : 'Agregar anotación';
+            if (bit) {
+                bitEstudiante.value = bit.studentId;
+                bitFecha.value = bit.date;
+                bitContenido.value = bit.content;
+            } else {
+                bitEstudiante.value = '';
+                bitFecha.value = new Date().toISOString().slice(0,10);
+                bitContenido.value = '';
+            }
+            modal.style.display = 'block';
+        }
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const studentId = parseInt(bitEstudiante.value);
+            const date = bitFecha.value;
+            const content = bitContenido.value.trim();
+            if (!studentId || !date || !content) {
+                alert('Todos los campos son obligatorios');
+                return;
+            }
+            const bitacora = {
+                id: currentBitId || Date.now(),
+                groupId: currentGroupId,
+                studentId,
+                date,
+                content,
+                createdAt: new Date().toISOString()
+            };
+            await put('bitacoras', bitacora);
+            await cargarBitacoras();
+            modal.style.display = 'none';
+            alert('Anotación guardada');
+        });
+
+        function closeModalBit() { modal.style.display = 'none'; currentBitId = null; form.reset(); }
+        closeModal.onclick = closeModalBit;
+        cancelarBtn.onclick = closeModalBit;
+
+        grupoSelect.addEventListener('change', async () => {
+            currentGroupId = parseInt(grupoSelect.value);
+            if (currentGroupId) {
+                await cargarEstudiantes(currentGroupId);
+                await cargarBitacoras();
+            } else {
+                container.innerHTML = '<p class="text-gray-500">Seleccione un grupo.</p>';
+                estudianteSelect.innerHTML = '<option value="">Todos</option>';
+            }
+        });
+
+        filtrarBtn.addEventListener('click', filtrar);
+        agregarBtn.addEventListener('click', () => {
+            if (!currentGroupId) { alert('Primero seleccione un grupo'); return; }
+            abrirModal();
+        });
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/[&<>]/g, function(m) {
+                if (m === '&') return '&amp;';
+                if (m === '<') return '&lt;';
+                if (m === '>') return '&gt;';
+                return m;
+            });
+        }
+
+        await openDB();
+        await cargarGrupos();
+        window.onclick = (e) => { if (e.target === modal) closeModalBit(); };
+    </script>
+</body>
+</html>
