@@ -280,7 +280,6 @@
                     if (asignatura) {
                         await recargarComponentes();
                         currentSubjectId = asignatura.id;
-                        // Abrir el modal en modo edición, pero con el componente actual inválido
                         modalTitulo.innerText = 'Reparar Asignatura - Seleccione componente';
                         nombreInput.value = asignatura.name;
                         grupoSelect.value = asignatura.groupId;
@@ -346,22 +345,25 @@
             const groupId = parseInt(grupoSelect.value);
             const componentId = parseInt(componenteSelect.value) || null;
             
+            console.log('Intentando guardar asignatura:', { name, groupId, componentId });
+            
             if (!name || !groupId) {
                 alert('Nombre y grupo son obligatorios');
                 return;
             }
             
-            // Verificar que el componente seleccionado realmente existe
-            if (componentId) {
-                const componentes = await getAll('components');
-                const exists = componentes.some(c => c.id === componentId);
-                if (!exists) {
-                    alert('El componente seleccionado no existe. Por favor, recargue la página o seleccione otro componente.');
-                    return;
-                }
-            }
-            
             try {
+                // Verificar que el componente seleccionado realmente existe
+                if (componentId) {
+                    const componente = await getById('components', componentId);
+                    if (!componente) {
+                        console.error('Componente no encontrado en BD:', componentId);
+                        alert('El componente seleccionado no existe. Por favor, recargue la página o seleccione otro componente.');
+                        return;
+                    }
+                    console.log('Componente válido:', componente.nombre);
+                }
+                
                 const grupo = await getById('groups', groupId);
                 if (!grupo) throw new Error('Grupo no encontrado');
                 
@@ -376,6 +378,7 @@
                     updatedAt: new Date().toISOString()
                 };
                 
+                console.log('Guardando asignatura:', asignatura);
                 await put('subjects', asignatura);
                 await cargarAsignaturas();
                 modal.style.display = 'none';
