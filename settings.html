@@ -7,7 +7,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="css/style.css">
     <style>
-        /* Estilos específicos para settings */
         .settings-tabs {
             display: flex;
             gap: 0.5rem;
@@ -225,22 +224,10 @@
         <div class="modal-content">
             <span class="close" id="closeCentroModal">&times;</span>
             <h2 id="centroModalTitle">Nuevo centro educativo</h2>
-            <div class="form-group">
-                <label>Nombre completo *</label>
-                <input type="text" id="centroNombre" placeholder="Escuela Tranquilino Sáenz Rojas">
-            </div>
-            <div class="form-group">
-                <label>Código (identificador)</label>
-                <input type="text" id="centroCodigo" placeholder="Ej: CE1">
-            </div>
-            <div class="form-group">
-                <label>Activo</label>
-                <input type="checkbox" id="centroActivo" checked>
-            </div>
-            <div style="text-align: right;">
-                <button id="saveCentroBtn" class="btn-accion">Guardar</button>
-                <button id="cancelCentroBtn" class="btn-secundario">Cancelar</button>
-            </div>
+            <div class="form-group"><label>Nombre completo *</label><input type="text" id="centroNombre" placeholder="Escuela Tranquilino Sáenz Rojas"></div>
+            <div class="form-group"><label>Código (identificador)</label><input type="text" id="centroCodigo" placeholder="Ej: CE1"></div>
+            <div class="form-group"><label>Activo</label><input type="checkbox" id="centroActivo" checked></div>
+            <div style="text-align: right;"><button id="saveCentroBtn" class="btn-accion">Guardar</button><button id="cancelCentroBtn" class="btn-secundario">Cancelar</button></div>
         </div>
     </div>
 
@@ -248,18 +235,9 @@
         <div class="modal-content">
             <span class="close" id="closeYearModal">&times;</span>
             <h2 id="yearModalTitle">Nuevo año lectivo</h2>
-            <div class="form-group">
-                <label>Nombre (ej: 2026)</label>
-                <input type="text" id="yearName" placeholder="2026">
-            </div>
-            <div class="form-group">
-                <label>Activo</label>
-                <input type="checkbox" id="yearActive" checked>
-            </div>
-            <div style="text-align: right;">
-                <button id="saveYearBtn" class="btn-accion">Guardar</button>
-                <button id="cancelYearBtn" class="btn-secundario">Cancelar</button>
-            </div>
+            <div class="form-group"><label>Nombre (ej: 2026)</label><input type="text" id="yearName" placeholder="2026"></div>
+            <div class="form-group"><label>Activo</label><input type="checkbox" id="yearActive" checked></div>
+            <div style="text-align: right;"><button id="saveYearBtn" class="btn-accion">Guardar</button><button id="cancelYearBtn" class="btn-secundario">Cancelar</button></div>
         </div>
     </div>
 
@@ -267,39 +245,13 @@
         <div class="modal-content">
             <span class="close" id="closePeriodModal">&times;</span>
             <h2 id="periodModalTitle">Nuevo período</h2>
-            <div class="form-group">
-                <label>Año lectivo</label>
-                <select id="periodYearId"></select>
-            </div>
-            <div class="form-group">
-                <label>Nombre (ej: I Semestre)</label>
-                <input type="text" id="periodName" placeholder="I Semestre">
-            </div>
-            <div class="form-group">
-                <label>Tipo</label>
-                <select id="periodType">
-                    <option value="bimestre">Bimestre</option>
-                    <option value="trimestre">Trimestre</option>
-                    <option value="cuatrimestre">Cuatrimestre</option>
-                    <option value="semestre">Semestre</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label>Fecha inicio</label>
-                <input type="date" id="periodStart">
-            </div>
-            <div class="form-group">
-                <label>Fecha fin</label>
-                <input type="date" id="periodEnd">
-            </div>
-            <div class="form-group">
-                <label>Activo</label>
-                <input type="checkbox" id="periodActive" checked>
-            </div>
-            <div style="text-align: right;">
-                <button id="savePeriodBtn" class="btn-accion">Guardar</button>
-                <button id="cancelPeriodBtn" class="btn-secundario">Cancelar</button>
-            </div>
+            <div class="form-group"><label>Año lectivo</label><select id="periodYearId"></select></div>
+            <div class="form-group"><label>Nombre (ej: I Semestre)</label><input type="text" id="periodName" placeholder="I Semestre"></div>
+            <div class="form-group"><label>Tipo</label><select id="periodType"><option value="bimestre">Bimestre</option><option value="trimestre">Trimestre</option><option value="cuatrimestre">Cuatrimestre</option><option value="semestre">Semestre</option></select></div>
+            <div class="form-group"><label>Fecha inicio</label><input type="date" id="periodStart"></div>
+            <div class="form-group"><label>Fecha fin</label><input type="date" id="periodEnd"></div>
+            <div class="form-group"><label>Activo</label><input type="checkbox" id="periodActive" checked></div>
+            <div style="text-align: right;"><button id="savePeriodBtn" class="btn-accion">Guardar</button><button id="cancelPeriodBtn" class="btn-secundario">Cancelar</button></div>
         </div>
     </div>
 
@@ -307,20 +259,13 @@
         <div class="modal-content" style="max-width: 700px;">
             <span class="close" id="closeComponentModal">&times;</span>
             <h2 id="componentModalTitle">Nuevo componente</h2>
-            <div class="form-group">
-                <label>Nombre (ej: I Ciclo, Diversificada)</label>
-                <input type="text" id="componentName" placeholder="Ej: I Ciclo">
-            </div>
-            <div class="form-group">
-                <label>Subcomponentes (suma total 100%)</label>
+            <div class="form-group"><label>Nombre (ej: I Ciclo, Diversificada)</label><input type="text" id="componentName" placeholder="Ej: I Ciclo"></div>
+            <div class="form-group"><label>Subcomponentes (suma total 100%)</label>
                 <div id="subcomponentsContainer"></div>
                 <button type="button" id="addSubcomponentBtn" class="btn-secundario btn-sm"><i class="fas fa-plus"></i> Agregar subcomponente</button>
                 <div id="totalPercentDisplay" class="total-percent">Total: 0%</div>
             </div>
-            <div style="text-align: right;">
-                <button id="saveComponentBtn" class="btn-accion">Guardar</button>
-                <button id="cancelComponentBtn" class="btn-secundario">Cancelar</button>
-            </div>
+            <div style="text-align: right;"><button id="saveComponentBtn" class="btn-accion">Guardar</button><button id="cancelComponentBtn" class="btn-secundario">Cancelar</button></div>
         </div>
     </div>
 
@@ -337,10 +282,7 @@
                 <option value="Educación Adultos">Educación Adultos (CINDEA/IPEC) – Trabajo cotidiano 50%, Tareas 10%, Proyecto 30%, Asistencia 10%</option>
                 <option value="Educación Especial">Educación Especial (III Ciclo/Diversificado) – Trabajo cotidiano 60%, Tareas 10%, Proyecto 20%, Asistencia 10%</option>
             </select>
-            <div style="text-align: right;">
-                <button id="confirmPreloadBtn" class="btn-accion">Cargar</button>
-                <button id="cancelPreloadBtn" class="btn-secundario">Cancelar</button>
-            </div>
+            <div style="text-align: right;"><button id="confirmPreloadBtn" class="btn-accion">Cargar</button><button id="cancelPreloadBtn" class="btn-secundario">Cancelar</button></div>
         </div>
     </div>
 
@@ -354,7 +296,6 @@
         let currentComponentId = null;
         let subcomponents = [];
 
-        // Esperar a que la DB esté lista
         await openDB();
         await initDefaultData();
 
@@ -362,9 +303,8 @@
         async function renderCentros() {
             const centros = await getAll('centros_educativos');
             const container = document.getElementById('centrosList');
-            if (!centros.length) {
-                container.innerHTML = '<p class="empty-table">No hay centros educativos. Cree uno nuevo.</p>';
-            } else {
+            if (!centros.length) container.innerHTML = '<p class="empty-table">No hay centros educativos. Cree uno nuevo.</p>';
+            else {
                 container.innerHTML = centros.map(c => `
                     <div class="entity-card">
                         <div class="entity-header">
@@ -375,9 +315,7 @@
                                 <i class="fas fa-trash-alt" data-id="${c.id}" data-action="deleteCentro"></i>
                             </div>
                         </div>
-                        <div class="entity-details">
-                            <i class="fas fa-id-card"></i> ${c.codigo || 'Sin código'}
-                        </div>
+                        <div class="entity-details"><i class="fas fa-id-card"></i> ${c.codigo || 'Sin código'}</div>
                     </div>
                 `).join('');
                 attachCentroActions();
@@ -395,7 +333,7 @@
             document.querySelectorAll('[data-action="deleteCentro"]').forEach(btn => {
                 btn.addEventListener('click', async (e) => {
                     const id = parseInt(e.currentTarget.dataset.id);
-                    if (confirm('¿Eliminar este centro educativo? Se perderá la asociación a grupos.')) {
+                    if (confirm('¿Eliminar este centro educativo?')) {
                         await remove('centros_educativos', id);
                         renderCentros();
                     }
@@ -414,12 +352,7 @@
         document.getElementById('saveCentroBtn').onclick = async () => {
             const nombre = document.getElementById('centroNombre').value.trim();
             if (!nombre) { alert('El nombre es obligatorio'); return; }
-            const centro = {
-                id: currentCentroId || Date.now(),
-                nombre,
-                codigo: document.getElementById('centroCodigo').value.trim(),
-                activo: document.getElementById('centroActivo').checked
-            };
+            const centro = { id: currentCentroId || Date.now(), nombre, codigo: document.getElementById('centroCodigo').value.trim(), activo: document.getElementById('centroActivo').checked };
             await put('centros_educativos', centro);
             renderCentros();
             closeAllModals();
@@ -431,9 +364,8 @@
         async function renderYears() {
             const years = await getAll('school_years');
             const container = document.getElementById('yearsList');
-            if (!years.length) {
-                container.innerHTML = '<p class="empty-table">No hay años lectivos. Cree uno nuevo.</p>';
-            } else {
+            if (!years.length) container.innerHTML = '<p class="empty-table">No hay años lectivos. Cree uno nuevo.</p>';
+            else {
                 container.innerHTML = years.map(y => `
                     <div class="entity-card">
                         <div class="entity-header">
@@ -462,10 +394,8 @@
             document.querySelectorAll('[data-action="deleteYear"]').forEach(btn => {
                 btn.addEventListener('click', async (e) => {
                     const id = parseInt(e.currentTarget.dataset.id);
-                    if (confirm('¿Eliminar este año lectivo? También se eliminarán todos sus períodos.')) {
+                    if (confirm('¿Eliminar este año lectivo?')) {
                         await remove('school_years', id);
-                        const periods = await getPeriodsByYear(id);
-                        for (let p of periods) await remove('periods_enhanced', p.id);
                         renderYears();
                         renderPeriods();
                     }
@@ -483,11 +413,7 @@
         document.getElementById('saveYearBtn').onclick = async () => {
             const nombre = document.getElementById('yearName').value.trim();
             if (!nombre) { alert('El nombre es obligatorio'); return; }
-            const year = {
-                id: currentYearId || Date.now(),
-                nombre,
-                activo: document.getElementById('yearActive').checked
-            };
+            const year = { id: currentYearId || Date.now(), nombre, activo: document.getElementById('yearActive').checked };
             await put('school_years', year);
             renderYears();
             closeAllModals();
@@ -498,16 +424,10 @@
         // ----- PERÍODOS -----
         async function renderPeriods() {
             const yearFilter = document.getElementById('yearFilterPeriods').value;
-            let periods;
-            if (yearFilter === 'todos') {
-                periods = await getAll('periods_enhanced');
-            } else {
-                periods = await getPeriodsByYear(parseInt(yearFilter));
-            }
+            let periods = yearFilter === 'todos' ? await getAll('periods_enhanced') : await getPeriodsByYear(parseInt(yearFilter));
             const container = document.getElementById('periodsList');
-            if (!periods.length) {
-                container.innerHTML = '<p class="empty-table">No hay períodos para este año. Cree uno nuevo.</p>';
-            } else {
+            if (!periods.length) container.innerHTML = '<p class="empty-table">No hay períodos para este año. Cree uno nuevo.</p>';
+            else {
                 container.innerHTML = periods.map(p => `
                     <div class="entity-card">
                         <div class="entity-header">
@@ -518,9 +438,7 @@
                                 <i class="fas fa-trash-alt" data-id="${p.id}" data-action="deletePeriod"></i>
                             </div>
                         </div>
-                        <div class="entity-details">
-                            <i class="fas fa-calendar-alt"></i> ${p.fechaInicio || 'sin fecha'} - ${p.fechaFin || 'sin fecha'}
-                        </div>
+                        <div class="entity-details"><i class="fas fa-calendar-alt"></i> ${p.fechaInicio || 'sin fecha'} - ${p.fechaFin || 'sin fecha'}</div>
                     </div>
                 `).join('');
                 attachPeriodActions();
@@ -553,7 +471,6 @@
             document.getElementById('periodStart').value = period ? (period.fechaInicio || '') : '';
             document.getElementById('periodEnd').value = period ? (period.fechaFin || '') : '';
             document.getElementById('periodActive').checked = period ? period.activo : true;
-            // Llenar select de años
             getAll('school_years').then(years => {
                 const select = document.getElementById('periodYearId');
                 select.innerHTML = years.map(y => `<option value="${y.id}" ${period && period.schoolYearId === y.id ? 'selected' : ''}>${escapeHtml(y.nombre)}</option>`).join('');
@@ -600,6 +517,7 @@
             else display.className = 'total-percent invalid';
             return total;
         }
+
         function renderSubcomponentsUI() {
             const container = document.getElementById('subcomponentsContainer');
             if (subcomponents.length === 0) {
@@ -636,10 +554,12 @@
             }
             updateTotalPercent();
         }
+
         document.getElementById('addSubcomponentBtn').onclick = () => {
             subcomponents.push({ nombre: 'Nuevo subcomponente', porcentaje: 0 });
             renderSubcomponentsUI();
         };
+
         async function renderComponents() {
             const components = await getAll('components');
             const container = document.getElementById('componentsList');
@@ -663,14 +583,13 @@
                                 </div>
                             `).join('')}
                         </div>
-                        <div class="total-percent">
-                            Total: ${comp.subcomponentes.reduce((s, sub) => s + sub.porcentaje, 0)}%
-                        </div>
+                        <div class="total-percent valid">Total: ${comp.subcomponentes.reduce((s, sub) => s + sub.porcentaje, 0)}%</div>
                     </div>
                 `).join('');
                 attachComponentActions();
             }
         }
+
         function attachComponentActions() {
             document.querySelectorAll('[data-action="editComponent"]').forEach(btn => {
                 btn.addEventListener('click', async (e) => {
@@ -690,6 +609,7 @@
                 });
             });
         }
+
         function openComponentModal(component = null) {
             currentComponentId = component ? component.id : null;
             document.getElementById('componentModalTitle').innerText = component ? 'Editar componente' : 'Nuevo componente';
@@ -698,6 +618,7 @@
             renderSubcomponentsUI();
             document.getElementById('modalComponent').style.display = 'block';
         }
+
         document.getElementById('addComponentBtn').onclick = () => openComponentModal();
         document.getElementById('saveComponentBtn').onclick = async () => {
             const nombre = document.getElementById('componentName').value.trim();
@@ -717,57 +638,21 @@
         document.getElementById('cancelComponentBtn').onclick = () => closeAllModals();
         document.getElementById('closeComponentModal').onclick = () => closeAllModals();
 
-        // Precarga por modalidad (Formación Tecnológica)
+        // Precarga por modalidad
         const modalidadesData = {
-            'I Ciclo': [
-                { nombre: 'Trabajo cotidiano', porcentaje: 65 },
-                { nombre: 'Tareas', porcentaje: 10 },
-                { nombre: 'Prueba de ejecución', porcentaje: 15 },
-                { nombre: 'Asistencia', porcentaje: 10 }
-            ],
-            'II Ciclo': [
-                { nombre: 'Trabajo cotidiano', porcentaje: 60 },
-                { nombre: 'Tareas', porcentaje: 10 },
-                { nombre: 'Prueba de ejecución', porcentaje: 20 },
-                { nombre: 'Asistencia', porcentaje: 10 }
-            ],
-            'III Ciclo': [
-                { nombre: 'Trabajo cotidiano', porcentaje: 50 },
-                { nombre: 'Tareas', porcentaje: 10 },
-                { nombre: 'Proyecto', porcentaje: 30 },
-                { nombre: 'Asistencia', porcentaje: 10 }
-            ],
-            'Diversificada': [
-                { nombre: 'Trabajo cotidiano', porcentaje: 50 },
-                { nombre: 'Tareas', porcentaje: 5 },
-                { nombre: 'Proyecto', porcentaje: 35 },
-                { nombre: 'Asistencia', porcentaje: 10 }
-            ],
-            'Educación Adultos': [
-                { nombre: 'Trabajo cotidiano', porcentaje: 50 },
-                { nombre: 'Tareas', porcentaje: 10 },
-                { nombre: 'Proyecto', porcentaje: 30 },
-                { nombre: 'Asistencia', porcentaje: 10 }
-            ],
-            'Educación Especial': [
-                { nombre: 'Trabajo cotidiano', porcentaje: 60 },
-                { nombre: 'Tareas', porcentaje: 10 },
-                { nombre: 'Proyecto', porcentaje: 20 },
-                { nombre: 'Asistencia', porcentaje: 10 }
-            ]
+            'I Ciclo': [{ nombre: 'Trabajo cotidiano', porcentaje: 65 }, { nombre: 'Tareas', porcentaje: 10 }, { nombre: 'Prueba de ejecución', porcentaje: 15 }, { nombre: 'Asistencia', porcentaje: 10 }],
+            'II Ciclo': [{ nombre: 'Trabajo cotidiano', porcentaje: 60 }, { nombre: 'Tareas', porcentaje: 10 }, { nombre: 'Prueba de ejecución', porcentaje: 20 }, { nombre: 'Asistencia', porcentaje: 10 }],
+            'III Ciclo': [{ nombre: 'Trabajo cotidiano', porcentaje: 50 }, { nombre: 'Tareas', porcentaje: 10 }, { nombre: 'Proyecto', porcentaje: 30 }, { nombre: 'Asistencia', porcentaje: 10 }],
+            'Diversificada': [{ nombre: 'Trabajo cotidiano', porcentaje: 50 }, { nombre: 'Tareas', porcentaje: 5 }, { nombre: 'Proyecto', porcentaje: 35 }, { nombre: 'Asistencia', porcentaje: 10 }],
+            'Educación Adultos': [{ nombre: 'Trabajo cotidiano', porcentaje: 50 }, { nombre: 'Tareas', porcentaje: 10 }, { nombre: 'Proyecto', porcentaje: 30 }, { nombre: 'Asistencia', porcentaje: 10 }],
+            'Educación Especial': [{ nombre: 'Trabajo cotidiano', porcentaje: 60 }, { nombre: 'Tareas', porcentaje: 10 }, { nombre: 'Proyecto', porcentaje: 20 }, { nombre: 'Asistencia', porcentaje: 10 }]
         };
-        document.getElementById('preloadModalidadesBtn').onclick = () => {
-            document.getElementById('modalPreload').style.display = 'block';
-        };
+        document.getElementById('preloadModalidadesBtn').onclick = () => document.getElementById('modalPreload').style.display = 'block';
         document.getElementById('confirmPreloadBtn').onclick = async () => {
             const modalidad = document.getElementById('preloadModalidad').value;
             const subcomponentes = modalidadesData[modalidad];
             if (!subcomponentes) { alert('No hay datos para esta modalidad'); return; }
-            const component = {
-                id: Date.now(),
-                nombre: modalidad,
-                subcomponentes: JSON.parse(JSON.stringify(subcomponentes))
-            };
+            const component = { id: Date.now(), nombre: modalidad, subcomponentes: JSON.parse(JSON.stringify(subcomponentes)) };
             await put('components', component);
             renderComponents();
             closeAllModals();
@@ -807,7 +692,7 @@
         // Inicializar
         await renderCentros();
         await renderYears();
-        await updateYearSelects(); // también llama a renderPeriods
+        await updateYearSelects();
         await renderComponents();
 
         window.onclick = (e) => {
