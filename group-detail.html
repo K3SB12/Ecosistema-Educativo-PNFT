@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detalle del Grupo - PNFT Articulador</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { background-color: #f8fafc; }
+        .sidebar { background: linear-gradient(180deg, #1e5a20 0%, #2E7D32 100%); }
+        .nav-item.active { background: white; color: #2E7D32; box-shadow: 0 10px 20px -5px rgba(0,0,0,0.2); }
+        .nav-item.active i { color: #2E7D32; }
+        .btn-accion { background: #2E7D32; transition: all 0.2s; }
+        .btn-accion:hover { background: #1e5a20; transform: translateY(-2px); }
+        .stat-card { background: white; padding: 1rem; border-radius: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+        .flex-between { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem; }
+        .grade-table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+        .grade-table th, .grade-table td { border: 1px solid #e2e8f0; padding: 0.5rem; text-align: left; }
+        .grade-table th { background: #f1f5f9; }
+    </style>
+</head>
+<body class="font-sans antialiased">
+    <div class="flex min-h-screen">
+        <aside class="w-72 bg-gradient-to-b from-green-800 to-green-700 text-white flex-shrink-0 sticky top-0 h-screen overflow-y-auto">
+            <div class="text-center py-8 border-b border-white/20">
+                <div class="w-20 h-20 bg-white/10 rounded-full flex items-center justify-center text-3xl font-bold mx-auto mb-4 border-2 border-white/20">PNFT</div>
+                <h2 class="text-xl font-semibold">Articulador 2026</h2>
+                <p class="text-sm opacity-80">MEP Costa Rica</p>
+            </div>
+            <ul class="mt-6 space-y-1 px-4">
+                <a href="index.html"><li class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10"><i class="fas fa-chart-pie w-5"></i> Tablero</li></a>
+                <a href="planning.html"><li class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10"><i class="fas fa-clipboard-list w-5"></i> Planeamiento</li></a>
+                <a href="progresion.html"><li class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10"><i class="fas fa-road w-5"></i> Progresión</li></a>
+                <a href="evaluation.html"><li class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10"><i class="fas fa-check-circle w-5"></i> Evaluación</li></a>
+                <a href="logbook.html"><li class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10"><i class="fas fa-book-open w-5"></i> Bitácora</li></a>
+                <a href="students.html"><li class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10"><i class="fas fa-users w-5"></i> Estudiantes</li></a>
+                <a href="groups.html"><li class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10"><i class="fas fa-layer-group w-5"></i> Grupos</li></a>
+                <a href="subjects.html"><li class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10"><i class="fas fa-book w-5"></i> Asignaturas</li></a>
+                <a href="schedules.html"><li class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10"><i class="fas fa-clock w-5"></i> Horario</li></a>
+                <a href="settings.html"><li class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10"><i class="fas fa-cog w-5"></i> Configuración</li></a>
+            </ul>
+        </aside>
+
+        <main class="flex-1 p-8 bg-gray-50">
+            <div class="flex justify-between items-center mb-8 bg-white p-4 rounded-2xl shadow-sm">
+                <h1 id="pageTitle" class="text-2xl font-bold text-gray-800">Detalle del Grupo</h1>
+                <div class="flex gap-4">
+                    <span class="bg-green-100 text-green-800 px-4 py-2 rounded-full text-sm font-medium flex items-center gap-2"><i class="fas fa-user-graduate"></i> Docente</span>
+                    <span class="bg-green-100 text-green-800 px-4 py-2 rounded-full text-sm font-medium flex items-center gap-2"><i class="fas fa-calendar-alt"></i> 2026</span>
+                </div>
+            </div>
+
+            <div id="grupoInfo" class="bg-white p-6 border border-gray-200 rounded-xl shadow-sm mb-8">
+                <p class="text-gray-500">Cargando información del grupo...</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+                <div class="bg-white p-6 border border-gray-200 rounded-xl shadow-sm">
+                    <h2 class="text-xl font-semibold text-gray-800 mb-4">Evolución de notas</h2>
+                    <canvas id="evolucionChart" width="400" height="300"></canvas>
+                </div>
+                <div class="bg-white p-6 border border-gray-200 rounded-xl shadow-sm">
+                    <h2 class="text-xl font-semibold text-gray-800 mb-4">Distribución de estudiantes por rango de nota</h2>
+                    <canvas id="distribucionChart" width="400" height="300"></canvas>
+                </div>
+            </div>
+
+            <div class="bg-white p-6 border border-gray-200 rounded-xl shadow-sm mb-8">
+                <h2 class="text-xl font-semibold text-gray-800 mb-4">Asistencia acumulada</h2>
+                <canvas id="asistenciaChart" width="800" height="300"></canvas>
+            </div>
+
+            <div class="bg-white p-6 border border-gray-200 rounded-xl shadow-sm overflow-x-auto">
+                <h2 class="text-xl font-semibold text-gray-800 mb-4">Detalle de notas por estudiante</h2>
+                <div id="tablaNotas"></div>
+            </div>
+        </main>
+    </div>
+
+    <script type="module">
+        import { openDB, getAll, getById } from './js/db.js';
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const groupId = parseInt(urlParams.get('groupId'));
+        if (!groupId) {
+            document.getElementById('grupoInfo').innerHTML = '<p class="text-red-500">No se especificó un grupo.</p>';
+            throw new Error('No groupId');
+        }
+
+        let grupo = null;
+        let students = [];
+        let periods = [];
+        let grades = [];
+        let attendance = [];
+
+        async function cargarDatos() {
+            grupo = await getById('groups', groupId);
+            if (!grupo) {
+                document.getElementById('grupoInfo').innerHTML = '<p class="text-red-500">Grupo no encontrado.</p>';
+                return;
+            }
+            document.getElementById('pageTitle').innerText = `Detalle del Grupo: ${grupo.seccion}`;
+            document.getElementById('grupoInfo').innerHTML = `
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div><span class="font-semibold">Sección:</span> ${escapeHtml(grupo.seccion)}</div>
+                    <div><span class="font-semibold">Nivel:</span> ${escapeHtml(grupo.nivel)}</div>
+                    <div><span class="font-semibold">Año:</span> ${escapeHtml(grupo.anio)}</div>
+                    <div><span class="font-semibold">Institución:</span> ${escapeHtml(grupo.centroId ? (await getById('centros_educativos', grupo.centroId))?.nombre : '—')}</div>
+                </div>
+            `;
+
+            students = (await getAll('students')).filter(s => s.groupId === groupId);
+            periods = await getAll('periods_enhanced');
+            const allGrades = await getAll('grades');
+            grades = allGrades.filter(g => g.groupId === groupId);
+            const allAttendance = await getAll('attendance');
+            attendance = allAttendance.filter(a => a.groupId === groupId);
+
+            await generarGraficos();
+            await generarTablaNotas();
+        }
+
+        async function generarGraficos() {
+            // Calcular notas promedio por período (componentes combinados)
+            const periodMap = {};
+            periods.forEach(p => {
+                periodMap[p.id] = { nombre: p.nombre, total: 0, count: 0 };
+            });
+            // Simulación: nota promedio por estudiante por período (promedio de todas sus notas en ese período)
+            // Esto es simplificado; en producción deberías calcular según los porcentajes de los componentes.
+            for (let student of students) {
+                const studentGrades = grades.filter(g => g.studentId === student.id);
+                const periodSums = {};
+                const periodCounts = {};
+                for (let g of studentGrades) {
+                    if (!periodSums[g.periodId]) { periodSums[g.periodId] = 0; periodCounts[g.periodId] = 0; }
+                    periodSums[g.periodId] += g.value;
+                    periodCounts[g.periodId]++;
+                }
+                for (let pId in periodSums) {
+                    const avg = periodSums[pId] / periodCounts[pId];
+                    periodMap[pId].total += avg;
+                    periodMap[pId].count++;
+                }
+            }
+            const periodLabels = [];
+            const periodAverages = [];
+            for (let p of periods) {
+                periodLabels.push(p.nombre);
+                const avg = periodMap[p.id].count > 0 ? periodMap[p.id].total / periodMap[p.id].count : 0;
+                periodAverages.push(avg);
+            }
+
+            const ctxEvol = document.getElementById('evolucionChart').getContext('2d');
+            new Chart(ctxEvol, {
+                type: 'line',
+                data: { labels: periodLabels, datasets: [{ label: 'Nota promedio', data: periodAverages, borderColor: '#2E7D32', tension: 0.2 }] },
+                options: { responsive: true, scales: { y: { min: 0, max: 100 } } }
+            });
+
+            // Distribución de notas finales (promedio anual)
+            const annualAverages = [];
+            for (let student of students) {
+                const studentGrades = grades.filter(g => g.studentId === student.id);
+                const sum = studentGrades.reduce((acc, g) => acc + g.value, 0);
+                const avg = studentGrades.length ? sum / studentGrades.length : 0;
+                annualAverages.push(avg);
+            }
+            const ranges = { '0-59': 0, '60-69': 0, '70-79': 0, '80-89': 0, '90-100': 0 };
+            annualAverages.forEach(avg => {
+                if (avg < 60) ranges['0-59']++;
+                else if (avg < 70) ranges['60-69']++;
+                else if (avg < 80) ranges['70-79']++;
+                else if (avg < 90) ranges['80-89']++;
+                else ranges['90-100']++;
+            });
+            const ctxDist = document.getElementById('distribucionChart').getContext('2d');
+            new Chart(ctxDist, {
+                type: 'bar',
+                data: { labels: Object.keys(ranges), datasets: [{ label: 'Cantidad de estudiantes', data: Object.values(ranges), backgroundColor: '#2E7D32' }] },
+                options: { responsive: true }
+            });
+
+            // Asistencia acumulada (porcentaje de asistencia por período)
+            const attendanceByPeriod = {};
+            periods.forEach(p => { attendanceByPeriod[p.id] = { total: 0, present: 0 }; });
+            for (let a of attendance) {
+                if (!attendanceByPeriod[a.periodId]) continue;
+                attendanceByPeriod[a.periodId].total++;
+                if (a.estado === 'presente') attendanceByPeriod[a.periodId].present++;
+            }
+            const periodAttendanceLabels = [];
+            const periodAttendanceValues = [];
+            for (let p of periods) {
+                periodAttendanceLabels.push(p.nombre);
+                const total = attendanceByPeriod[p.id]?.total || 0;
+                const present = attendanceByPeriod[p.id]?.present || 0;
+                const percent = total > 0 ? (present / total) * 100 : 0;
+                periodAttendanceValues.push(percent);
+            }
+            const ctxAsist = document.getElementById('asistenciaChart').getContext('2d');
+            new Chart(ctxAsist, {
+                type: 'bar',
+                data: { labels: periodAttendanceLabels, datasets: [{ label: '% Asistencia', data: periodAttendanceValues, backgroundColor: '#1976D2' }] },
+                options: { responsive: true, scales: { y: { min: 0, max: 100 } } }
+            });
+        }
+
+        async function generarTablaNotas() {
+            if (students.length === 0) {
+                document.getElementById('tablaNotas').innerHTML = '<p class="text-gray-500">No hay estudiantes en este grupo.</p>';
+                return;
+            }
+            // Agrupar notas por estudiante y período
+            const studentPeriodMap = {};
+            for (let student of students) {
+                studentPeriodMap[student.id] = {};
+                const studentGrades = grades.filter(g => g.studentId === student.id);
+                for (let g of studentGrades) {
+                    if (!studentPeriodMap[student.id][g.periodId]) studentPeriodMap[student.id][g.periodId] = [];
+                    studentPeriodMap[student.id][g.periodId].push(g.value);
+                }
+            }
+            // Calcular promedio por período para cada estudiante
+            let html = '<table class="grade-table"><thead><tr><th>Estudiante</th>';
+            periods.forEach(p => { html += `<th>${escapeHtml(p.nombre)}</th>`; });
+            html += '<th>Promedio anual</th><th>Condición</th></tr></thead><tbody>';
+            for (let student of students) {
+                html += `<tr><td>${escapeHtml(student.nombre)} ${escapeHtml(student.apellido1)}</td>`;
+                let annualSum = 0;
+                let periodCount = 0;
+                for (let p of periods) {
+                    const notas = studentPeriodMap[student.id]?.[p.id] || [];
+                    const avg = notas.length ? notas.reduce((a,b)=>a+b,0)/notas.length : 0;
+                    html += `<td>${avg.toFixed(1)}</td>`;
+                    annualSum += avg;
+                    periodCount++;
+                }
+                const annualAvg = periodCount ? annualSum / periodCount : 0;
+                const condicion = annualAvg >= 70 ? 'Aprobado' : (annualAvg >= 60 ? 'En proceso' : 'Reprobado');
+                html += `<td><strong>${annualAvg.toFixed(1)}</strong></td><td>${condicion}</td></tr>`;
+            }
+            html += '</tbody></table>';
+            document.getElementById('tablaNotas').innerHTML = html;
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/[&<>]/g, function(m) {
+                if (m === '&') return '&amp;';
+                if (m === '<') return '&lt;';
+                if (m === '>') return '&gt;';
+                return m;
+            });
+        }
+
+        await openDB();
+        await cargarDatos();
+    </script>
+</body>
+</html>
