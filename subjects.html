@@ -23,7 +23,6 @@
         .entity-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
         .entity-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.5rem; }
         .entity-title { font-weight: 600; font-size: 1.1rem; color: #1e293b; }
-        .entity-badge { font-size: 0.7rem; background: #e8f5e9; color: #2E7D32; padding: 0.2rem 0.6rem; border-radius: 30px; }
         .action-icons i { margin-left: 0.5rem; cursor: pointer; color: #94a3b8; transition: 0.2s; }
         .action-icons i:hover { color: #2E7D32; }
         .flex-between { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem; }
@@ -31,6 +30,8 @@
         .subcomponent-item { display: flex; justify-content: space-between; align-items: center; padding: 0.2rem 0; font-size: 0.85rem; }
         .porcentaje-preview { font-weight: 600; color: #2E7D32; }
         .component-preview { background: #f1f5f9; border-radius: 12px; padding: 0.5rem; margin-top: 0.5rem; }
+        .fix-btn { background: #FF9800; color: white; padding: 0.2rem 0.5rem; border-radius: 20px; font-size: 0.7rem; margin-left: 0.5rem; cursor: pointer; }
+        .fix-btn:hover { background: #F57C00; }
     </style>
 </head>
 <body class="font-sans antialiased">
@@ -144,16 +145,20 @@
         const componentePreview = document.getElementById('componentePreview');
         const subcomponentesPreview = document.getElementById('subcomponentesPreview');
 
+        // Cache de componentes (se recarga cada vez que se abre el modal)
         let componentesCache = [];
 
         async function cargarSelects() {
             const grupos = await getAll('groups');
             grupoSelect.innerHTML = '<option value="">-- Seleccione grupo --</option>' + grupos.map(g => `<option value="${g.id}">${g.seccion} (${g.nivel}) - ${g.anio}</option>`).join('');
-            
+        }
+
+        // Recargar componentes desde la base de datos cada vez que se abre el modal
+        async function recargarComponentes() {
             const componentes = await getAll('components');
             componentesCache = componentes;
-            console.log('Componentes cargados:', componentes.length);
-            componenteSelect.innerHTML = '<option value="">-- Seleccione componente --</option>' + componentes.map(c => `<option value="${c.id}">${c.nombre}</option>`).join('');
+            console.log('Componentes recargados:', componentesCache.map(c => ({ id: c.id, nombre: c.nombre })));
+            componenteSelect.innerHTML = '<option value="">-- Seleccione componente --</option>' + componentesCache.map(c => `<option value="${c.id}">${c.nombre}</option>`).join('');
         }
 
         async function cargarAsignaturas() {
@@ -161,8 +166,6 @@
             const grupos = await getAll('groups');
             const instituciones = await getAll('centros_educativos');
             const componentes = await getAll('components');
-            
-            console.log('Asignaturas:', asignaturas.length, 'Componentes disponibles:', componentes.length);
             
             // Filtros
             const grupoFiltro = filtroGrupo.value;
@@ -202,11 +205,16 @@
                         </div>
                     `;
                 } else if (a.componentId && !componente) {
-                    console.warn(`Componente ${a.componentId} no encontrado para asignatura ${a.id}`);
-                    subcomponentesHtml = `<div class="text-xs text-red-500 mt-1">⚠️ Componente no encontrado (ID: ${a.componentId})</div>`;
+                    // Componente inválido: mostrar un botón para reparar
+                    subcomponentesHtml = `
+                        <div class="text-xs text-red-500 mt-1 flex items-center gap-2">
+                            ⚠️ Componente no encontrado (ID: ${a.componentId})
+                            <span class="fix-btn" data-id="${a.id}" data-action="fix">Reparar</span>
+                        </div>
+                    `;
                 }
                 return `
-                    <div class="bg-white rounded-xl shadow-md border border-gray-200 p-5 entity-card">
+                    <div class="bg-white rounded-xl shadow-md border border-gray-200 p-5 entity-card" data-id="${a.id}">
                         <div class="entity-header">
                             <span class="entity-title">${escapeHtml(a.name)}</span>
                             <div class="action-icons">
@@ -230,13 +238,18 @@
         }
         
         function attachActions() {
+            // Editar
             document.querySelectorAll('[data-action="edit"]').forEach(btn => {
                 btn.addEventListener('click', async () => {
                     const id = parseInt(btn.dataset.id);
                     const asignatura = (await getAll('subjects')).find(a => a.id === id);
-                    if (asignatura) abrirModal(asignatura);
+                    if (asignatura) {
+                        await recargarComponentes(); // Asegurar componentes actualizados
+                        abrirModal(asignatura);
+                    }
                 });
             });
+            // Duplicar
             document.querySelectorAll('[data-action="duplicate"]').forEach(btn => {
                 btn.addEventListener('click', async () => {
                     const id = parseInt(btn.dataset.id);
@@ -249,12 +262,31 @@
                     }
                 });
             });
+            // Eliminar
             document.querySelectorAll('[data-action="delete"]').forEach(btn => {
                 btn.addEventListener('click', async () => {
                     const id = parseInt(btn.dataset.id);
                     if (confirm('¿Eliminar esta asignatura? Se perderán las configuraciones de horario asociadas.')) {
                         await remove('subjects', id);
                         cargarAsignaturas();
+                    }
+                });
+            });
+            // Botones "Reparar"
+            document.querySelectorAll('[data-action="fix"]').forEach(btn => {
+                btn.addEventListener('click', async () => {
+                    const id = parseInt(btn.dataset.id);
+                    const asignatura = (await getAll('subjects')).find(a => a.id === id);
+                    if (asignatura) {
+                        await recargarComponentes();
+                        currentSubjectId = asignatura.id;
+                        // Abrir el modal en modo edición, pero con el componente actual inválido
+                        modalTitulo.innerText = 'Reparar Asignatura - Seleccione componente';
+                        nombreInput.value = asignatura.name;
+                        grupoSelect.value = asignatura.groupId;
+                        componenteSelect.value = ''; // Limpiar selección
+                        componentePreview.style.display = 'none';
+                        modal.style.display = 'block';
                     }
                 });
             });
@@ -318,6 +350,17 @@
                 alert('Nombre y grupo son obligatorios');
                 return;
             }
+            
+            // Verificar que el componente seleccionado realmente existe
+            if (componentId) {
+                const componentes = await getAll('components');
+                const exists = componentes.some(c => c.id === componentId);
+                if (!exists) {
+                    alert('El componente seleccionado no existe. Por favor, recargue la página o seleccione otro componente.');
+                    return;
+                }
+            }
+            
             try {
                 const grupo = await getById('groups', groupId);
                 if (!grupo) throw new Error('Grupo no encontrado');
@@ -334,7 +377,6 @@
                 };
                 
                 await put('subjects', asignatura);
-                console.log('Asignatura guardada:', asignatura);
                 await cargarAsignaturas();
                 modal.style.display = 'none';
                 alert('Asignatura guardada correctamente');
@@ -359,7 +401,11 @@
             }
         });
         
-        agregarBtn.addEventListener('click', () => abrirModal());
+        agregarBtn.addEventListener('click', async () => {
+            await recargarComponentes();
+            abrirModal();
+        });
+        
         limpiarFiltrosBtn.addEventListener('click', () => {
             filtroGrupo.value = 'todos';
             filtroInstitucion.value = 'todos';
@@ -395,6 +441,7 @@
         await openDB();
         await cargarSelects();
         await cargarFiltros();
+        await recargarComponentes(); // Carga inicial de componentes
         await cargarAsignaturas();
         
         filtroGrupo.addEventListener('change', cargarAsignaturas);
