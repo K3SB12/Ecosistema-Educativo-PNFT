@@ -88,14 +88,15 @@
             <ul class="nav-menu">
                 <a href="index.html"><li class="nav-item active"><i class="fas fa-chart-pie"></i> Tablero</li></a>
                 <a href="planning.html"><li class="nav-item"><i class="fas fa-clipboard-list"></i> Planeamiento</li></a>
-                <a href="progresion.html"><li class="nav-item"><i class="fas fa-road"></i> Progresión</span></a>
+                <a href="progresion.html"><li class="nav-item"><i class="fas fa-road"></i> Progresión</li></a>
                 <a href="evaluation.html"><li class="nav-item"><i class="fas fa-check-circle"></i> Evaluación</li></a>
                 <a href="logbook.html"><li class="nav-item"><i class="fas fa-book-open"></i> Bitácora</li></a>
                 <a href="students.html"><li class="nav-item"><i class="fas fa-users"></i> Estudiantes</li></a>
                 <a href="groups.html"><li class="nav-item"><i class="fas fa-layer-group"></i> Grupos</li></a>
-                <a href="subjects.html"><li class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10"><i class="fas fa-book w-5"></i> Asignaturas</li></a>
-                <a href="schedules.html"><li class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10"><i class="fas fa-clock w-5"></i> Horario</li></a>
-                <a href="conducta.html"><li class="flex items-center gap-3 px-4 py-3 rounded-xl bg-white text-green-800 font-semibold shadow-md"><i class="fas fa-clipboard-list w-5"></i> Conducta</li></a>
+                <a href="subjects.html"><li class="nav-item"><i class="fas fa-book"></i> Asignaturas</li></a>
+                <a href="schedules.html"><li class="nav-item"><i class="fas fa-clock"></i> Horario</li></a>
+                <a href="conducta.html"><li class="nav-item"><i class="fas fa-clipboard-list"></i> Conducta</li></a>
+                <a href="alertas.html"><li class="nav-item"><i class="fas fa-exclamation-triangle"></i> Alertas</li></a>
                 <a href="settings.html"><li class="nav-item"><i class="fas fa-cog"></i> Configuración</li></a>
             </ul>
         </aside>
@@ -108,28 +109,93 @@
                 </div>
             </div>
             <div class="stats-grid">
-                <div class="stat-card"><div class="stat-icon"><i class="fas fa-clipboard-list"></i></div><div class="stat-content"><h3>Planeamientos</h3><span class="number">0</span></div></div>
-                <div class="stat-card"><div class="stat-icon"><i class="fas fa-check-circle"></i></div><div class="stat-content"><h3>Evaluaciones</h3><span class="number">0</span></div></div>
-                <div class="stat-card"><div class="stat-icon"><i class="fas fa-book-open"></i></div><div class="stat-content"><h3>Bitácoras</h3><span class="number">0</span></div></div>
-                <div class="stat-card"><div class="stat-icon"><i class="fas fa-users"></i></div><div class="stat-content"><h3>Estudiantes</h3><span class="number">0</span></div></div>
-                <div class="stat-card"><div class="stat-icon"><i class="fas fa-layer-group"></i></div><div class="stat-content"><h3>Grupos</h3><span class="number">0</span></div></div>
+                <div class="stat-card"><div class="stat-icon"><i class="fas fa-clipboard-list"></i></div><div class="stat-content"><h3>Planeamientos</h3><span id="totalPlaneamientos" class="number">0</span></div></div>
+                <div class="stat-card"><div class="stat-icon"><i class="fas fa-check-circle"></i></div><div class="stat-content"><h3>Indicadores</h3><span id="totalEvaluaciones" class="number">0</span></div></div>
+                <div class="stat-card"><div class="stat-icon"><i class="fas fa-book-open"></i></div><div class="stat-content"><h3>Bitácoras</h3><span id="totalBitacoras" class="number">0</span></div></div>
+                <div class="stat-card"><div class="stat-icon"><i class="fas fa-users"></i></div><div class="stat-content"><h3>Estudiantes</h3><span id="totalEstudiantes" class="number">0</span></div></div>
+                <div class="stat-card"><div class="stat-icon"><i class="fas fa-layer-group"></i></div><div class="stat-content"><h3>Grupos</h3><span id="totalGrupos" class="number">0</span></div></div>
             </div>
             <div class="recent-section">
                 <div class="section-header"><h2><i class="fas fa-history" style="color:#2E7D32;"></i> Últimos planeamientos</h2><a href="planning.html"><i class="fas fa-arrow-right"></i> Ver todos</a></div>
-                <table><thead><tr><th>Nivel</th><th>Módulo</th><th>Fecha</th></tr></thead><tbody><tr><td colspan="3" class="empty-table">Aún no hay planeamientos guardados</td></tr></tbody></table>
+                <table id="tablaPlaneamientos">
+                    <thead><tr><th>Nivel</th><th>Módulo</th><th>Fecha</th></tr></thead>
+                    <tbody id="planeamientosBody"><tr><td colspan="3" class="empty-table">Cargando...</td></tr></tbody>
+                </table>
             </div>
             <div class="recent-section">
                 <div class="section-header"><h2><i class="fas fa-bolt" style="color:#2E7D32;"></i> Acciones rápidas</h2></div>
                 <div class="quick-actions">
                     <a href="planning.html" class="action-btn"><i class="fas fa-plus-circle"></i><span>Nuevo planeamiento</span></a>
-                    <a href="progresion.html" class="action-btn"><i class="fas fa-road"></i><span> Progresión</span></a>  <!-- NUEVO -->
+                    <a href="progresion.html" class="action-btn"><i class="fas fa-road"></i><span> Progresión</span></a>
                     <a href="evaluation.html" class="action-btn"><i class="fas fa-chart-line"></i><span>Registrar evaluación</span></a>
                     <a href="logbook.html" class="action-btn"><i class="fas fa-pen-alt"></i><span>Añadir bitácora</span></a>
                     <a href="students.html" class="action-btn"><i class="fas fa-user-plus"></i><span>Gestionar estudiantes</span></a>
+                    <a href="groups.html" class="action-btn"><i class="fas fa-plus-circle"></i><span>Crear grupo</span></a>
                     <a href="settings.html" class="action-btn"><i class="fas fa-sliders-h"></i><span>Configuración</span></a>
                 </div>
             </div>
         </main>
     </div>
+
+    <script type="module">
+        import { openDB, getAll } from './js/db.js';
+
+        async function cargarEstadisticas() {
+            try {
+                const db = await openDB();
+                // Contar planeamientos
+                const plannings = await getAll('plannings');
+                document.getElementById('totalPlaneamientos').textContent = plannings.length;
+                
+                // Contar indicadores de evaluación
+                const indicadores = await getAll('evaluation_indicators');
+                document.getElementById('totalEvaluaciones').textContent = indicadores.length;
+                
+                // Contar bitácoras
+                const bitacoras = await getAll('bitacoras');
+                document.getElementById('totalBitacoras').textContent = bitacoras.length;
+                
+                // Contar estudiantes
+                const students = await getAll('students');
+                document.getElementById('totalEstudiantes').textContent = students.length;
+                
+                // Contar grupos
+                const groups = await getAll('groups');
+                document.getElementById('totalGrupos').textContent = groups.length;
+                
+                // Últimos planeamientos (ordenar por fecha descendente)
+                const planeamientosOrdenados = plannings.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+                const ultimos = planeamientosOrdenados.slice(0, 5);
+                const tbody = document.getElementById('planeamientosBody');
+                if (ultimos.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="3" class="empty-table">Aún no hay planeamientos guardados</td></tr>';
+                } else {
+                    tbody.innerHTML = ultimos.map(p => `
+                        <tr>
+                            <td>${escapeHtml(p.datosAdministrativos?.nivel || '—')}</td>
+                            <td>${escapeHtml(p.datosAdministrativos?.modulo || '—')}</td>
+                            <td>${new Date(p.fecha).toLocaleDateString()}</td>
+                        </tr>
+                    `).join('');
+                }
+            } catch (error) {
+                console.error('Error cargando estadísticas:', error);
+                const tbody = document.getElementById('planeamientosBody');
+                tbody.innerHTML = '<tr><td colspan="3" class="empty-table">Error al cargar datos. Asegúrate de que la base de datos está inicializada.</td></tr>';
+            }
+        }
+        
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/[&<>]/g, function(m) {
+                if (m === '&') return '&amp;';
+                if (m === '<') return '&lt;';
+                if (m === '>') return '&gt;';
+                return m;
+            });
+        }
+        
+        cargarEstadisticas();
+    </script>
 </body>
 </html>
