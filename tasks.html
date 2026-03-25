@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tareas - PNFT Articulador</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background-color: #f8fafc; }
+        .sidebar { background: linear-gradient(180deg, #1e5a20 0%, #2E7D32 100%); }
+        .nav-item.active { background: white; color: #2E7D32; box-shadow: 0 10px 20px -5px rgba(0,0,0,0.2); }
+        .nav-item.active i { color: #2E7D32; }
+        .btn-accion { background: #2E7D32; transition: all 0.2s; }
+        .btn-accion:hover { background: #1e5a20; transform: translateY(-2px); }
+        .btn-secundario { background: #f0f0f0; color: #333; border: 1px solid #ccc; }
+        .btn-secundario:hover { background: #e0e0e0; }
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); overflow: auto; }
+        .modal-content { background-color: white; margin: 5% auto; padding: 2rem; border-radius: 24px; width: 90%; max-width: 800px; box-shadow: 0 20px 40px rgba(0,0,0,0.2); position: relative; }
+        .close { color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer; }
+        .close:hover { color: black; }
+        .evaluacion-card { border: 1px solid #e2e8f0; border-radius: 16px; padding: 1rem; margin-bottom: 1rem; background: #fafcff; }
+        .grade-table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+        .grade-table th, .grade-table td { border: 1px solid #e2e8f0; padding: 0.5rem; text-align: left; }
+        .grade-table th { background: #f1f5f9; }
+        .grade-table input { width: 80px; padding: 0.3rem; border: 1px solid #ccc; border-radius: 4px; }
+        .flex-between { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem; }
+    </style>
+</head>
+<body class="font-sans antialiased">
+    <div class="flex min-h-screen">
+        <aside class="w-72 bg-gradient-to-b from-green-800 to-green-700 text-white flex-shrink-0 sticky top-0 h-screen overflow-y-auto">
+            <div class="text-center py-8 border-b border-white/20">
+                <div class="w-20 h-20 bg-white/10 rounded-full flex items-center justify-center text-3xl font-bold mx-auto mb-4 border-2 border-white/20">PNFT</div>
+                <h2 class="text-xl font-semibold">Articulador 2026</h2>
+                <p class="text-sm opacity-80">MEP Costa Rica</p>
+            </div>
+            <ul class="mt-6 space-y-1 px-4">
+                <a href="index.html"><li class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10"><i class="fas fa-chart-pie w-5"></i> Tablero</li></a>
+                <a href="planning.html"><li class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10"><i class="fas fa-clipboard-list w-5"></i> Planeamiento</li></a>
+                <a href="progresion.html"><li class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10"><i class="fas fa-road w-5"></i> Progresión</li></a>
+                <a href="evaluation.html"><li class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10"><i class="fas fa-check-circle w-5"></i> Evaluación</li></a>
+                <a href="logbook.html"><li class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10"><i class="fas fa-book-open w-5"></i> Bitácora</li></a>
+                <a href="students.html"><li class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10"><i class="fas fa-users w-5"></i> Estudiantes</li></a>
+                <a href="groups.html"><li class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10"><i class="fas fa-layer-group w-5"></i> Grupos</li></a>
+                <a href="subjects.html"><li class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10"><i class="fas fa-book w-5"></i> Asignaturas</li></a>
+                <a href="schedules.html"><li class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10"><i class="fas fa-clock w-5"></i> Horario</li></a>
+                <a href="daily-works.html"><li class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10"><i class="fas fa-chalkboard-user w-5"></i> Trabajo Cotidiano</li></a>
+                <a href="tasks.html"><li class="flex items-center gap-3 px-4 py-3 rounded-xl bg-white text-green-800 font-semibold shadow-md"><i class="fas fa-tasks w-5"></i> Tareas</li></a>
+                <a href="settings.html"><li class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10"><i class="fas fa-cog w-5"></i> Configuración</li></a>
+            </ul>
+        </aside>
+
+        <main class="flex-1 p-8 bg-gray-50">
+            <div class="flex justify-between items-center mb-8 bg-white p-4 rounded-2xl shadow-sm">
+                <h1 class="text-2xl font-bold text-gray-800">Tareas</h1>
+                <div class="flex gap-4">
+                    <span class="bg-green-100 text-green-800 px-4 py-2 rounded-full text-sm font-medium flex items-center gap-2"><i class="fas fa-user-graduate"></i> Docente</span>
+                    <span class="bg-green-100 text-green-800 px-4 py-2 rounded-full text-sm font-medium flex items-center gap-2"><i class="fas fa-calendar-alt"></i> 2026</span>
+                </div>
+            </div>
+
+            <div class="bg-white p-6 border border-gray-200 rounded-xl shadow-sm mb-8">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div><label class="block text-sm font-semibold text-gray-700 mb-1"> Grupo </label><select id="grupoSelect" class="w-full border-gray-300 rounded-lg py-2"></select></div>
+                    <div><label class="block text-sm font-semibold text-gray-700 mb-1"> Período </label><select id="periodoSelect" class="w-full border-gray-300 rounded-lg py-2"></select></div>
+                    <div><button id="cargarBtn" class="w-full px-4 py-2 bg-green-800 text-white rounded-lg hover:bg-green-900 transition"> Cargar </button></div>
+                </div>
+            </div>
+
+            <div id="evaluacionesContainer" class="bg-white p-6 border border-gray-200 rounded-xl shadow-sm mb-8">
+                <div class="flex-between">
+                    <h2 class="text-xl font-semibold text-gray-800">Tareas</h2>
+                    <button id="agregarEvaluacionBtn" class="bg-green-800 text-white px-4 py-2 rounded-lg shadow hover:bg-green-900"><i class="fas fa-plus"></i> Agregar tarea</button>
+                </div>
+                <div id="evaluacionesLista" class="space-y-4 mt-4"></div>
+            </div>
+
+            <div id="notasContainer" class="bg-white p-6 border border-gray-200 rounded-xl shadow-sm overflow-x-auto">
+                <div class="flex-between mb-4">
+                    <h2 class="text-xl font-semibold text-gray-800">Notas por estudiante</h2>
+                    <button id="guardarNotasBtn" class="bg-green-800 text-white px-4 py-2 rounded-lg shadow hover:bg-green-900"><i class="fas fa-save"></i> Guardar todas</button>
+                </div>
+                <div id="tablaNotas"></div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal para agregar/editar tarea -->
+    <div id="modalEvaluacion" class="modal">
+        <div class="modal-content">
+            <span class="close" id="closeModalEval">&times;</span>
+            <h2 id="modalEvalTitulo" class="text-xl font-bold mb-4">Agregar tarea</h2>
+            <form id="formEvaluacion">
+                <div class="mb-4"><label class="block text-sm font-medium text-gray-700 mb-1">Nombre de la tarea *</label><input type="text" id="evalNombre" required class="w-full border rounded-lg p-2"></div>
+                <div class="mb-4"><label class="block text-sm font-medium text-gray-700 mb-1">Puntaje máximo</label><input type="number" id="evalPuntaje" value="100" step="1" min="0" class="w-full border rounded-lg p-2"></div>
+                <div class="flex justify-end gap-3"><button type="submit" class="bg-green-800 text-white px-5 py-2 rounded-lg hover:bg-green-900">Guardar</button><button type="button" id="cancelarEvalBtn" class="bg-gray-200 text-gray-800 px-5 py-2 rounded-lg hover:bg-gray-300">Cancelar</button></div>
+            </form>
+        </div>
+    </div>
+
+    <script type="module">
+        import { openDB, getAll, put, remove, getById } from './js/db.js';
+
+        let currentGroupId = null;
+        let currentPeriodId = null;
+        let currentEvaluations = [];
+        let currentStudents = [];
+        let currentGrades = [];
+
+        const grupoSelect = document.getElementById('grupoSelect');
+        const periodoSelect = document.getElementById('periodoSelect');
+        const cargarBtn = document.getElementById('cargarBtn');
+        const agregarBtn = document.getElementById('agregarEvaluacionBtn');
+        const evaluacionesLista = document.getElementById('evaluacionesLista');
+        const tablaNotas = document.getElementById('tablaNotas');
+        const guardarNotasBtn = document.getElementById('guardarNotasBtn');
+        const modalEval = document.getElementById('modalEvaluacion');
+        const closeModalEval = document.getElementById('closeModalEval');
+        const cancelarEvalBtn = document.getElementById('cancelarEvalBtn');
+        const formEvaluacion = document.getElementById('formEvaluacion');
+        const evalNombre = document.getElementById('evalNombre');
+        const evalPuntaje = document.getElementById('evalPuntaje');
+        let currentEvalId = null;
+
+        async function cargarGrupos() {
+            const grupos = await getAll('groups');
+            grupoSelect.innerHTML = '<option value="">-- Seleccione grupo --</option>' + grupos.map(g => `<option value="${g.id}">${g.seccion} (${g.nivel}) - ${g.anio}</option>`).join('');
+        }
+
+        async function cargarPeriodos() {
+            const periodos = await getAll('periods_enhanced');
+            periodoSelect.innerHTML = '<option value="">-- Seleccione período --</option>' + periodos.map(p => `<option value="${p.id}">${p.nombre}</option>`).join('');
+        }
+
+        async function cargarEvaluaciones() {
+            if (!currentGroupId || !currentPeriodId) return;
+            const all = await getAll('evaluations');
+            currentEvaluations = all.filter(e => e.groupId === currentGroupId && e.periodId === currentPeriodId && e.type === 'task');
+            renderEvaluaciones();
+        }
+
+        function renderEvaluaciones() {
+            if (currentEvaluations.length === 0) {
+                evaluacionesLista.innerHTML = '<p class="text-gray-500">No hay tareas. Agregue una.</p>';
+                return;
+            }
+            let html = '';
+            currentEvaluations.forEach(eval => {
+                html += `
+                    <div class="evaluacion-card">
+                        <div class="flex justify-between items-center">
+                            <div>
+                                <span class="font-semibold">${escapeHtml(eval.name)}</span>
+                                <span class="text-sm text-gray-500 ml-2">Puntaje máximo: ${eval.maxScore}</span>
+                            </div>
+                            <div>
+                                <button class="edit-eval text-blue-600 mr-2" data-id="${eval.id}"><i class="fas fa-edit"></i></button>
+                                <button class="delete-eval text-red-600" data-id="${eval.id}"><i class="fas fa-trash-alt"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            evaluacionesLista.innerHTML = html;
+
+            document.querySelectorAll('.edit-eval').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const id = parseInt(btn.dataset.id);
+                    const eval = currentEvaluations.find(e => e.id === id);
+                    if (eval) abrirModalEvaluacion(eval);
+                });
+            });
+            document.querySelectorAll('.delete-eval').forEach(btn => {
+                btn.addEventListener('click', async () => {
+                    const id = parseInt(btn.dataset.id);
+                    if (confirm('¿Eliminar esta tarea? También se eliminarán las notas asociadas.')) {
+                        await remove('evaluations', id);
+                        const allGrades = await getAll('grades');
+                        const toDelete = allGrades.filter(g => g.metadata && g.metadata.evaluationId === id);
+                        for (let g of toDelete) await remove('grades', g.id);
+                        await cargarEvaluaciones();
+                        await cargarNotas();
+                    }
+                });
+            });
+        }
+
+        async function cargarEstudiantes() {
+            if (!currentGroupId) return;
+            const all = await getAll('students');
+            currentStudents = all.filter(s => s.groupId === currentGroupId);
+        }
+
+        async function cargarNotas() {
+            if (!currentGroupId || !currentPeriodId) return;
+            const all = await getAll('grades');
+            currentGrades = all.filter(g => g.groupId === currentGroupId && g.periodId === currentPeriodId && g.subcomponentId === 'task');
+            renderTablaNotas();
+        }
+
+        function renderTablaNotas() {
+            if (currentEvaluations.length === 0) {
+                tablaNotas.innerHTML = '<p class="text-gray-500">Primero agregue tareas.</p>';
+                return;
+            }
+            if (currentStudents.length === 0) {
+                tablaNotas.innerHTML = '<p class="text-gray-500">No hay estudiantes en este grupo.</p>';
+                return;
+            }
+
+            let html = '<table class="grade-table"><thead><tr><th>Estudiante</th>';
+            currentEvaluations.forEach(eval => {
+                html += `<th>${escapeHtml(eval.name)} (/${eval.maxScore})</th>`;
+            });
+            html += '</tr></thead><tbody>';
+
+            currentStudents.forEach(student => {
+                html += `<tr><td>${escapeHtml(student.nombre)} ${escapeHtml(student.apellido1)}</td>`;
+                currentEvaluations.forEach(eval => {
+                    const grade = currentGrades.find(g => g.studentId === student.id && g.metadata?.evaluationId === eval.id);
+                    const value = grade ? grade.value : '';
+                    html += `<td><input type="number" step="0.1" min="0" max="${eval.maxScore}" class="grade-input" data-student="${student.id}" data-eval="${eval.id}" value="${value}"></td>`;
+                });
+                html += '</tr>';
+            });
+            html += '</tbody></table>';
+            tablaNotas.innerHTML = html;
+
+            document.querySelectorAll('.grade-input').forEach(input => {
+                input.addEventListener('change', async (e) => {
+                    const studentId = parseInt(input.dataset.student);
+                    const evalId = parseInt(input.dataset.eval);
+                    const value = parseFloat(input.value);
+                    await guardarNota(studentId, evalId, isNaN(value) ? null : value);
+                });
+            });
+        }
+
+        async function guardarNota(studentId, evaluationId, value) {
+            if (!currentGroupId || !currentPeriodId) return;
+            const existing = currentGrades.find(g => g.studentId === studentId && g.metadata?.evaluationId === evaluationId);
+            if (value === null || value === '') {
+                if (existing) await remove('grades', existing.id);
+            } else {
+                const grade = existing || {
+                    id: Date.now() + studentId + evaluationId,
+                    groupId: currentGroupId,
+                    studentId,
+                    periodId: currentPeriodId,
+                    subcomponentId: 'task',
+                    value,
+                    metadata: { evaluationId }
+                };
+                grade.value = value;
+                await put('grades', grade);
+            }
+            await cargarNotas();
+        }
+
+        async function guardarTodasNotas() {
+            const inputs = document.querySelectorAll('.grade-input');
+            for (let input of inputs) {
+                const studentId = parseInt(input.dataset.student);
+                const evalId = parseInt(input.dataset.eval);
+                const value = parseFloat(input.value);
+                await guardarNota(studentId, evalId, isNaN(value) ? null : value);
+            }
+            alert('Notas guardadas');
+        }
+
+        function abrirModalEvaluacion(evaluacion = null) {
+            currentEvalId = evaluacion ? evaluacion.id : null;
+            document.getElementById('modalEvalTitulo').innerText = evaluacion ? 'Editar tarea' : 'Agregar tarea';
+            evalNombre.value = evaluacion ? evaluacion.name : '';
+            evalPuntaje.value = evaluacion ? evaluacion.maxScore : 100;
+            modalEval.style.display = 'block';
+        }
+
+        formEvaluacion.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const name = evalNombre.value.trim();
+            const maxScore = parseInt(evalPuntaje.value) || 0;
+            if (!name) { alert('El nombre es obligatorio'); return; }
+            const evaluacion = {
+                id: currentEvalId || Date.now(),
+                type: 'task',
+                groupId: currentGroupId,
+                periodId: currentPeriodId,
+                name,
+                maxScore,
+                createdAt: new Date().toISOString()
+            };
+            await put('evaluations', evaluacion);
+            await cargarEvaluaciones();
+            await cargarNotas();
+            modalEval.style.display = 'none';
+            alert('Tarea guardada');
+        });
+
+        function closeModalEvaluacion() { modalEval.style.display = 'none'; currentEvalId = null; formEvaluacion.reset(); }
+        closeModalEval.onclick = closeModalEvaluacion;
+        cancelarEvalBtn.onclick = closeModalEvaluacion;
+
+        async function cargarTodo() {
+            const groupId = parseInt(grupoSelect.value);
+            const periodId = parseInt(periodoSelect.value);
+            if (!groupId || !periodId) {
+                alert('Seleccione grupo y período');
+                return;
+            }
+            currentGroupId = groupId;
+            currentPeriodId = periodId;
+            await cargarEstudiantes();
+            await cargarEvaluaciones();
+            await cargarNotas();
+        }
+
+        agregarBtn.addEventListener('click', () => {
+            if (!currentGroupId || !currentPeriodId) {
+                alert('Primero seleccione grupo y período y presione "Cargar"');
+                return;
+            }
+            abrirModalEvaluacion();
+        });
+
+        cargarBtn.addEventListener('click', cargarTodo);
+        guardarNotasBtn.addEventListener('click', guardarTodasNotas);
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/[&<>]/g, function(m) {
+                if (m === '&') return '&amp;';
+                if (m === '<') return '&lt;';
+                if (m === '>') return '&gt;';
+                return m;
+            });
+        }
+
+        await openDB();
+        await cargarGrupos();
+        await cargarPeriodos();
+
+        window.onclick = (e) => { if (e.target === modalEval) closeModalEvaluacion(); };
+    </script>
+</body>
+</html>
