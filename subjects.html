@@ -310,17 +310,22 @@
             e.preventDefault();
             const name = nombreInput.value.trim();
             const groupId = parseInt(grupoSelect.value);
-            const componentId = parseInt(componenteSelect.value) || null;
+            const componentId = componenteSelect.value ? parseInt(componenteSelect.value) : null;
             
-            console.log('Guardando asignatura:', { name, groupId, componentId, currentSubjectId });
+            console.log('=== GUARDANDO ASIGNATURA ===');
+            console.log('name:', name);
+            console.log('groupId:', groupId, typeof groupId);
+            console.log('componentId:', componentId, typeof componentId);
+            console.log('currentSubjectId:', currentSubjectId);
             
-            if (!name || !groupId) {
+            if (!name || isNaN(groupId) || groupId <= 0) {
                 alert('Nombre y grupo son obligatorios');
                 return;
             }
             try {
                 const grupo = await getById('groups', groupId);
-                if (!grupo) throw new Error('Grupo no encontrado');
+                console.log('Grupo encontrado:', grupo);
+                if (!grupo) throw new Error('Grupo no encontrado con ID ' + groupId);
                 
                 const asignatura = {
                     id: currentSubjectId || Date.now(),
@@ -333,7 +338,7 @@
                     updatedAt: new Date().toISOString()
                 };
                 
-                console.log('Guardando objeto:', asignatura);
+                console.log('Objeto a guardar:', asignatura);
                 await put('subjects', asignatura);
                 console.log('Guardado exitoso');
                 
