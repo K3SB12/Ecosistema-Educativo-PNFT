@@ -213,4 +213,79 @@ export async function initDefaultData() {
             });
         }
     }
+    
+    // ===== COMPONENTES ESTÁNDAR =====
+    const componentes = await getAll('components');
+    if (componentes.length === 0) {
+        const standardComponents = [
+            {
+                id: Date.now(),
+                nombre: 'I Ciclo',
+                subcomponentes: [
+                    { nombre: 'Trabajo cotidiano', porcentaje: 65 },
+                    { nombre: 'Tareas', porcentaje: 10 },
+                    { nombre: 'Prueba de ejecución', porcentaje: 15 },
+                    { nombre: 'Asistencia', porcentaje: 10 }
+                ]
+            },
+            {
+                id: Date.now() + 1,
+                nombre: 'II Ciclo',
+                subcomponentes: [
+                    { nombre: 'Trabajo cotidiano', porcentaje: 60 },
+                    { nombre: 'Tareas', porcentaje: 10 },
+                    { nombre: 'Prueba de ejecución', porcentaje: 20 },
+                    { nombre: 'Asistencia', porcentaje: 10 }
+                ]
+            },
+            {
+                id: Date.now() + 2,
+                nombre: 'III Ciclo',
+                subcomponentes: [
+                    { nombre: 'Trabajo cotidiano', porcentaje: 50 },
+                    { nombre: 'Tareas', porcentaje: 10 },
+                    { nombre: 'Proyecto', porcentaje: 30 },
+                    { nombre: 'Asistencia', porcentaje: 10 },
+                    { nombre: 'Portafolio', porcentaje: 0 }
+                ]
+            },
+            {
+                id: Date.now() + 3,
+                nombre: 'Diversificada',
+                subcomponentes: [
+                    { nombre: 'Trabajo cotidiano', porcentaje: 50 },
+                    { nombre: 'Tareas', porcentaje: 5 },
+                    { nombre: 'Proyecto', porcentaje: 35 },
+                    { nombre: 'Asistencia', porcentaje: 10 },
+                    { nombre: 'Portafolio', porcentaje: 0 }
+                ]
+            },
+            {
+                id: Date.now() + 4,
+                nombre: 'Educación Adultos',
+                subcomponentes: [
+                    { nombre: 'Trabajo cotidiano', porcentaje: 50 },
+                    { nombre: 'Tareas', porcentaje: 10 },
+                    { nombre: 'Proyecto', porcentaje: 30 },
+                    { nombre: 'Asistencia', porcentaje: 10 },
+                    { nombre: 'Portafolio', porcentaje: 0 }
+                ]
+            },
+            {
+                id: Date.now() + 5,
+                nombre: 'Educación Especial',
+                subcomponentes: [
+                    { nombre: 'Trabajo cotidiano', porcentaje: 60 },
+                    { nombre: 'Tareas', porcentaje: 10 },
+                    { nombre: 'Proyecto', porcentaje: 20 },
+                    { nombre: 'Asistencia', porcentaje: 10 },
+                    { nombre: 'Portafolio', porcentaje: 0 }
+                ]
+            }
+        ];
+        for (let comp of standardComponents) {
+            await put('components', comp);
+        }
+        console.log('Componentes estándar creados');
+    }
 }
