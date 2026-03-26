@@ -197,20 +197,20 @@
                 return;
             }
             
-            container.innerHTML = asignaturas.map(a => {
-                const grupo = grupos.find(g => g.id === a.groupId);
-                const institucion = instituciones.find(i => i.id === a.institutionId);
-                const componente = componentes.find(c => c.id === a.componentId);
+            container.innerHTML = asignaturas.map(asig => {
+                const grupo = grupos.find(g => g.id === asig.groupId);
+                const institucion = instituciones.find(i => i.id === asig.institutionId);
+                const componente = componentes.find(c => c.id === asig.componentId);
                 
                 // Extraer porcentajes según subcomponentes
-                let tc = 0, t = 0, p = 0, a = 0, pr = 0;
+                let tc = 0, t = 0, p = 0, att = 0, pr = 0;
                 if (componente && componente.subcomponentes) {
                     for (let sub of componente.subcomponentes) {
                         const nombre = sub.nombre.toLowerCase();
                         if (nombre.includes('trabajo cotidiano')) tc = sub.porcentaje;
                         else if (nombre.includes('tarea')) t = sub.porcentaje;
                         else if (nombre.includes('prueba')) p = sub.porcentaje;
-                        else if (nombre.includes('asistencia')) a = sub.porcentaje;
+                        else if (nombre.includes('asistencia')) att = sub.porcentaje;
                         else if (nombre.includes('proyecto')) pr = sub.porcentaje;
                         else if (nombre.includes('portafolio')) pr = sub.porcentaje;
                     }
@@ -218,29 +218,29 @@
                 
                 // Si el componente no existe, mostrar botón reparar
                 let subcomponentesHtml = '';
-                if (a.componentId && !componente) {
+                if (asig.componentId && !componente) {
                     subcomponentesHtml = `
                         <div class="text-xs text-red-500 mt-1 flex items-center gap-2">
-                            ⚠️ Componente no encontrado (ID: ${a.componentId})
-                            <span class="fix-btn" data-id="${a.id}" data-action="fix">Reparar</span>
+                            ⚠️ Componente no encontrado (ID: ${asig.componentId})
+                            <span class="fix-btn" data-id="${asig.id}" data-action="fix">Reparar</span>
                         </div>
                     `;
                 }
                 
                 return `
-                    <div class="bg-white rounded-xl shadow-md border border-gray-200 p-5 entity-card" data-id="${a.id}">
+                    <div class="bg-white rounded-xl shadow-md border border-gray-200 p-5 entity-card" data-id="${asig.id}">
                         <div class="entity-header">
-                            <span class="entity-title">${escapeHtml(a.name)}</span>
+                            <span class="entity-title">${escapeHtml(asig.name)}</span>
                             <div class="action-icons">
-                                <i class="fas fa-edit" data-id="${a.id}" data-action="edit"></i>
-                                <i class="fas fa-copy" data-id="${a.id}" data-action="duplicate"></i>
-                                <i class="fas fa-trash-alt" data-id="${a.id}" data-action="delete"></i>
+                                <i class="fas fa-edit" data-id="${asig.id}" data-action="edit"></i>
+                                <i class="fas fa-copy" data-id="${asig.id}" data-action="duplicate"></i>
+                                <i class="fas fa-trash-alt" data-id="${asig.id}" data-action="delete"></i>
                             </div>
                         </div>
                         <div class="text-sm text-gray-600 mt-2">
                             <div><i class="fas fa-users w-4 text-green-700"></i> ${grupo ? grupo.seccion : '—'}</div>
                             <div><i class="fas fa-school w-4 text-green-700"></i> ${institucion ? institucion.nombre : '—'}</div>
-                            <div><i class="fas fa-calendar w-4 text-green-700"></i> ${a.year || '—'}</div>
+                            <div><i class="fas fa-calendar w-4 text-green-700"></i> ${asig.year || '—'}</div>
                             <div><i class="fas fa-chart-line w-4 text-green-700"></i> ${componente ? componente.nombre : 'Sin componente'}</div>
                             ${subcomponentesHtml}
                         </div>
@@ -249,7 +249,7 @@
                             <div><div class="label">TC %</div><div class="value">${tc}</div></div>
                             <div><div class="label">T %</div><div class="value">${t}</div></div>
                             <div><div class="label">P %</div><div class="value">${p}</div></div>
-                            <div><div class="label">A %</div><div class="value">${a}</div></div>
+                            <div><div class="label">A %</div><div class="value">${att}</div></div>
                             <div><div class="label">Pr %</div><div class="value">${pr}</div></div>
                         </div>
                     </div>
@@ -487,7 +487,7 @@
         await cargarSelects();
         await cargarFiltros();
         await recargarComponentes();
-        await crearAsignaturaEjemplo(); // <-- esto crea una asignatura de prueba si no hay ninguna
+        await crearAsignaturaEjemplo();
         await cargarAsignaturas();
         
         filtroGrupo.addEventListener('change', cargarAsignaturas);
