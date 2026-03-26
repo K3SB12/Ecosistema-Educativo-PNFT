@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="css/style.css">
     <style>
-        /* Estilos específicos para settings */
+        /* Estilos existentes (se mantienen) */
         .settings-tabs {
             display: flex;
             gap: 0.5rem;
@@ -64,10 +64,6 @@
             color: #2E7D32;
             padding: 0.2rem 0.6rem;
             border-radius: 30px;
-        }
-        .entity-badge-standard {
-            background: #FF9800;
-            color: white;
         }
         .entity-details {
             font-size: 0.85rem;
@@ -126,19 +122,12 @@
             transition: all 0.2s;
         }
         .btn-accion:hover { background: #1e5a20; transform: translateY(-2px); }
-        .btn-ia { background: #1976D2; }
-        .btn-ia:hover { background: #0d5a9e; }
         .btn-secundario {
             background: #f0f0f0;
             color: #333;
             border: 1px solid #ccc;
         }
         .btn-secundario:hover { background: #e0e0e0; transform: translateY(-1px); }
-        .btn-danger {
-            background: #c62828;
-            color: white;
-        }
-        .btn-danger:hover { background: #b71c1c; }
         .flex-between {
             display: flex;
             justify-content: space-between;
@@ -146,11 +135,6 @@
             flex-wrap: wrap;
             gap: 1rem;
             margin-bottom: 1.5rem;
-        }
-        .warning-text {
-            color: #c62828;
-            font-size: 0.8rem;
-            margin-top: 0.3rem;
         }
     </style>
 </head>
@@ -224,18 +208,14 @@
             <div id="componentsPane" class="tab-pane">
                 <div class="flex-between">
                     <h2><i class="fas fa-chart-line"></i> Componentes de evaluación</h2>
-                    <div>
-                        <button id="preloadModalidadesBtn" class="btn-accion btn-ia"><i class="fas fa-download"></i> Restaurar componentes estándar</button>
-                        <button id="addComponentBtn" class="btn-accion"><i class="fas fa-plus"></i> Nuevo componente personalizado</button>
-                    </div>
+                    <button id="addComponentBtn" class="btn-accion"><i class="fas fa-plus"></i> Nuevo componente</button>
                 </div>
-                <p class="text-sm text-gray-600 mb-4">⚠️ Los componentes estándar (I Ciclo, II Ciclo, III Ciclo, Diversificada, Educación Adultos, Educación Especial) se crean automáticamente. Puedes editarlos si los porcentajes cambian, pero no elimines los que estás usando en asignaturas.</p>
                 <div id="componentsList"></div>
             </div>
         </main>
     </div>
 
-    <!-- MODALES (sin cambios estructurales) -->
+    <!-- MODALES -->
     <div id="modalCentro" class="modal">
         <div class="modal-content">
             <span class="close" id="closeCentroModal">&times;</span>
@@ -321,11 +301,10 @@
     <div id="modalComponent" class="modal">
         <div class="modal-content" style="max-width: 700px;">
             <span class="close" id="closeComponentModal">&times;</span>
-            <h2 id="componentModalTitle">Nuevo componente personalizado</h2>
+            <h2 id="componentModalTitle">Nuevo componente</h2>
             <div class="form-group">
-                <label>Nombre (ej: Mi componente personalizado)</label>
-                <input type="text" id="componentName" placeholder="Ej: Mi componente">
-                <div id="nombreWarning" class="warning-text" style="display: none;">⚠️ Este nombre está reservado para componentes estándar. Usa otro nombre.</div>
+                <label>Nombre (ej: I Ciclo, Diversificada)</label>
+                <input type="text" id="componentName" placeholder="Ej: I Ciclo">
             </div>
             <div class="form-group">
                 <label>Subcomponentes (suma total 100%)</label>
@@ -340,19 +319,6 @@
         </div>
     </div>
 
-    <div id="modalPreload" class="modal">
-        <div class="modal-content">
-            <span class="close" id="closePreloadModal">&times;</span>
-            <h2>Restaurar componentes estándar</h2>
-            <p>Esta acción recreará los componentes con los porcentajes oficiales del MEP (incluyendo Portafolio en los ciclos correspondientes).</p>
-            <p class="text-sm text-red-600 mt-2">⚠️ Si ya tiene componentes con estos nombres, serán reemplazados.</p>
-            <div style="text-align: right; margin-top: 1rem;">
-                <button id="confirmPreloadBtn" class="btn-accion">Restaurar</button>
-                <button id="cancelPreloadBtn" class="btn-secundario">Cancelar</button>
-            </div>
-        </div>
-    </div>
-
     <script type="module">
         import { openDB, getAll, put, remove, getPeriodsByYear, initDefaultData } from './js/db.js';
 
@@ -362,53 +328,6 @@
         let currentPeriodId = null;
         let currentComponentId = null;
         let subcomponents = [];
-
-        // Nombres estándar de componentes precargados
-        const STANDARD_NAMES = ['I Ciclo-MEP', 'II Ciclo-MEP', 'III Ciclo-MEP', 'Diversificada-MEP', 'Educación Adultos-MEP', 'Educación Especial-MEP'];
-
-        // Datos de componentes estándar (con Portafolio incluido en los que aplica)
-        const standardComponentsData = {
-            'I Ciclo-MEP': [
-                { nombre: 'Trabajo cotidiano', porcentaje: 65 },
-                { nombre: 'Tareas', porcentaje: 10 },
-                { nombre: 'Prueba de ejecución', porcentaje: 15 },
-                { nombre: 'Asistencia', porcentaje: 10 }
-            ],
-            'II Ciclo-MEP': [
-                { nombre: 'Trabajo cotidiano', porcentaje: 60 },
-                { nombre: 'Tareas', porcentaje: 10 },
-                { nombre: 'Prueba de ejecución', porcentaje: 20 },
-                { nombre: 'Asistencia', porcentaje: 10 }
-            ],
-            'III Ciclo-MEP': [
-                { nombre: 'Trabajo cotidiano', porcentaje: 50 },
-                { nombre: 'Tareas', porcentaje: 10 },
-                { nombre: 'Proyecto', porcentaje: 30 },
-                { nombre: 'Asistencia', porcentaje: 10 },
-                { nombre: 'Portafolio', porcentaje: 0 }  // Portafolio como 0% por defecto, editable
-            ],
-            'Diversificada-MEP': [
-                { nombre: 'Trabajo cotidiano', porcentaje: 50 },
-                { nombre: 'Tareas', porcentaje: 5 },
-                { nombre: 'Proyecto', porcentaje: 35 },
-                { nombre: 'Asistencia', porcentaje: 10 },
-                { nombre: 'Portafolio', porcentaje: 0 }
-            ],
-            'Educación Adultos-MEP': [
-                { nombre: 'Trabajo cotidiano', porcentaje: 50 },
-                { nombre: 'Tareas', porcentaje: 10 },
-                { nombre: 'Proyecto', porcentaje: 30 },
-                { nombre: 'Asistencia', porcentaje: 10 },
-                { nombre: 'Portafolio', porcentaje: 0 }
-            ],
-            'Educación Especial-MEP': [
-                { nombre: 'Trabajo cotidiano', porcentaje: 60 },
-                { nombre: 'Tareas', porcentaje: 10 },
-                { nombre: 'Proyecto', porcentaje: 20 },
-                { nombre: 'Asistencia', porcentaje: 10 },
-                { nombre: 'Portafolio', porcentaje: 0 }
-            ]
-        };
 
         // Esperar a que la DB esté lista
         await openDB();
@@ -647,48 +566,6 @@
         }
 
         // ----- COMPONENTES -----
-        async function precargarComponentesEstandar() {
-            const componentes = await getAll('components');
-            for (let nombre of STANDARD_NAMES) {
-                const existe = componentes.some(c => c.nombre === nombre);
-                if (existe) {
-                    // Si existe, lo actualizamos (sobrescribimos)
-                    const existente = componentes.find(c => c.nombre === nombre);
-                    const nuevosSub = standardComponentsData[nombre] || [];
-                    existente.subcomponentes = JSON.parse(JSON.stringify(nuevosSub));
-                    await put('components', existente);
-                } else {
-                    // Si no existe, lo creamos
-                    const nuevoComp = {
-                        id: Date.now(),
-                        nombre: nombre,
-                        subcomponentes: JSON.parse(JSON.stringify(standardComponentsData[nombre] || []))
-                    };
-                    await put('components', nuevoComp);
-                }
-            }
-            await renderComponents();
-        }
-
-        // Función de inicialización automática de componentes estándar
-        async function inicializarComponentesEstandar() {
-            const componentes = await getAll('components');
-            let hayCambios = false;
-            for (let nombre of STANDARD_NAMES) {
-                const existe = componentes.some(c => c.nombre === nombre);
-                if (!existe) {
-                    const nuevoComp = {
-                        id: Date.now(),
-                        nombre: nombre,
-                        subcomponentes: JSON.parse(JSON.stringify(standardComponentsData[nombre] || []))
-                    };
-                    await put('components', nuevoComp);
-                    hayCambios = true;
-                }
-            }
-            if (hayCambios) await renderComponents();
-        }
-
         function updateTotalPercent() {
             const total = subcomponents.reduce((s, sub) => s + (sub.porcentaje || 0), 0);
             const display = document.getElementById('totalPercentDisplay');
@@ -741,36 +618,30 @@
             const components = await getAll('components');
             const container = document.getElementById('componentsList');
             if (!components.length) {
-                container.innerHTML = '<p class="empty-table">No hay componentes. Use "Restaurar componentes estándar" o cree uno personalizado.</p>';
+                container.innerHTML = '<p class="empty-table">No hay componentes. Cree uno nuevo.</p>';
             } else {
-                container.innerHTML = components.map(comp => {
-                    const isStandard = STANDARD_NAMES.includes(comp.nombre);
-                    return `
-                        <div class="entity-card">
-                            <div class="entity-header">
-                                <span class="entity-title">${escapeHtml(comp.nombre)}</span>
-                                <div>
-                                    ${isStandard ? '<span class="entity-badge entity-badge-standard">Estándar MEP</span>' : '<span class="entity-badge">Personalizado</span>'}
-                                </div>
-                                <div class="action-icons">
-                                    <i class="fas fa-edit" data-id="${comp.id}" data-action="editComponent"></i>
-                                    <i class="fas fa-trash-alt" data-id="${comp.id}" data-action="deleteComponent"></i>
-                                </div>
-                            </div>
-                            <div class="subcomponent-list">
-                                ${comp.subcomponentes.map(sub => `
-                                    <div class="subcomponent-item">
-                                        <span>${escapeHtml(sub.nombre)}</span>
-                                        <span>${sub.porcentaje}%</span>
-                                    </div>
-                                `).join('')}
-                            </div>
-                            <div class="total-percent">
-                                Total: ${comp.subcomponentes.reduce((s, sub) => s + sub.porcentaje, 0)}%
+                container.innerHTML = components.map(comp => `
+                    <div class="entity-card">
+                        <div class="entity-header">
+                            <span class="entity-title">${escapeHtml(comp.nombre)}</span>
+                            <div class="action-icons">
+                                <i class="fas fa-edit" data-id="${comp.id}" data-action="editComponent"></i>
+                                <i class="fas fa-trash-alt" data-id="${comp.id}" data-action="deleteComponent"></i>
                             </div>
                         </div>
-                    `;
-                }).join('');
+                        <div class="subcomponent-list">
+                            ${comp.subcomponentes.map(sub => `
+                                <div class="subcomponent-item">
+                                    <span>${escapeHtml(sub.nombre)}</span>
+                                    <span>${sub.porcentaje}%</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                        <div class="total-percent">
+                            Total: ${comp.subcomponentes.reduce((s, sub) => s + sub.porcentaje, 0)}%
+                        </div>
+                    </div>
+                `).join('');
                 attachComponentActions();
             }
         }
@@ -786,57 +657,25 @@
             document.querySelectorAll('[data-action="deleteComponent"]').forEach(btn => {
                 btn.addEventListener('click', async (e) => {
                     const id = parseInt(e.currentTarget.dataset.id);
-                    const comp = (await getAll('components')).find(c => c.id === id);
-                    if (comp && STANDARD_NAMES.includes(comp.nombre)) {
-                        if (confirm(`¿Eliminar el componente estándar "${comp.nombre}"? Puede restaurarlo después con el botón "Restaurar componentes estándar".`)) {
-                            await remove('components', id);
-                            renderComponents();
-                        }
-                    } else if (comp) {
-                        if (confirm('¿Eliminar este componente? Se perderá la asignación a asignaturas.')) {
-                            await remove('components', id);
-                            renderComponents();
-                        }
+                    if (confirm('¿Eliminar este componente? Se perderá la asignación a grupos.')) {
+                        await remove('components', id);
+                        renderComponents();
                     }
                 });
             });
         }
         function openComponentModal(component = null) {
             currentComponentId = component ? component.id : null;
-            document.getElementById('componentModalTitle').innerText = component ? 'Editar componente' : 'Nuevo componente personalizado';
-            const nombreInput = document.getElementById('componentName');
-            const warning = document.getElementById('nombreWarning');
-            nombreInput.value = component ? component.nombre : '';
+            document.getElementById('componentModalTitle').innerText = component ? 'Editar componente' : 'Nuevo componente';
+            document.getElementById('componentName').value = component ? component.nombre : '';
             subcomponents = component ? JSON.parse(JSON.stringify(component.subcomponentes)) : [];
             renderSubcomponentsUI();
-            // Validación de nombre reservado
-            const checkNombre = () => {
-                const nombre = nombreInput.value.trim();
-                if (STANDARD_NAMES.includes(nombre)) {
-                    warning.style.display = 'block';
-                } else {
-                    warning.style.display = 'none';
-                }
-            };
-            nombreInput.addEventListener('input', checkNombre);
-            checkNombre();
             document.getElementById('modalComponent').style.display = 'block';
-            // Limpiar evento al cerrar
-            const closeHandler = () => {
-                nombreInput.removeEventListener('input', checkNombre);
-                modalComponent.removeEventListener('close', closeHandler);
-            };
-            const modalComponent = document.getElementById('modalComponent');
-            modalComponent.addEventListener('close', closeHandler);
         }
         document.getElementById('addComponentBtn').onclick = () => openComponentModal();
         document.getElementById('saveComponentBtn').onclick = async () => {
             const nombre = document.getElementById('componentName').value.trim();
             if (!nombre) { alert('El nombre es obligatorio'); return; }
-            if (STANDARD_NAMES.includes(nombre)) {
-                alert('No puede crear un componente con nombre estándar. Use el botón "Restaurar componentes estándar" si necesita recuperar los valores originales.');
-                return;
-            }
             if (subcomponents.length === 0) { alert('Debe agregar al menos un subcomponente'); return; }
             const total = subcomponents.reduce((s, sub) => s + sub.porcentaje, 0);
             if (total !== 100) { alert(`La suma de porcentajes debe ser 100%. Actual: ${total}%`); return; }
@@ -851,20 +690,6 @@
         };
         document.getElementById('cancelComponentBtn').onclick = () => closeAllModals();
         document.getElementById('closeComponentModal').onclick = () => closeAllModals();
-
-        // Precarga (restauración) de componentes estándar
-        document.getElementById('preloadModalidadesBtn').onclick = () => {
-            document.getElementById('modalPreload').style.display = 'block';
-        };
-        document.getElementById('confirmPreloadBtn').onclick = async () => {
-            if (confirm('¿Restaurar todos los componentes estándar? Esto sobrescribirá los existentes (si los hay).')) {
-                await precargarComponentesEstandar();
-                closeAllModals();
-                alert('Componentes estándar restaurados correctamente.');
-            }
-        };
-        document.getElementById('cancelPreloadBtn').onclick = () => closeAllModals();
-        document.getElementById('closePreloadModal').onclick = () => closeAllModals();
 
         // Utilidades
         function escapeHtml(str) {
@@ -896,10 +721,9 @@
         });
 
         // Inicializar
-        await inicializarComponentesEstandar(); // Asegura que existan los estándar
         await renderCentros();
         await renderYears();
-        await updateYearSelects(); // también llama a renderPeriods
+        await updateYearSelects();
         await renderComponents();
 
         window.onclick = (e) => {
