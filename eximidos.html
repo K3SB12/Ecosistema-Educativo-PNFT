@@ -7,7 +7,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" integrity="sha512-GsLlZN/3F2ErC5ifS5QtgpiJtWd43JWSuIgh7mbzZ8zBps+dvLusV+eNQATqgA/HdeKFVgA5v3S/cIrLF7QnIg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
     <style>
         body { background-color: #f8fafc; }
         .sidebar { background: linear-gradient(180deg, #1e5a20 0%, #2E7D32 100%); }
@@ -31,7 +32,6 @@
 </head>
 <body class="font-sans antialiased">
     <div class="flex min-h-screen">
-        <!-- Sidebar -->
         <aside class="w-72 bg-gradient-to-b from-green-800 to-green-700 text-white flex-shrink-0 sticky top-0 h-screen overflow-y-auto">
             <div class="text-center py-8 border-b border-white/20">
                 <div class="w-20 h-20 bg-white/10 rounded-full flex items-center justify-center text-3xl font-bold mx-auto mb-4 border-2 border-white/20">PNFT</div>
@@ -61,7 +61,6 @@
                 </div>
             </div>
 
-            <!-- Filtros -->
             <div class="bg-white p-6 border border-gray-200 rounded-xl shadow-sm mb-8">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
@@ -78,12 +77,11 @@
                 </div>
                 <div class="mt-4 flex justify-end gap-2">
                     <button id="generarBtn" class="bg-green-800 text-white px-4 py-2 rounded-lg shadow hover:bg-green-900"><i class="fas fa-chart-line"></i> Generar Reporte</button>
-                    <button id="exportExcelBtn" class="bg-green-600 text-white px-4 py-2 rounded-lg shadow hover:bg-green-700"><i class="fas fa-file-excel"></i> Exportar Excel</button>
-                    <button id="exportPdfBtn" class="bg-red-600 text-white px-4 py-2 rounded-lg shadow hover:bg-red-700"><i class="fas fa-file-pdf"></i> Exportar PDF</button>
+                    <button id="excelBtn" class="bg-green-600 text-white px-4 py-2 rounded-lg shadow hover:bg-green-700"><i class="fas fa-file-excel"></i> Exportar Excel</button>
+                    <button id="pdfBtn" class="bg-red-600 text-white px-4 py-2 rounded-lg shadow hover:bg-red-700"><i class="fas fa-file-pdf"></i> Exportar PDF</button>
                 </div>
             </div>
 
-            <!-- Contenedor del reporte -->
             <div id="reporteContainer" class="bg-white p-6 border border-gray-200 rounded-xl shadow-sm overflow-x-auto">
                 <div class="text-center text-gray-500 py-8">Seleccione una asignatura y haga clic en "Generar Reporte".</div>
             </div>
@@ -104,11 +102,12 @@
         const asignaturaSelect = document.getElementById('asignaturaSelect');
         const filtroMostrar = document.getElementById('filtroMostrar');
         const generarBtn = document.getElementById('generarBtn');
-        const exportExcelBtn = document.getElementById('exportExcelBtn');
-        const exportPdfBtn = document.getElementById('exportPdfBtn');
+        const excelBtn = document.getElementById('excelBtn');
+        const pdfBtn = document.getElementById('pdfBtn');
         const reporteContainer = document.getElementById('reporteContainer');
 
-        // Cargar datos iniciales
+        let datosReporte = [];
+
         async function cargarDatos() {
             asignaturas = await getAll('subjects');
             grupos = await getAll('groups');
@@ -117,7 +116,6 @@
             grades = await getAll('grades');
             components = await getAll('components');
 
-            // Poblar select de asignaturas
             asignaturaSelect.innerHTML = '<option value="">-- Seleccione asignatura --</option>';
             for (let a of asignaturas) {
                 const grupo = grupos.find(g => g.id === a.groupId);
@@ -127,96 +125,51 @@
             }
         }
 
-        // Obtener el último período (con mayor fecha de fin o mayor ID)
         function obtenerUltimoPeriodo(periodosGrupo) {
-            if (periodosGrupo.length === 0) return null;
+            if (!periodosGrupo.length) return null;
             return periodosGrupo.reduce((latest, p) => {
                 if (!latest) return p;
-                // Comparar por fecha de fin, si no, por ID
                 const dateLatest = latest.fechaFin ? new Date(latest.fechaFin) : null;
                 const dateCurrent = p.fechaFin ? new Date(p.fechaFin) : null;
-                if (dateLatest && dateCurrent) {
-                    return dateCurrent > dateLatest ? p : latest;
-                }
-                // Si una tiene fecha y la otra no, preferir la que tiene fecha
-                if (dateCurrent && !dateLatest) return p;
-                if (dateLatest && !dateCurrent) return latest;
-                // Por defecto, mayor ID
+                if (dateLatest && dateCurrent) return dateCurrent > dateLatest ? p : latest;
+                if (dateCurrent) return p;
+                if (dateLatest) return latest;
                 return p.id > latest.id ? p : latest;
             }, null);
         }
 
-        // Obtener el promedio para un tipo de evaluación (subcomponentId) en un período
         function obtenerPromedio(estudianteId, periodoId, grupoId, subcomponentId) {
-            const notas = grades.filter(g =>
-                g.studentId === estudianteId &&
-                g.periodId === periodoId &&
-                g.groupId === grupoId &&
-                g.subcomponentId === subcomponentId
-            );
+            const notas = grades.filter(g => g.studentId === estudianteId && g.periodId === periodoId && g.groupId === grupoId && g.subcomponentId === subcomponentId);
             if (notas.length === 0) return null;
             const sum = notas.reduce((acc, n) => acc + (n.value || 0), 0);
             return sum / notas.length;
         }
 
-        // Generar reporte
         async function generarReporte() {
             const asignaturaId = parseInt(asignaturaSelect.value);
-            if (!asignaturaId) {
-                alert('Seleccione una asignatura.');
-                return;
-            }
-
+            if (!asignaturaId) { alert('Seleccione asignatura.'); return; }
             const asignatura = asignaturas.find(a => a.id === asignaturaId);
-            if (!asignatura) return;
-
             const grupo = grupos.find(g => g.id === asignatura.groupId);
             if (!grupo) return;
 
-            // Obtener los períodos del año del grupo
             const periodosGrupo = periodos.filter(p => p.schoolYearId === grupo.anioId);
-            if (periodosGrupo.length === 0) {
-                reporteContainer.innerHTML = '<div class="text-center text-gray-500 py-8">No hay períodos configurados para este grupo.</div>';
-                return;
-            }
-
             const ultimoPeriodo = obtenerUltimoPeriodo(periodosGrupo);
-            if (!ultimoPeriodo) {
-                reporteContainer.innerHTML = '<div class="text-center text-gray-500 py-8">No se pudo determinar el último período.</div>';
-                return;
-            }
+            if (!ultimoPeriodo) { reporteContainer.innerHTML = '<div class="text-center text-gray-500 py-8">No hay períodos.</div>'; return; }
 
-            // Obtener el componente de evaluación de la asignatura
             const componente = components.find(c => c.id === asignatura.componentId);
-            if (!componente || !componente.subcomponentes) {
-                reporteContainer.innerHTML = '<div class="text-center text-red-500 py-8">La asignatura no tiene un componente de evaluación válido.</div>';
-                return;
-            }
+            if (!componente || !componente.subcomponentes) { reporteContainer.innerHTML = '<div class="text-center text-red-500 py-8">Componente inválido.</div>'; return; }
 
-            // Mapear subcomponentes a tipos (daily_work, task, test, attendance)
-            const tipos = {
-                daily_work: { nombre: 'Trabajo Cotidiano', porcentaje: 0 },
-                task: { nombre: 'Tareas', porcentaje: 0 },
-                test: { nombre: 'Pruebas', porcentaje: 0 },
-                attendance: { nombre: 'Asistencia', porcentaje: 0 }
-            };
+            const tipos = { daily_work: { nombre: 'Trabajo Cotidiano', porcentaje: 0 }, task: { nombre: 'Tareas', porcentaje: 0 }, test: { nombre: 'Pruebas', porcentaje: 0 }, attendance: { nombre: 'Asistencia', porcentaje: 0 } };
             for (let sub of componente.subcomponentes) {
-                const nombre = sub.nombre.toLowerCase();
-                if (nombre.includes('trabajo cotidiano')) tipos.daily_work.porcentaje = sub.porcentaje;
-                else if (nombre.includes('tarea')) tipos.task.porcentaje = sub.porcentaje;
-                else if (nombre.includes('prueba')) tipos.test.porcentaje = sub.porcentaje;
-                else if (nombre.includes('asistencia')) tipos.attendance.porcentaje = sub.porcentaje;
+                const n = sub.nombre.toLowerCase();
+                if (n.includes('trabajo cotidiano')) tipos.daily_work.porcentaje = sub.porcentaje;
+                else if (n.includes('tarea')) tipos.task.porcentaje = sub.porcentaje;
+                else if (n.includes('prueba')) tipos.test.porcentaje = sub.porcentaje;
+                else if (n.includes('asistencia')) tipos.attendance.porcentaje = sub.porcentaje;
             }
 
-            // Filtrar estudiantes del grupo
             const estudiantesGrupo = estudiantes.filter(e => e.groupId === grupo.id);
-            if (estudiantesGrupo.length === 0) {
-                reporteContainer.innerHTML = '<div class="text-center text-gray-500 py-8">No hay estudiantes en este grupo.</div>';
-                return;
-            }
-
-            // Para cada estudiante, calcular promedio de cada componente en el último período
-            const resultados = [];
+            datosReporte = [];
             for (let est of estudiantesGrupo) {
                 const notas = {
                     daily_work: obtenerPromedio(est.id, ultimoPeriodo.id, grupo.id, 'daily_work'),
@@ -224,139 +177,66 @@
                     test: obtenerPromedio(est.id, ultimoPeriodo.id, grupo.id, 'test'),
                     attendance: obtenerPromedio(est.id, ultimoPeriodo.id, grupo.id, 'attendance')
                 };
-                // Verificar si tiene datos en todos los componentes (los que tienen porcentaje > 0)
-                const componentesRequeridos = [];
-                if (tipos.daily_work.porcentaje > 0) componentesRequeridos.push('daily_work');
-                if (tipos.task.porcentaje > 0) componentesRequeridos.push('task');
-                if (tipos.test.porcentaje > 0) componentesRequeridos.push('test');
-                if (tipos.attendance.porcentaje > 0) componentesRequeridos.push('attendance');
-
+                const requeridos = [];
+                if (tipos.daily_work.porcentaje > 0) requeridos.push('daily_work');
+                if (tipos.task.porcentaje > 0) requeridos.push('task');
+                if (tipos.test.porcentaje > 0) requeridos.push('test');
+                if (tipos.attendance.porcentaje > 0) requeridos.push('attendance');
                 let eximido = true;
-                for (let tipo of componentesRequeridos) {
-                    const nota = notas[tipo];
-                    if (nota === null || nota < 85) {
-                        eximido = false;
-                        break;
-                    }
+                for (let t of requeridos) {
+                    if (notas[t] === null || notas[t] < 85) { eximido = false; break; }
                 }
-                resultados.push({
-                    estudiante: est,
-                    notas,
-                    eximido
-                });
+                datosReporte.push({ estudiante: est, notas, eximido });
             }
 
-            // Filtrar según opción
             const mostrar = filtroMostrar.value;
-            let filtrados = resultados;
-            if (mostrar === 'eximidos') {
-                filtrados = resultados.filter(r => r.eximido);
-            }
+            let filtrados = mostrar === 'eximidos' ? datosReporte.filter(d => d.eximido) : datosReporte;
+            filtrados.sort((a,b) => a.estudiante.nombre.localeCompare(b.estudiante.nombre));
 
-            if (filtrados.length === 0) {
-                reporteContainer.innerHTML = '<div class="text-center text-gray-500 py-8">No hay estudiantes que cumplan los criterios.</div>';
-                return;
-            }
+            if (filtrados.length === 0) { reporteContainer.innerHTML = '<div class="text-center text-gray-500 py-8">No hay estudiantes que cumplan los criterios.</div>'; return; }
 
-            // Ordenar alfabéticamente
-            filtrados.sort((a, b) => a.estudiante.nombre.localeCompare(b.estudiante.nombre));
-
-            // Construir tabla
-            let html = `
-                <div class="mb-4">
-                    <h3 class="text-lg font-bold">${escapeHtml(asignatura.name)} - ${escapeHtml(grupo.seccion)} (${grupo.anio})</h3>
-                    <p class="text-sm text-gray-600">Último período: ${escapeHtml(ultimoPeriodo.nombre)}</p>
-                </div>
-                <div class="overflow-x-auto">
-                    <table class="reporte-table">
-                        <thead>
-                            <tr>
-                                <th>Nombre del Estudiante</th>
-                                <th>${tipos.daily_work.porcentaje > 0 ? 'Trabajo Cotidiano' : ''}</th>
-                                <th>${tipos.task.porcentaje > 0 ? 'Tareas' : ''}</th>
-                                <th>${tipos.test.porcentaje > 0 ? 'Pruebas' : ''}</th>
-                                <th>${tipos.attendance.porcentaje > 0 ? 'Asistencia' : ''}</th>
-                                <th>Condición</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-            `;
-
-            for (let r of filtrados) {
-                const eximidoClass = r.eximido ? 'eximido' : 'no-eximido';
-                const badge = r.eximido ? '<span class="badge-eximido">Eximido</span>' : '<span class="badge-no-eximido">No eximido</span>';
-                html += `<tr class="${eximidoClass}">`;
-                html += `<td>${escapeHtml(r.estudiante.nombre)}</td>`;
-                if (tipos.daily_work.porcentaje > 0) {
-                    const nota = r.notas.daily_work !== null ? r.notas.daily_work.toFixed(2) : '—';
-                    html += `<td>${nota}</td>`;
-                }
-                if (tipos.task.porcentaje > 0) {
-                    const nota = r.notas.task !== null ? r.notas.task.toFixed(2) : '—';
-                    html += `<td>${nota}</td>`;
-                }
-                if (tipos.test.porcentaje > 0) {
-                    const nota = r.notas.test !== null ? r.notas.test.toFixed(2) : '—';
-                    html += `<td>${nota}</td>`;
-                }
-                if (tipos.attendance.porcentaje > 0) {
-                    const nota = r.notas.attendance !== null ? r.notas.attendance.toFixed(2) : '—';
-                    html += `<td>${nota}</td>`;
-                }
-                html += `<td>${badge}</td>`;
-                html += `</tr>`;
+            let html = `<div class="mb-4"><h3 class="text-lg font-bold">${escapeHtml(asignatura.name)} - ${escapeHtml(grupo.seccion)} (${grupo.anio})</h3><p>Último período: ${escapeHtml(ultimoPeriodo.nombre)}</p></div>
+                        <div class="overflow-x-auto"><table class="reporte-table"><thead><tr><th>Nombre</th>`;
+            if (tipos.daily_work.porcentaje > 0) html += `<th>${tipos.daily_work.nombre}</th>`;
+            if (tipos.task.porcentaje > 0) html += `<th>${tipos.task.nombre}</th>`;
+            if (tipos.test.porcentaje > 0) html += `<th>${tipos.test.nombre}</th>`;
+            if (tipos.attendance.porcentaje > 0) html += `<th>${tipos.attendance.nombre}</th>`;
+            html += `<th>Condición</th></tr></thead><tbody>`;
+            for (let d of filtrados) {
+                const rowClass = d.eximido ? 'eximido' : 'no-eximido';
+                const badge = d.eximido ? '<span class="badge-eximido">Eximido</span>' : '<span class="badge-no-eximido">No eximido</span>';
+                html += `<tr class="${rowClass}"><td>${escapeHtml(d.estudiante.nombre)}</td>`;
+                if (tipos.daily_work.porcentaje > 0) html += `<td>${d.notas.daily_work !== null ? d.notas.daily_work.toFixed(2) : '—'}</td>`;
+                if (tipos.task.porcentaje > 0) html += `<td>${d.notas.task !== null ? d.notas.task.toFixed(2) : '—'}</td>`;
+                if (tipos.test.porcentaje > 0) html += `<td>${d.notas.test !== null ? d.notas.test.toFixed(2) : '—'}</td>`;
+                if (tipos.attendance.porcentaje > 0) html += `<td>${d.notas.attendance !== null ? d.notas.attendance.toFixed(2) : '—'}</td>`;
+                html += `<td>${badge}</td></tr>`;
             }
             html += `</tbody></table></div>`;
             reporteContainer.innerHTML = html;
         }
 
-        // Exportar a Excel
         function exportarExcel() {
             const tabla = document.querySelector('#reporteContainer table');
-            if (!tabla) {
-                alert('Primero genere un reporte.');
-                return;
-            }
+            if (!tabla) { alert('Primero genere un reporte.'); return; }
             const ws = XLSX.utils.table_to_sheet(tabla);
             const wb = XLSX.utils.book_new();
-            const asignatura = asignaturaSelect.options[asignaturaSelect.selectedIndex]?.text || 'Eximidos';
-            XLSX.utils.book_append_sheet(wb, ws, asignatura.slice(0, 31));
+            XLSX.utils.book_append_sheet(wb, ws, 'Eximidos');
             XLSX.writeFile(wb, `eximidos_${new Date().toISOString().slice(0,19)}.xlsx`);
         }
 
-        // Exportar a PDF
-        function exportarPdf() {
+        function exportarPDF() {
             const element = document.getElementById('reporteContainer');
-            if (!element || element.children.length === 0 || element.children[0].innerText.includes('Seleccione')) {
-                alert('Primero genere un reporte.');
-                return;
-            }
-            const opt = {
-                margin: 0.5,
-                filename: `eximidos_${new Date().toISOString().slice(0,19)}.pdf`,
-                image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { scale: 2 },
-                jsPDF: { unit: 'in', format: 'letter', orientation: 'landscape' }
-            };
-            html2pdf().set(opt).from(element).save();
+            if (!element || element.innerText.includes('Seleccione')) { alert('Primero genere un reporte.'); return; }
+            html2pdf().set({ margin: 0.5, filename: `eximidos_${new Date().toISOString().slice(0,19)}.pdf`, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2 }, jsPDF: { unit: 'in', format: 'a4', orientation: 'landscape' } }).from(element).save();
         }
 
-        function escapeHtml(str) {
-            if (!str) return '';
-            return str.replace(/[&<>]/g, function(m) {
-                if (m === '&') return '&amp;';
-                if (m === '<') return '&lt;';
-                if (m === '>') return '&gt;';
-                return m;
-            });
-        }
+        function escapeHtml(str) { if (!str) return ''; return str.replace(/[&<>]/g, m => m === '&' ? '&amp;' : m === '<' ? '&lt;' : '&gt;'); }
 
-        // Eventos
         generarBtn.addEventListener('click', generarReporte);
-        exportExcelBtn.addEventListener('click', exportarExcel);
-        exportPdfBtn.addEventListener('click', exportarPdf);
+        excelBtn.addEventListener('click', exportarExcel);
+        pdfBtn.addEventListener('click', exportarPDF);
 
-        // Inicializar
         await openDB();
         await cargarDatos();
     </script>
