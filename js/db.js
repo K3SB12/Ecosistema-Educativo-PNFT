@@ -1,6 +1,6 @@
 // js/db.js - Versión 8 (estable)
 const DB_NAME = 'PNFT_DB';
-const DB_VERSION = 8;
+const DB_VERSION = 9;
 
 let db = null;
 
