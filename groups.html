@@ -517,23 +517,26 @@
                     renderTablaEstudiantes();
                 });
             });
-            // Eventos editar/eliminar
-            document.querySelectorAll('.editar-estudiante').forEach(btn => {
-                btn.addEventListener('click', async (e) => {
+            // ==================== DELEGACIÓN DE EVENTOS PARA EDITAR/ELIMINAR ====================
+            // Escuchamos los clics en el contenedor #estudiantesLista
+            document.getElementById('estudiantesLista').addEventListener('click', async (e) => {
+                // Editar
+                if (e.target.closest('.editar-estudiante')) {
+                    const btn = e.target.closest('.editar-estudiante');
                     const id = parseInt(btn.dataset.id);
                     const estudiante = estudiantesList.find(s => s.id === id);
                     if (estudiante) abrirFormEstudiante(estudiante);
-                });
-            });
-            document.querySelectorAll('.eliminar-estudiante').forEach(btn => {
-                btn.addEventListener('click', async (e) => {
+                }
+                // Eliminar
+                if (e.target.closest('.eliminar-estudiante')) {
+                    const btn = e.target.closest('.eliminar-estudiante');
                     const id = parseInt(btn.dataset.id);
                     if (confirm('¿Eliminar este estudiante?')) {
                         await remove('students', id);
                         await cargarEstudiantes(currentGroupId);
                         await renderGrupos();
                     }
-                });
+                }
             });
         }
 
@@ -960,14 +963,14 @@
                 alert('Asistencia limpiada para esta fecha');
             });
         }
-
-        // ==================== INICIALIZACIÓN ====================
-        (async function init() {
+        
+ // ==================== INICIALIZACIÓN ====================
+       (async function init() {
             await openDB();
             await cargarDatosEjemplo();
             await cargarFiltros();
             await renderGrupos();
-            await cargarAdecuaciones(); // cargar tipos de adecuación para el select
+            await cargarAdecuaciones();
             configurarEventos();
             document.getElementById('fechaAsistencia').value = currentAttendanceDate;
         })();
