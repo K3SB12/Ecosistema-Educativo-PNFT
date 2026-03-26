@@ -11,6 +11,7 @@
     <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/html-docx-js@0.3.1/dist/html-docx.js"></script>
     <style>
+        /* Estilos (igual que antes) */
         body { background-color: #f8fafc; }
         .sidebar { background: linear-gradient(180deg, #1e5a20 0%, #2E7D32 100%); }
         .nav-item.active { background: white; color: #2E7D32; box-shadow: 0 10px 20px -5px rgba(0,0,0,0.2); }
@@ -180,8 +181,8 @@
             document.querySelectorAll('.edit-eval').forEach(btn => {
                 btn.addEventListener('click', () => {
                     const id = parseInt(btn.dataset.id);
-                    const eval = currentEvaluations.find(e => e.id === id);
-                    if (eval) abrirModalEvaluacion(eval);
+                    const evalObj = currentEvaluations.find(e => e.id === id);
+                    if (evalObj) abrirModalEvaluacion(evalObj);
                 });
             });
             document.querySelectorAll('.delete-eval').forEach(btn => {
@@ -222,11 +223,12 @@
                 return;
             }
 
-            let html = '<table class="grade-table"><thead><tr><th>Estudiante</th>';
+            let html = '<table class="grade-table"><thead> ';
+            html += '<th>Estudiante</th>';
             currentEvaluations.forEach(eval => {
                 html += `<th>${escapeHtml(eval.name)} (/${eval.maxScore})</th>`;
             });
-            html += '</tr></thead><tbody>';
+            html += ' </thead><tbody>';
 
             currentStudents.forEach(student => {
                 html += `<tr><td>${escapeHtml(student.nombre)} ${escapeHtml(student.apellido1)}</td>`;
@@ -282,6 +284,7 @@
             alert('Notas guardadas');
         }
 
+        // Exportaciones (similares a daily-works)
         function exportarExcel() {
             const tabla = document.querySelector('#notasContainer table');
             if (!tabla) { alert('Primero cargue un grupo y período.'); return; }
@@ -369,12 +372,7 @@
 
         function escapeHtml(str) {
             if (!str) return '';
-            return str.replace(/[&<>]/g, function(m) {
-                if (m === '&') return '&amp;';
-                if (m === '<') return '&lt;';
-                if (m === '>') return '&gt;';
-                return m;
-            });
+            return str.replace(/[&<>]/g, m => m === '&' ? '&amp;' : m === '<' ? '&lt;' : '&gt;');
         }
 
         await openDB();
