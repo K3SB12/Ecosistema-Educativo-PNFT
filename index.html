@@ -97,10 +97,10 @@
                 <a href="schedules.html"><li class="nav-item"><i class="fas fa-clock"></i> Horario</li></a>
                 <a href="conducta.html"><li class="nav-item"><i class="fas fa-clipboard-list"></i> Conducta</li></a>
                 <a href="alertas.html"><li class="nav-item"><i class="fas fa-exclamation-triangle"></i> Alertas</li></a>
-                <a href="reporte-periodo.html"><li class="nav-item"><i class="fas fa-chart-line w-5"></i> Reporte por Período</li></a>
-                <a href="reporte-anual.html"><li class="nav-item"><i class="fas fa-chart-line w-5"></i> Reporte Anual</li></a>
-                <a href="reporte-individual.html"><li class="nav-item"><i class="fas fa-file-alt w-5"></i> Reporte Individual</li></a>
-                <a href="eximidos.html"><li class="nav-item"><i class="fas fa-check-circle w-5"></i> Eximidos</li></a>
+                <a href="reporte-periodo.html"><li class="nav-item"><i class="fas fa-chart-line"></i> Reporte por Período</li></a>
+                <a href="reporte-anual.html"><li class="nav-item"><i class="fas fa-chart-line"></i> Reporte Anual</li></a>
+                <a href="reporte-individual.html"><li class="nav-item"><i class="fas fa-file-alt"></i> Reporte Individual</li></a>
+                <a href="eximidos.html"><li class="nav-item"><i class="fas fa-check-circle"></i> Eximidos</li></a>
                 <a href="settings.html"><li class="nav-item"><i class="fas fa-cog"></i> Configuración</li></a>
             </ul>
         </aside>
@@ -122,8 +122,14 @@
             <div class="recent-section">
                 <div class="section-header"><h2><i class="fas fa-history" style="color:#2E7D32;"></i> Últimos planeamientos</h2><a href="planning.html"><i class="fas fa-arrow-right"></i> Ver todos</a></div>
                 <table id="tablaPlaneamientos">
-                    <thead><tr><th>Nivel</th><th>Módulo</th><th>Fecha</th></tr></thead>
-                    <tbody id="planeamientosBody"><tr><td colspan="3" class="empty-table">Cargando...</td></tr></tbody>
+                    <thead> …
+                        <th>Nivel</th>
+                        <th>Módulo</th>
+                        <th>Fecha</th>
+                    </thead>
+                    <tbody id="planeamientosBody">
+                        <tr><td colspan="3" class="empty-table">Cargando...</td></tr>
+                    </tbody>
                 </table>
             </div>
             <div class="recent-section">
@@ -146,49 +152,71 @@
 
         async function cargarEstadisticas() {
             try {
-                const db = await openDB();
-                // Contar planeamientos
+                // Asegurar que la base de datos está abierta antes de cualquier operación
+                await openDB();
+
+                // Obtener todos los datos de las stores necesarias
                 const plannings = await getAll('plannings');
-                document.getElementById('totalPlaneamientos').textContent = plannings.length;
-                
-                // Contar indicadores de evaluación
                 const indicadores = await getAll('evaluation_indicators');
-                document.getElementById('totalEvaluaciones').textContent = indicadores.length;
-                
-                // Contar bitácoras
                 const bitacoras = await getAll('bitacoras');
-                document.getElementById('totalBitacoras').textContent = bitacoras.length;
-                
-                // Contar estudiantes
                 const students = await getAll('students');
-                document.getElementById('totalEstudiantes').textContent = students.length;
-                
-                // Contar grupos
                 const groups = await getAll('groups');
+
+                // Actualizar contadores
+                document.getElementById('totalPlaneamientos').textContent = plannings.length;
+                document.getElementById('totalEvaluaciones').textContent = indicadores.length;
+                document.getElementById('totalBitacoras').textContent = bitacoras.length;
+                document.getElementById('totalEstudiantes').textContent = students.length;
                 document.getElementById('totalGrupos').textContent = groups.length;
-                
-                // Últimos planeamientos (ordenar por fecha descendente)
-                const planeamientosOrdenados = plannings.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
-                const ultimos = planeamientosOrdenados.slice(0, 5);
+
+                // Últimos planeamientos
                 const tbody = document.getElementById('planeamientosBody');
-                if (ultimos.length === 0) {
+                if (plannings.length === 0) {
                     tbody.innerHTML = '<tr><td colspan="3" class="empty-table">Aún no hay planeamientos guardados</td></tr>';
-                } else {
-                    tbody.innerHTML = ultimos.map(p => `
-                        <tr>
-                            <td>${escapeHtml(p.datosAdministrativos?.nivel || '—')}</td>
-                            <td>${escapeHtml(p.datosAdministrativos?.modulo || '—')}</td>
-                            <td>${new Date(p.fecha).toLocaleDateString()}</td>
-                        </tr>
-                    `).join('');
+                    return;
                 }
+
+                // Ordenar por fecha descendente (manejar fechas inválidas)
+                const planeamientosOrdenados = [...plannings].sort((a, b) => {
+                    const fechaA = a.fecha ? new Date(a.fecha) : 0;
+                    const fechaB = b.fecha ? new Date(b.fecha) : 0;
+                    return fechaB - fechaA;
+                });
+
+                const ultimos = planeamientosOrdenados.slice(0, 5);
+                tbody.innerHTML = ultimos.map(p => {
+                    // Acceso seguro a datosAdministrativos
+                    const nivel = p.datosAdministrativos?.nivel || '—';
+                    const modulo = p.datosAdministrativos?.modulo || '—';
+                    let fechaFormateada = '—';
+                    if (p.fecha) {
+                        try {
+                            fechaFormateada = new Date(p.fecha).toLocaleDateString();
+                        } catch (e) {
+                            fechaFormateada = 'Fecha inválida';
+                        }
+                    }
+                    return `
+                        <tr>
+                            <td>${escapeHtml(nivel)}</td>
+                            <td>${escapeHtml(modulo)}</td>
+                            <td>${escapeHtml(fechaFormateada)}</td>
+                        </tr>
+                    `;
+                }).join('');
             } catch (error) {
                 console.error('Error cargando estadísticas:', error);
                 const tbody = document.getElementById('planeamientosBody');
-                tbody.innerHTML = '<tr><td colspan="3" class="empty-table">Error al cargar datos. Asegúrate de que la base de datos está inicializada.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="3" class="empty-table">Error al cargar datos. Revisa la consola para más detalles.</td></tr>';
+                // Mostrar los contadores como 0 en caso de error
+                document.getElementById('totalPlaneamientos').textContent = '0';
+                document.getElementById('totalEvaluaciones').textContent = '0';
+                document.getElementById('totalBitacoras').textContent = '0';
+                document.getElementById('totalEstudiantes').textContent = '0';
+                document.getElementById('totalGrupos').textContent = '0';
             }
         }
-        
+
         function escapeHtml(str) {
             if (!str) return '';
             return str.replace(/[&<>]/g, function(m) {
@@ -198,7 +226,8 @@
                 return m;
             });
         }
-        
+
+        // Iniciar la carga de datos
         cargarEstadisticas();
     </script>
 </body>
