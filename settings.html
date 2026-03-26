@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="css/style.css">
     <style>
+        /* Estilos específicos para settings */
         .settings-tabs {
             display: flex;
             gap: 0.5rem;
@@ -63,6 +64,10 @@
             color: #2E7D32;
             padding: 0.2rem 0.6rem;
             border-radius: 30px;
+        }
+        .entity-badge-standard {
+            background: #FF9800;
+            color: white;
         }
         .entity-details {
             font-size: 0.85rem;
@@ -129,6 +134,11 @@
             border: 1px solid #ccc;
         }
         .btn-secundario:hover { background: #e0e0e0; transform: translateY(-1px); }
+        .btn-danger {
+            background: #c62828;
+            color: white;
+        }
+        .btn-danger:hover { background: #b71c1c; }
         .flex-between {
             display: flex;
             justify-content: space-between;
@@ -136,6 +146,11 @@
             flex-wrap: wrap;
             gap: 1rem;
             margin-bottom: 1.5rem;
+        }
+        .warning-text {
+            color: #c62828;
+            font-size: 0.8rem;
+            margin-top: 0.3rem;
         }
     </style>
 </head>
@@ -210,24 +225,37 @@
                 <div class="flex-between">
                     <h2><i class="fas fa-chart-line"></i> Componentes de evaluación</h2>
                     <div>
-                        <button id="preloadModalidadesBtn" class="btn-accion btn-ia"><i class="fas fa-download"></i> Precargar por modalidad</button>
-                        <button id="addComponentBtn" class="btn-accion"><i class="fas fa-plus"></i> Nuevo componente</button>
+                        <button id="preloadModalidadesBtn" class="btn-accion btn-ia"><i class="fas fa-download"></i> Restaurar componentes estándar</button>
+                        <button id="addComponentBtn" class="btn-accion"><i class="fas fa-plus"></i> Nuevo componente personalizado</button>
                     </div>
                 </div>
+                <p class="text-sm text-gray-600 mb-4">⚠️ Los componentes estándar (I Ciclo, II Ciclo, III Ciclo, Diversificada, Educación Adultos, Educación Especial) se crean automáticamente. Puedes editarlos si los porcentajes cambian, pero no elimines los que estás usando en asignaturas.</p>
                 <div id="componentsList"></div>
             </div>
         </main>
     </div>
 
-    <!-- MODALES -->
+    <!-- MODALES (sin cambios estructurales) -->
     <div id="modalCentro" class="modal">
         <div class="modal-content">
             <span class="close" id="closeCentroModal">&times;</span>
             <h2 id="centroModalTitle">Nuevo centro educativo</h2>
-            <div class="form-group"><label>Nombre completo *</label><input type="text" id="centroNombre" placeholder="Escuela Tranquilino Sáenz Rojas"></div>
-            <div class="form-group"><label>Código (identificador)</label><input type="text" id="centroCodigo" placeholder="Ej: CE1"></div>
-            <div class="form-group"><label>Activo</label><input type="checkbox" id="centroActivo" checked></div>
-            <div style="text-align: right;"><button id="saveCentroBtn" class="btn-accion">Guardar</button><button id="cancelCentroBtn" class="btn-secundario">Cancelar</button></div>
+            <div class="form-group">
+                <label>Nombre completo *</label>
+                <input type="text" id="centroNombre" placeholder="Escuela Tranquilino Sáenz Rojas">
+            </div>
+            <div class="form-group">
+                <label>Código (identificador)</label>
+                <input type="text" id="centroCodigo" placeholder="Ej: CE1">
+            </div>
+            <div class="form-group">
+                <label>Activo</label>
+                <input type="checkbox" id="centroActivo" checked>
+            </div>
+            <div style="text-align: right;">
+                <button id="saveCentroBtn" class="btn-accion">Guardar</button>
+                <button id="cancelCentroBtn" class="btn-secundario">Cancelar</button>
+            </div>
         </div>
     </div>
 
@@ -235,9 +263,18 @@
         <div class="modal-content">
             <span class="close" id="closeYearModal">&times;</span>
             <h2 id="yearModalTitle">Nuevo año lectivo</h2>
-            <div class="form-group"><label>Nombre (ej: 2026)</label><input type="text" id="yearName" placeholder="2026"></div>
-            <div class="form-group"><label>Activo</label><input type="checkbox" id="yearActive" checked></div>
-            <div style="text-align: right;"><button id="saveYearBtn" class="btn-accion">Guardar</button><button id="cancelYearBtn" class="btn-secundario">Cancelar</button></div>
+            <div class="form-group">
+                <label>Nombre (ej: 2026)</label>
+                <input type="text" id="yearName" placeholder="2026">
+            </div>
+            <div class="form-group">
+                <label>Activo</label>
+                <input type="checkbox" id="yearActive" checked>
+            </div>
+            <div style="text-align: right;">
+                <button id="saveYearBtn" class="btn-accion">Guardar</button>
+                <button id="cancelYearBtn" class="btn-secundario">Cancelar</button>
+            </div>
         </div>
     </div>
 
@@ -245,44 +282,74 @@
         <div class="modal-content">
             <span class="close" id="closePeriodModal">&times;</span>
             <h2 id="periodModalTitle">Nuevo período</h2>
-            <div class="form-group"><label>Año lectivo</label><select id="periodYearId"></select></div>
-            <div class="form-group"><label>Nombre (ej: I Semestre)</label><input type="text" id="periodName" placeholder="I Semestre"></div>
-            <div class="form-group"><label>Tipo</label><select id="periodType"><option value="bimestre">Bimestre</option><option value="trimestre">Trimestre</option><option value="cuatrimestre">Cuatrimestre</option><option value="semestre">Semestre</option></select></div>
-            <div class="form-group"><label>Fecha inicio</label><input type="date" id="periodStart"></div>
-            <div class="form-group"><label>Fecha fin</label><input type="date" id="periodEnd"></div>
-            <div class="form-group"><label>Activo</label><input type="checkbox" id="periodActive" checked></div>
-            <div style="text-align: right;"><button id="savePeriodBtn" class="btn-accion">Guardar</button><button id="cancelPeriodBtn" class="btn-secundario">Cancelar</button></div>
+            <div class="form-group">
+                <label>Año lectivo</label>
+                <select id="periodYearId"></select>
+            </div>
+            <div class="form-group">
+                <label>Nombre (ej: I Semestre)</label>
+                <input type="text" id="periodName" placeholder="I Semestre">
+            </div>
+            <div class="form-group">
+                <label>Tipo</label>
+                <select id="periodType">
+                    <option value="bimestre">Bimestre</option>
+                    <option value="trimestre">Trimestre</option>
+                    <option value="cuatrimestre">Cuatrimestre</option>
+                    <option value="semestre">Semestre</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Fecha inicio</label>
+                <input type="date" id="periodStart">
+            </div>
+            <div class="form-group">
+                <label>Fecha fin</label>
+                <input type="date" id="periodEnd">
+            </div>
+            <div class="form-group">
+                <label>Activo</label>
+                <input type="checkbox" id="periodActive" checked>
+            </div>
+            <div style="text-align: right;">
+                <button id="savePeriodBtn" class="btn-accion">Guardar</button>
+                <button id="cancelPeriodBtn" class="btn-secundario">Cancelar</button>
+            </div>
         </div>
     </div>
 
     <div id="modalComponent" class="modal">
         <div class="modal-content" style="max-width: 700px;">
             <span class="close" id="closeComponentModal">&times;</span>
-            <h2 id="componentModalTitle">Nuevo componente</h2>
-            <div class="form-group"><label>Nombre (ej: I Ciclo, Diversificada)</label><input type="text" id="componentName" placeholder="Ej: I Ciclo"></div>
-            <div class="form-group"><label>Subcomponentes (suma total 100%)</label>
+            <h2 id="componentModalTitle">Nuevo componente personalizado</h2>
+            <div class="form-group">
+                <label>Nombre (ej: Mi componente personalizado)</label>
+                <input type="text" id="componentName" placeholder="Ej: Mi componente">
+                <div id="nombreWarning" class="warning-text" style="display: none;">⚠️ Este nombre está reservado para componentes estándar. Usa otro nombre.</div>
+            </div>
+            <div class="form-group">
+                <label>Subcomponentes (suma total 100%)</label>
                 <div id="subcomponentsContainer"></div>
                 <button type="button" id="addSubcomponentBtn" class="btn-secundario btn-sm"><i class="fas fa-plus"></i> Agregar subcomponente</button>
                 <div id="totalPercentDisplay" class="total-percent">Total: 0%</div>
             </div>
-            <div style="text-align: right;"><button id="saveComponentBtn" class="btn-accion">Guardar</button><button id="cancelComponentBtn" class="btn-secundario">Cancelar</button></div>
+            <div style="text-align: right;">
+                <button id="saveComponentBtn" class="btn-accion">Guardar</button>
+                <button id="cancelComponentBtn" class="btn-secundario">Cancelar</button>
+            </div>
         </div>
     </div>
 
     <div id="modalPreload" class="modal">
         <div class="modal-content">
             <span class="close" id="closePreloadModal">&times;</span>
-            <h2>Precargar componente por modalidad (Formación Tecnológica)</h2>
-            <p>Seleccione la modalidad para cargar la plantilla con los porcentajes oficiales del MEP:</p>
-            <select id="preloadModalidad" style="width:100%; padding:0.5rem; margin:1rem 0;">
-                <option value="I Ciclo">I Ciclo (1°-3°) – Trabajo cotidiano 65%, Tareas 10%, Prueba de ejecución 15%, Asistencia 10%</option>
-                <option value="II Ciclo">II Ciclo (4°-6°) – Trabajo cotidiano 60%, Tareas 10%, Prueba de ejecución 20%, Asistencia 10%</option>
-                <option value="III Ciclo">III Ciclo (7°-9°) – Trabajo cotidiano 50%, Tareas 10%, Proyecto 30%, Asistencia 10%</option>
-                <option value="Diversificada">Diversificada (10°-12°) – Trabajo cotidiano 50%, Tareas 5%, Proyecto 35%, Asistencia 10%</option>
-                <option value="Educación Adultos">Educación Adultos (CINDEA/IPEC) – Trabajo cotidiano 50%, Tareas 10%, Proyecto 30%, Asistencia 10%</option>
-                <option value="Educación Especial">Educación Especial (III Ciclo/Diversificado) – Trabajo cotidiano 60%, Tareas 10%, Proyecto 20%, Asistencia 10%</option>
-            </select>
-            <div style="text-align: right;"><button id="confirmPreloadBtn" class="btn-accion">Cargar</button><button id="cancelPreloadBtn" class="btn-secundario">Cancelar</button></div>
+            <h2>Restaurar componentes estándar</h2>
+            <p>Esta acción recreará los componentes con los porcentajes oficiales del MEP (incluyendo Portafolio en los ciclos correspondientes).</p>
+            <p class="text-sm text-red-600 mt-2">⚠️ Si ya tiene componentes con estos nombres, serán reemplazados.</p>
+            <div style="text-align: right; margin-top: 1rem;">
+                <button id="confirmPreloadBtn" class="btn-accion">Restaurar</button>
+                <button id="cancelPreloadBtn" class="btn-secundario">Cancelar</button>
+            </div>
         </div>
     </div>
 
@@ -296,6 +363,54 @@
         let currentComponentId = null;
         let subcomponents = [];
 
+        // Nombres estándar de componentes precargados
+        const STANDARD_NAMES = ['I Ciclo', 'II Ciclo', 'III Ciclo', 'Diversificada', 'Educación Adultos', 'Educación Especial'];
+
+        // Datos de componentes estándar (con Portafolio incluido en los que aplica)
+        const standardComponentsData = {
+            'I Ciclo': [
+                { nombre: 'Trabajo cotidiano', porcentaje: 65 },
+                { nombre: 'Tareas', porcentaje: 10 },
+                { nombre: 'Prueba de ejecución', porcentaje: 15 },
+                { nombre: 'Asistencia', porcentaje: 10 }
+            ],
+            'II Ciclo': [
+                { nombre: 'Trabajo cotidiano', porcentaje: 60 },
+                { nombre: 'Tareas', porcentaje: 10 },
+                { nombre: 'Prueba de ejecución', porcentaje: 20 },
+                { nombre: 'Asistencia', porcentaje: 10 }
+            ],
+            'III Ciclo': [
+                { nombre: 'Trabajo cotidiano', porcentaje: 50 },
+                { nombre: 'Tareas', porcentaje: 10 },
+                { nombre: 'Proyecto', porcentaje: 30 },
+                { nombre: 'Asistencia', porcentaje: 10 },
+                { nombre: 'Portafolio', porcentaje: 0 }  // Portafolio como 0% por defecto, editable
+            ],
+            'Diversificada': [
+                { nombre: 'Trabajo cotidiano', porcentaje: 50 },
+                { nombre: 'Tareas', porcentaje: 5 },
+                { nombre: 'Proyecto', porcentaje: 35 },
+                { nombre: 'Asistencia', porcentaje: 10 },
+                { nombre: 'Portafolio', porcentaje: 0 }
+            ],
+            'Educación Adultos': [
+                { nombre: 'Trabajo cotidiano', porcentaje: 50 },
+                { nombre: 'Tareas', porcentaje: 10 },
+                { nombre: 'Proyecto', porcentaje: 30 },
+                { nombre: 'Asistencia', porcentaje: 10 },
+                { nombre: 'Portafolio', porcentaje: 0 }
+            ],
+            'Educación Especial': [
+                { nombre: 'Trabajo cotidiano', porcentaje: 60 },
+                { nombre: 'Tareas', porcentaje: 10 },
+                { nombre: 'Proyecto', porcentaje: 20 },
+                { nombre: 'Asistencia', porcentaje: 10 },
+                { nombre: 'Portafolio', porcentaje: 0 }
+            ]
+        };
+
+        // Esperar a que la DB esté lista
         await openDB();
         await initDefaultData();
 
@@ -303,8 +418,9 @@
         async function renderCentros() {
             const centros = await getAll('centros_educativos');
             const container = document.getElementById('centrosList');
-            if (!centros.length) container.innerHTML = '<p class="empty-table">No hay centros educativos. Cree uno nuevo.</p>';
-            else {
+            if (!centros.length) {
+                container.innerHTML = '<p class="empty-table">No hay centros educativos. Cree uno nuevo.</p>';
+            } else {
                 container.innerHTML = centros.map(c => `
                     <div class="entity-card">
                         <div class="entity-header">
@@ -315,7 +431,9 @@
                                 <i class="fas fa-trash-alt" data-id="${c.id}" data-action="deleteCentro"></i>
                             </div>
                         </div>
-                        <div class="entity-details"><i class="fas fa-id-card"></i> ${c.codigo || 'Sin código'}</div>
+                        <div class="entity-details">
+                            <i class="fas fa-id-card"></i> ${c.codigo || 'Sin código'}
+                        </div>
                     </div>
                 `).join('');
                 attachCentroActions();
@@ -333,7 +451,7 @@
             document.querySelectorAll('[data-action="deleteCentro"]').forEach(btn => {
                 btn.addEventListener('click', async (e) => {
                     const id = parseInt(e.currentTarget.dataset.id);
-                    if (confirm('¿Eliminar este centro educativo?')) {
+                    if (confirm('¿Eliminar este centro educativo? Se perderá la asociación a grupos.')) {
                         await remove('centros_educativos', id);
                         renderCentros();
                     }
@@ -352,7 +470,12 @@
         document.getElementById('saveCentroBtn').onclick = async () => {
             const nombre = document.getElementById('centroNombre').value.trim();
             if (!nombre) { alert('El nombre es obligatorio'); return; }
-            const centro = { id: currentCentroId || Date.now(), nombre, codigo: document.getElementById('centroCodigo').value.trim(), activo: document.getElementById('centroActivo').checked };
+            const centro = {
+                id: currentCentroId || Date.now(),
+                nombre,
+                codigo: document.getElementById('centroCodigo').value.trim(),
+                activo: document.getElementById('centroActivo').checked
+            };
             await put('centros_educativos', centro);
             renderCentros();
             closeAllModals();
@@ -364,8 +487,9 @@
         async function renderYears() {
             const years = await getAll('school_years');
             const container = document.getElementById('yearsList');
-            if (!years.length) container.innerHTML = '<p class="empty-table">No hay años lectivos. Cree uno nuevo.</p>';
-            else {
+            if (!years.length) {
+                container.innerHTML = '<p class="empty-table">No hay años lectivos. Cree uno nuevo.</p>';
+            } else {
                 container.innerHTML = years.map(y => `
                     <div class="entity-card">
                         <div class="entity-header">
@@ -394,8 +518,10 @@
             document.querySelectorAll('[data-action="deleteYear"]').forEach(btn => {
                 btn.addEventListener('click', async (e) => {
                     const id = parseInt(e.currentTarget.dataset.id);
-                    if (confirm('¿Eliminar este año lectivo?')) {
+                    if (confirm('¿Eliminar este año lectivo? También se eliminarán todos sus períodos.')) {
                         await remove('school_years', id);
+                        const periods = await getPeriodsByYear(id);
+                        for (let p of periods) await remove('periods_enhanced', p.id);
                         renderYears();
                         renderPeriods();
                     }
@@ -413,7 +539,11 @@
         document.getElementById('saveYearBtn').onclick = async () => {
             const nombre = document.getElementById('yearName').value.trim();
             if (!nombre) { alert('El nombre es obligatorio'); return; }
-            const year = { id: currentYearId || Date.now(), nombre, activo: document.getElementById('yearActive').checked };
+            const year = {
+                id: currentYearId || Date.now(),
+                nombre,
+                activo: document.getElementById('yearActive').checked
+            };
             await put('school_years', year);
             renderYears();
             closeAllModals();
@@ -424,10 +554,16 @@
         // ----- PERÍODOS -----
         async function renderPeriods() {
             const yearFilter = document.getElementById('yearFilterPeriods').value;
-            let periods = yearFilter === 'todos' ? await getAll('periods_enhanced') : await getPeriodsByYear(parseInt(yearFilter));
+            let periods;
+            if (yearFilter === 'todos') {
+                periods = await getAll('periods_enhanced');
+            } else {
+                periods = await getPeriodsByYear(parseInt(yearFilter));
+            }
             const container = document.getElementById('periodsList');
-            if (!periods.length) container.innerHTML = '<p class="empty-table">No hay períodos para este año. Cree uno nuevo.</p>';
-            else {
+            if (!periods.length) {
+                container.innerHTML = '<p class="empty-table">No hay períodos para este año. Cree uno nuevo.</p>';
+            } else {
                 container.innerHTML = periods.map(p => `
                     <div class="entity-card">
                         <div class="entity-header">
@@ -438,7 +574,9 @@
                                 <i class="fas fa-trash-alt" data-id="${p.id}" data-action="deletePeriod"></i>
                             </div>
                         </div>
-                        <div class="entity-details"><i class="fas fa-calendar-alt"></i> ${p.fechaInicio || 'sin fecha'} - ${p.fechaFin || 'sin fecha'}</div>
+                        <div class="entity-details">
+                            <i class="fas fa-calendar-alt"></i> ${p.fechaInicio || 'sin fecha'} - ${p.fechaFin || 'sin fecha'}
+                        </div>
                     </div>
                 `).join('');
                 attachPeriodActions();
@@ -509,6 +647,48 @@
         }
 
         // ----- COMPONENTES -----
+        async function precargarComponentesEstandar() {
+            const componentes = await getAll('components');
+            for (let nombre of STANDARD_NAMES) {
+                const existe = componentes.some(c => c.nombre === nombre);
+                if (existe) {
+                    // Si existe, lo actualizamos (sobrescribimos)
+                    const existente = componentes.find(c => c.nombre === nombre);
+                    const nuevosSub = standardComponentsData[nombre] || [];
+                    existente.subcomponentes = JSON.parse(JSON.stringify(nuevosSub));
+                    await put('components', existente);
+                } else {
+                    // Si no existe, lo creamos
+                    const nuevoComp = {
+                        id: Date.now(),
+                        nombre: nombre,
+                        subcomponentes: JSON.parse(JSON.stringify(standardComponentsData[nombre] || []))
+                    };
+                    await put('components', nuevoComp);
+                }
+            }
+            await renderComponents();
+        }
+
+        // Función de inicialización automática de componentes estándar
+        async function inicializarComponentesEstandar() {
+            const componentes = await getAll('components');
+            let hayCambios = false;
+            for (let nombre of STANDARD_NAMES) {
+                const existe = componentes.some(c => c.nombre === nombre);
+                if (!existe) {
+                    const nuevoComp = {
+                        id: Date.now(),
+                        nombre: nombre,
+                        subcomponentes: JSON.parse(JSON.stringify(standardComponentsData[nombre] || []))
+                    };
+                    await put('components', nuevoComp);
+                    hayCambios = true;
+                }
+            }
+            if (hayCambios) await renderComponents();
+        }
+
         function updateTotalPercent() {
             const total = subcomponents.reduce((s, sub) => s + (sub.porcentaje || 0), 0);
             const display = document.getElementById('totalPercentDisplay');
@@ -517,7 +697,6 @@
             else display.className = 'total-percent invalid';
             return total;
         }
-
         function renderSubcomponentsUI() {
             const container = document.getElementById('subcomponentsContainer');
             if (subcomponents.length === 0) {
@@ -554,25 +733,25 @@
             }
             updateTotalPercent();
         }
-
         document.getElementById('addSubcomponentBtn').onclick = () => {
             subcomponents.push({ nombre: 'Nuevo subcomponente', porcentaje: 0 });
             renderSubcomponentsUI();
         };
-
         async function renderComponents() {
             const components = await getAll('components');
             const container = document.getElementById('componentsList');
             if (!components.length) {
-                container.innerHTML = '<p class="empty-table">No hay componentes. Cree uno nuevo o precargue por modalidad.</p>';
+                container.innerHTML = '<p class="empty-table">No hay componentes. Use "Restaurar componentes estándar" o cree uno personalizado.</p>';
             } else {
-                const nombresPrecargados = ['I Ciclo', 'II Ciclo', 'III Ciclo', 'Diversificada', 'Educación Adultos', 'Educación Especial'];
                 container.innerHTML = components.map(comp => {
-                    const isPrecargado = nombresPrecargados.includes(comp.nombre);
+                    const isStandard = STANDARD_NAMES.includes(comp.nombre);
                     return `
                         <div class="entity-card">
                             <div class="entity-header">
-                                <span class="entity-title">${escapeHtml(comp.nombre)} ${isPrecargado ? '<span class="entity-badge" style="background:#FF9800; color:white;">Precargado</span>' : ''}</span>
+                                <span class="entity-title">${escapeHtml(comp.nombre)}</span>
+                                <div>
+                                    ${isStandard ? '<span class="entity-badge entity-badge-standard">Estándar MEP</span>' : '<span class="entity-badge">Personalizado</span>'}
+                                </div>
                                 <div class="action-icons">
                                     <i class="fas fa-edit" data-id="${comp.id}" data-action="editComponent"></i>
                                     <i class="fas fa-trash-alt" data-id="${comp.id}" data-action="deleteComponent"></i>
@@ -595,7 +774,6 @@
                 attachComponentActions();
             }
         }
-
         function attachComponentActions() {
             document.querySelectorAll('[data-action="editComponent"]').forEach(btn => {
                 btn.addEventListener('click', async (e) => {
@@ -608,27 +786,57 @@
             document.querySelectorAll('[data-action="deleteComponent"]').forEach(btn => {
                 btn.addEventListener('click', async (e) => {
                     const id = parseInt(e.currentTarget.dataset.id);
-                    if (confirm('¿Eliminar este componente? Se perderá la asignación a grupos.')) {
-                        await remove('components', id);
-                        renderComponents();
+                    const comp = (await getAll('components')).find(c => c.id === id);
+                    if (comp && STANDARD_NAMES.includes(comp.nombre)) {
+                        if (confirm(`¿Eliminar el componente estándar "${comp.nombre}"? Puede restaurarlo después con el botón "Restaurar componentes estándar".`)) {
+                            await remove('components', id);
+                            renderComponents();
+                        }
+                    } else if (comp) {
+                        if (confirm('¿Eliminar este componente? Se perderá la asignación a asignaturas.')) {
+                            await remove('components', id);
+                            renderComponents();
+                        }
                     }
                 });
             });
         }
-
         function openComponentModal(component = null) {
             currentComponentId = component ? component.id : null;
-            document.getElementById('componentModalTitle').innerText = component ? 'Editar componente' : 'Nuevo componente';
-            document.getElementById('componentName').value = component ? component.nombre : '';
+            document.getElementById('componentModalTitle').innerText = component ? 'Editar componente' : 'Nuevo componente personalizado';
+            const nombreInput = document.getElementById('componentName');
+            const warning = document.getElementById('nombreWarning');
+            nombreInput.value = component ? component.nombre : '';
             subcomponents = component ? JSON.parse(JSON.stringify(component.subcomponentes)) : [];
             renderSubcomponentsUI();
+            // Validación de nombre reservado
+            const checkNombre = () => {
+                const nombre = nombreInput.value.trim();
+                if (STANDARD_NAMES.includes(nombre)) {
+                    warning.style.display = 'block';
+                } else {
+                    warning.style.display = 'none';
+                }
+            };
+            nombreInput.addEventListener('input', checkNombre);
+            checkNombre();
             document.getElementById('modalComponent').style.display = 'block';
+            // Limpiar evento al cerrar
+            const closeHandler = () => {
+                nombreInput.removeEventListener('input', checkNombre);
+                modalComponent.removeEventListener('close', closeHandler);
+            };
+            const modalComponent = document.getElementById('modalComponent');
+            modalComponent.addEventListener('close', closeHandler);
         }
-
         document.getElementById('addComponentBtn').onclick = () => openComponentModal();
         document.getElementById('saveComponentBtn').onclick = async () => {
             const nombre = document.getElementById('componentName').value.trim();
             if (!nombre) { alert('El nombre es obligatorio'); return; }
+            if (STANDARD_NAMES.includes(nombre)) {
+                alert('No puede crear un componente con nombre estándar. Use el botón "Restaurar componentes estándar" si necesita recuperar los valores originales.');
+                return;
+            }
             if (subcomponents.length === 0) { alert('Debe agregar al menos un subcomponente'); return; }
             const total = subcomponents.reduce((s, sub) => s + sub.porcentaje, 0);
             if (total !== 100) { alert(`La suma de porcentajes debe ser 100%. Actual: ${total}%`); return; }
@@ -644,24 +852,16 @@
         document.getElementById('cancelComponentBtn').onclick = () => closeAllModals();
         document.getElementById('closeComponentModal').onclick = () => closeAllModals();
 
-        // Precarga por modalidad
-        const modalidadesData = {
-            'I Ciclo': [{ nombre: 'Trabajo cotidiano', porcentaje: 65 }, { nombre: 'Tareas', porcentaje: 10 }, { nombre: 'Prueba de ejecución', porcentaje: 15 }, { nombre: 'Asistencia', porcentaje: 10 }],
-            'II Ciclo': [{ nombre: 'Trabajo cotidiano', porcentaje: 60 }, { nombre: 'Tareas', porcentaje: 10 }, { nombre: 'Prueba de ejecución', porcentaje: 20 }, { nombre: 'Asistencia', porcentaje: 10 }],
-            'III Ciclo': [{ nombre: 'Trabajo cotidiano', porcentaje: 50 }, { nombre: 'Tareas', porcentaje: 10 }, { nombre: 'Proyecto', porcentaje: 30 }, { nombre: 'Asistencia', porcentaje: 10 }],
-            'Diversificada': [{ nombre: 'Trabajo cotidiano', porcentaje: 50 }, { nombre: 'Tareas', porcentaje: 5 }, { nombre: 'Proyecto', porcentaje: 35 }, { nombre: 'Asistencia', porcentaje: 10 }],
-            'Educación Adultos': [{ nombre: 'Trabajo cotidiano', porcentaje: 50 }, { nombre: 'Tareas', porcentaje: 10 }, { nombre: 'Proyecto', porcentaje: 30 }, { nombre: 'Asistencia', porcentaje: 10 }],
-            'Educación Especial': [{ nombre: 'Trabajo cotidiano', porcentaje: 60 }, { nombre: 'Tareas', porcentaje: 10 }, { nombre: 'Proyecto', porcentaje: 20 }, { nombre: 'Asistencia', porcentaje: 10 }]
+        // Precarga (restauración) de componentes estándar
+        document.getElementById('preloadModalidadesBtn').onclick = () => {
+            document.getElementById('modalPreload').style.display = 'block';
         };
-        document.getElementById('preloadModalidadesBtn').onclick = () => document.getElementById('modalPreload').style.display = 'block';
         document.getElementById('confirmPreloadBtn').onclick = async () => {
-            const modalidad = document.getElementById('preloadModalidad').value;
-            const subcomponentes = modalidadesData[modalidad];
-            if (!subcomponentes) { alert('No hay datos para esta modalidad'); return; }
-            const component = { id: Date.now(), nombre: modalidad, subcomponentes: JSON.parse(JSON.stringify(subcomponentes)) };
-            await put('components', component);
-            renderComponents();
-            closeAllModals();
+            if (confirm('¿Restaurar todos los componentes estándar? Esto sobrescribirá los existentes (si los hay).')) {
+                await precargarComponentesEstandar();
+                closeAllModals();
+                alert('Componentes estándar restaurados correctamente.');
+            }
         };
         document.getElementById('cancelPreloadBtn').onclick = () => closeAllModals();
         document.getElementById('closePreloadModal').onclick = () => closeAllModals();
@@ -696,9 +896,10 @@
         });
 
         // Inicializar
+        await inicializarComponentesEstandar(); // Asegura que existan los estándar
         await renderCentros();
         await renderYears();
-        await updateYearSelects();
+        await updateYearSelects(); // también llama a renderPeriods
         await renderComponents();
 
         window.onclick = (e) => {
