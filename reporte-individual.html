@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reporte Individual - PNFT Articulador</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" integrity="sha512-GsLlZN/3F2ErC5ifS5QtgpiJtWd43JWSuIgh7mbzZ8zBps+dvLusV+eNQATqgA/HdeKFVgA5v3S/cIrLF7QnIg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <style>
+        body { background-color: #f8fafc; }
+        .sidebar { background: linear-gradient(180deg, #1e5a20 0%, #2E7D32 100%); }
+        .nav-item.active { background: white; color: #2E7D32; box-shadow: 0 10px 20px -5px rgba(0,0,0,0.2); }
+        .nav-item.active i { color: #2E7D32; }
+        .btn-accion { background: #2E7D32; transition: all 0.2s; }
+        .btn-accion:hover { background: #1e5a20; transform: translateY(-2px); }
+        .btn-secundario { background: #f0f0f0; color: #333; border: 1px solid #ccc; }
+        .btn-secundario:hover { background: #e0e0e0; }
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); overflow: auto; }
+        .modal-content { background-color: white; margin: 5% auto; padding: 2rem; border-radius: 24px; width: 90%; max-width: 800px; box-shadow: 0 20px 40px rgba(0,0,0,0.2); position: relative; }
+        .close { color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer; }
+        .close:hover { color: black; }
+        .reporte-table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+        .reporte-table th, .reporte-table td { border: 1px solid #e2e8f0; padding: 0.5rem; text-align: left; }
+        .reporte-table th { background: #f1f5f9; font-weight: 600; }
+        .reporte-table td { text-align: center; }
+        .reporte-table td:first-child { text-align: left; }
+        .flex-between { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem; }
+        .student-card { border: 1px solid #e2e8f0; border-radius: 16px; padding: 1rem; margin-bottom: 1rem; background: white; transition: 0.2s; }
+        .student-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+        .student-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.5rem; }
+        .student-name { font-weight: 600; font-size: 1rem; color: #1e293b; }
+        .btn-pdf { background: #e53e3e; color: white; padding: 0.3rem 0.8rem; border-radius: 30px; font-size: 0.8rem; cursor: pointer; transition: 0.2s; border: none; display: inline-flex; align-items: center; gap: 0.4rem; }
+        .btn-pdf:hover { background: #c53030; transform: translateY(-1px); }
+    </style>
+</head>
+<body class="font-sans antialiased">
+    <div class="flex min-h-screen">
+        <!-- Sidebar -->
+        <aside class="w-72 bg-gradient-to-b from-green-800 to-green-700 text-white flex-shrink-0 sticky top-0 h-screen overflow-y-auto">
+            <div class="text-center py-8 border-b border-white/20">
+                <div class="w-20 h-20 bg-white/10 rounded-full flex items-center justify-center text-3xl font-bold mx-auto mb-4 border-2 border-white/20">PNFT</div>
+                <h2 class="text-xl font-semibold">Articulador 2026</h2>
+                <p class="text-sm opacity-80">MEP Costa Rica</p>
+            </div>
+            <ul class="mt-6 space-y-1 px-4">
+                <a href="index.html"><li class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10"><i class="fas fa-chart-pie w-5"></i> Tablero</li></a>
+                <a href="planning.html"><li class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10"><i class="fas fa-clipboard-list w-5"></i> Planeamiento</li></a>
+                <a href="progresion.html"><li class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10"><i class="fas fa-road w-5"></i> Progresión</li></a>
+                <a href="evaluation.html"><li class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10"><i class="fas fa-check-circle w-5"></i> Evaluación</li></a>
+                <a href="logbook.html"><li class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10"><i class="fas fa-book-open w-5"></i> Bitácora</li></a>
+                <a href="students.html"><li class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10"><i class="fas fa-users w-5"></i> Estudiantes</li></a>
+                <a href="groups.html"><li class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10"><i class="fas fa-layer-group w-5"></i> Grupos</li></a>
+                <a href="subjects.html"><li class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10"><i class="fas fa-book w-5"></i> Asignaturas</li></a>
+                <a href="reporte-individual.html"><li class="flex items-center gap-3 px-4 py-3 rounded-xl bg-white text-green-800 font-semibold shadow-md"><i class="fas fa-file-alt w-5"></i> Reporte Individual</li></a>
+                <a href="settings.html"><li class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10"><i class="fas fa-cog w-5"></i> Configuración</li></a>
+            </ul>
+        </aside>
+
+        <main class="flex-1 p-8 bg-gray-50">
+            <div class="flex justify-between items-center mb-8 bg-white p-4 rounded-2xl shadow-sm">
+                <h1 class="text-2xl font-bold text-gray-800">Reporte Individual</h1>
+                <div class="flex gap-4">
+                    <span class="bg-green-100 text-green-800 px-4 py-2 rounded-full text-sm font-medium flex items-center gap-2"><i class="fas fa-user-graduate"></i> Docente</span>
+                    <span class="bg-green-100 text-green-800 px-4 py-2 rounded-full text-sm font-medium flex items-center gap-2"><i class="fas fa-calendar-alt"></i> 2026</span>
+                </div>
+            </div>
+
+            <!-- Filtros -->
+            <div class="bg-white p-6 border border-gray-200 rounded-xl shadow-sm mb-8">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1">Grupo</label>
+                        <select id="grupoSelect" class="w-full border-gray-300 rounded-lg py-2"></select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1">Asignatura</label>
+                        <select id="asignaturaSelect" class="w-full border-gray-300 rounded-lg py-2"></select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1">Filtrar por nombre</label>
+                        <input type="text" id="filtroNombre" placeholder="Buscar estudiante..." class="w-full border-gray-300 rounded-lg py-2 px-3">
+                    </div>
+                </div>
+                <div class="mt-4 flex justify-end">
+                    <button id="cargarBtn" class="bg-green-800 text-white px-4 py-2 rounded-lg shadow hover:bg-green-900"><i class="fas fa-users"></i> Cargar estudiantes</button>
+                </div>
+            </div>
+
+            <!-- Lista de estudiantes con botón de PDF -->
+            <div id="estudiantesContainer" class="space-y-4">
+                <div class="text-center text-gray-500 py-8">Seleccione grupo y asignatura, luego haga clic en "Cargar estudiantes".</div>
+            </div>
+        </main>
+    </div>
+
+    <script type="module">
+        import { openDB, getAll, getById } from './js/db.js';
+
+        let db;
+        let grupos = [];
+        let asignaturas = [];
+        let estudiantes = [];
+        let periodos = [];
+        let grades = [];
+        let components = [];
+        let periodosPorcentajes = new Map();
+
+        const grupoSelect = document.getElementById('grupoSelect');
+        const asignaturaSelect = document.getElementById('asignaturaSelect');
+        const filtroNombre = document.getElementById('filtroNombre');
+        const cargarBtn = document.getElementById('cargarBtn');
+        const estudiantesContainer = document.getElementById('estudiantesContainer');
+
+        async function cargarDatos() {
+            grupos = await getAll('groups');
+            asignaturas = await getAll('subjects');
+            estudiantes = await getAll('students');
+            periodos = await getAll('periods_enhanced');
+            grades = await getAll('grades');
+            components = await getAll('components');
+
+            // Cargar porcentajes de períodos por grupo
+            for (let grupo of grupos) {
+                if (grupo.periodosPorcentajes) {
+                    periodosPorcentajes.set(grupo.id, grupo.periodosPorcentajes);
+                } else {
+                    const periodosGrupo = periodos.filter(p => p.schoolYearId === grupo.anioId);
+                    if (periodosGrupo.length > 0) {
+                        const porc = 100 / periodosGrupo.length;
+                        const mapa = {};
+                        periodosGrupo.forEach(p => mapa[p.id] = porc);
+                        periodosPorcentajes.set(grupo.id, mapa);
+                    } else {
+                        periodosPorcentajes.set(grupo.id, {});
+                    }
+                }
+            }
+
+            // Llenar selects
+            grupoSelect.innerHTML = '<option value="">-- Seleccione grupo --</option>' + 
+                grupos.map(g => `<option value="${g.id}">${g.seccion} (${g.nivel}) - ${g.anio}</option>`).join('');
+        }
+
+        function actualizarAsignaturas() {
+            const grupoId = parseInt(grupoSelect.value);
+            if (grupoId) {
+                const asignaturasGrupo = asignaturas.filter(a => a.groupId === grupoId);
+                asignaturaSelect.innerHTML = '<option value="">-- Seleccione asignatura --</option>' +
+                    asignaturasGrupo.map(a => `<option value="${a.id}">${a.name}</option>`).join('');
+            } else {
+                asignaturaSelect.innerHTML = '<option value="">-- Seleccione asignatura --</option>';
+            }
+        }
+
+        grupoSelect.addEventListener('change', actualizarAsignaturas);
+
+        // Obtener nota de un estudiante en un período (misma lógica que reporte por período)
+        async function obtenerNotaPeriodo(estudianteId, asignaturaId, periodoId, grupoId) {
+            const notas = grades.filter(g => 
+                g.studentId === estudianteId && 
+                g.periodId === periodoId && 
+                g.groupId === grupoId
+            );
+            if (notas.length === 0) return null;
+
+            const asignatura = asignaturas.find(a => a.id === asignaturaId);
+            if (!asignatura || !asignatura.componentId) return null;
+            const componente = components.find(c => c.id === asignatura.componentId);
+            if (!componente || !componente.subcomponentes) return null;
+
+            const subMap = {};
+            componente.subcomponentes.forEach(sub => {
+                const nombre = sub.nombre.toLowerCase();
+                if (nombre.includes('trabajo cotidiano')) subMap.daily_work = sub.porcentaje;
+                else if (nombre.includes('tarea')) subMap.task = sub.porcentaje;
+                else if (nombre.includes('prueba')) subMap.test = sub.porcentaje;
+                else if (nombre.includes('asistencia')) subMap.attendance = sub.porcentaje;
+                else if (nombre.includes('proyecto')) subMap.project = sub.porcentaje;
+                else if (nombre.includes('portafolio')) subMap.portfolio = sub.porcentaje;
+            });
+
+            const getAvg = (type) => {
+                const relevant = notas.filter(g => g.subcomponentId === type);
+                if (relevant.length === 0) return 0;
+                const sum = relevant.reduce((acc, g) => acc + (g.value || 0), 0);
+                return sum / relevant.length;
+            };
+
+            let notaFinal = 0;
+            if (subMap.daily_work) notaFinal += (getAvg('daily_work') / 100) * subMap.daily_work;
+            if (subMap.task) notaFinal += (getAvg('task') / 100) * subMap.task;
+            if (subMap.test) notaFinal += (getAvg('test') / 100) * subMap.test;
+            if (subMap.attendance) notaFinal += (getAvg('attendance') / 100) * subMap.attendance;
+            if (subMap.project) notaFinal += (getAvg('project') / 100) * subMap.project;
+            if (subMap.portfolio) notaFinal += (getAvg('portfolio') / 100) * subMap.portfolio;
+
+            return Math.round(notaFinal * 100) / 100;
+        }
+
+        // Calcular nota anual
+        async function calcularNotaAnual(estudianteId, asignaturaId, grupoId) {
+            const grupo = grupos.find(g => g.id === grupoId);
+            if (!grupo) return null;
+            const pesos = periodosPorcentajes.get(grupo.id) || {};
+            const periodosGrupo = periodos.filter(p => p.schoolYearId === grupo.anioId);
+            if (periodosGrupo.length === 0) return null;
+
+            let sumaPonderada = 0;
+            let totalPeso = 0;
+            for (let periodo of periodosGrupo) {
+                const peso = pesos[periodo.id] || 0;
+                if (peso === 0) continue;
+                const nota = await obtenerNotaPeriodo(estudianteId, asignaturaId, periodo.id, grupoId);
+                if (nota !== null) {
+                    sumaPonderada += nota * peso;
+                    totalPeso += peso;
+                }
+            }
+            if (totalPeso === 0) return null;
+            return sumaPonderada / totalPeso;
+        }
+
+        // Obtener detalle completo para un estudiante (por período y subcomponentes)
+        async function obtenerDetalleEstudiante(estudianteId, asignaturaId, grupoId) {
+            const grupo = grupos.find(g => g.id === grupoId);
+            if (!grupo) return null;
+            const periodosGrupo = periodos.filter(p => p.schoolYearId === grupo.anioId);
+            const pesos = periodosPorcentajes.get(grupo.id) || {};
+
+            const detalle = [];
+            for (let periodo of periodosGrupo) {
+                const peso = pesos[periodo.id] || 0;
+                const notasPeriodo = grades.filter(g => 
+                    g.studentId === estudianteId && 
+                    g.periodId === periodo.id && 
+                    g.groupId === grupoId
+                );
+                
+                // Para este período, obtener notas por subcomponente
+                const asignatura = asignaturas.find(a => a.id === asignaturaId);
+                if (!asignatura || !asignatura.componentId) continue;
+                const componente = components.find(c => c.id === asignatura.componentId);
+                if (!componente || !componente.subcomponentes) continue;
+
+                const subMap = {};
+                componente.subcomponentes.forEach(sub => {
+                    const nombre = sub.nombre.toLowerCase();
+                    if (nombre.includes('trabajo cotidiano')) subMap.daily_work = { nombre: sub.nombre, porcentaje: sub.porcentaje };
+                    else if (nombre.includes('tarea')) subMap.task = { nombre: sub.nombre, porcentaje: sub.porcentaje };
+                    else if (nombre.includes('prueba')) subMap.test = { nombre: sub.nombre, porcentaje: sub.porcentaje };
+                    else if (nombre.includes('asistencia')) subMap.attendance = { nombre: sub.nombre, porcentaje: sub.porcentaje };
+                    else if (nombre.includes('proyecto')) subMap.project = { nombre: sub.nombre, porcentaje: sub.porcentaje };
+                    else if (nombre.includes('portafolio')) subMap.portfolio = { nombre: sub.nombre, porcentaje: sub.porcentaje };
+                });
+
+                const getAvg = (type) => {
+                    const relevant = notasPeriodo.filter(g => g.subcomponentId === type);
+                    if (relevant.length === 0) return 0;
+                    const sum = relevant.reduce((acc, g) => acc + (g.value || 0), 0);
+                    return sum / relevant.length;
+                };
+
+                const valores = {
+                    periodo: periodo,
+                    peso: peso,
+                    tc: getAvg('daily_work'),
+                    t: getAvg('task'),
+                    p: getAvg('test'),
+                    a: getAvg('attendance'),
+                    pr: getAvg('project') || getAvg('portfolio')
+                };
+                // Calcular nota final del período
+                let notaFinal = 0;
+                if (subMap.daily_work) notaFinal += (valores.tc / 100) * subMap.daily_work.porcentaje;
+                if (subMap.task) notaFinal += (valores.t / 100) * subMap.task.porcentaje;
+                if (subMap.test) notaFinal += (valores.p / 100) * subMap.test.porcentaje;
+                if (subMap.attendance) notaFinal += (valores.a / 100) * subMap.attendance.porcentaje;
+                if (subMap.project) notaFinal += (valores.pr / 100) * subMap.project.porcentaje;
+                if (subMap.portfolio) notaFinal += (valores.pr / 100) * subMap.portfolio.porcentaje;
+                valores.notaFinal = Math.round(notaFinal * 100) / 100;
+                detalle.push(valores);
+            }
+            return detalle;
+        }
+
+        // Generar HTML para PDF
+        async function generarPDF(estudiante, asignatura, grupo, detalle) {
+            // Construir el HTML del reporte
+            let html = `
+                <html>
+                <head>
+                    <meta charset="UTF-8">
+                    <title>Reporte Individual - ${estudiante.nombre}</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; margin: 40px; }
+                        h1 { color: #2E7D32; }
+                        .header { margin-bottom: 30px; }
+                        .info { margin-bottom: 20px; border-bottom: 1px solid #ccc; padding-bottom: 10px; }
+                        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+                        th, td { border: 1px solid #000; padding: 8px; text-align: center; }
+                        th { background: #4CAF50; color: white; }
+                        td:first-child { text-align: left; }
+                        .footer { margin-top: 30px; font-size: 12px; text-align: center; color: #666; }
+                    </style>
+                </head>
+                <body>
+                    <div class="header">
+                        <h1>Reporte Individual de Calificaciones</h1>
+                    </div>
+                    <div class="info">
+                        <p><strong>Estudiante:</strong> ${escapeHtml(estudiante.nombre)}</p>
+                        <p><strong>Asignatura:</strong> ${escapeHtml(asignatura.name)}</p>
+                        <p><strong>Grupo:</strong> ${escapeHtml(grupo.seccion)} (${escapeHtml(grupo.nivel)}) - ${grupo.anio}</p>
+                    </div>
+            `;
+
+            // Tabla de notas por período
+            html += `<h3>Notas por Período</h3>`;
+            html += `<table><thead><tr><th>Período</th>`;
+            // Subcomponentes (según componente)
+            const asignaturaComp = components.find(c => c.id === asignatura.componentId);
+            if (asignaturaComp && asignaturaComp.subcomponentes) {
+                for (let sub of asignaturaComp.subcomponentes) {
+                    html += `<th>${escapeHtml(sub.nombre)} (${sub.porcentaje}%)</th>`;
+                }
+            }
+            html += `<th>Nota Final</th></tr></thead><tbody>`;
+
+            for (let item of detalle) {
+                html += `<tr><td>${escapeHtml(item.periodo.nombre)}</td>`;
+                if (asignaturaComp && asignaturaComp.subcomponentes) {
+                    for (let sub of asignaturaComp.subcomponentes) {
+                        const nombreSub = sub.nombre.toLowerCase();
+                        let valor = 0;
+                        if (nombreSub.includes('trabajo cotidiano')) valor = item.tc;
+                        else if (nombreSub.includes('tarea')) valor = item.t;
+                        else if (nombreSub.includes('prueba')) valor = item.p;
+                        else if (nombreSub.includes('asistencia')) valor = item.a;
+                        else if (nombreSub.includes('proyecto')) valor = item.pr;
+                        else if (nombreSub.includes('portafolio')) valor = item.pr;
+                        html += `<td>${valor.toFixed(2)}</td>`;
+                    }
+                }
+                html += `<td><strong>${item.notaFinal.toFixed(2)}</strong></td></tr>`;
+            }
+            html += `</tbody></table>`;
+
+            // Calcular nota anual
+            const notaAnual = await calcularNotaAnual(estudiante.id, asignatura.id, grupo.id);
+            html += `<h3>Nota Anual</h3>`;
+            html += `<p><strong>Nota final del año:</strong> ${notaAnual !== null ? notaAnual.toFixed(2) : 'No disponible'}</p>`;
+
+            html += `<div class="footer">Documento generado por PNFT Articulador - ${new Date().toLocaleDateString()}</div>`;
+            html += `</body></html>`;
+
+            return html;
+        }
+
+        // Generar y descargar PDF
+        async function descargarPDF(estudianteId, asignaturaId) {
+            const estudiante = estudiantes.find(e => e.id === estudianteId);
+            const asignatura = asignaturas.find(a => a.id === asignaturaId);
+            if (!estudiante || !asignatura) {
+                alert('Estudiante o asignatura no encontrados.');
+                return;
+            }
+            const grupo = grupos.find(g => g.id === asignatura.groupId);
+            if (!grupo) {
+                alert('Grupo no encontrado.');
+                return;
+            }
+
+            const detalle = await obtenerDetalleEstudiante(estudianteId, asignaturaId, grupo.id);
+            if (!detalle || detalle.length === 0) {
+                alert('No hay notas registradas para este estudiante en esta asignatura.');
+                return;
+            }
+
+            const html = await generarPDF(estudiante, asignatura, grupo, detalle);
+            const opt = {
+                margin: 0.5,
+                filename: `reporte_${estudiante.nombre.replace(/\s+/g, '_')}_${asignatura.name.replace(/\s+/g, '_')}.pdf`,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2 },
+                jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+            };
+            html2pdf().set(opt).from(html).save();
+        }
+
+        // Cargar estudiantes y mostrar lista
+        async function cargarEstudiantes() {
+            const grupoId = parseInt(grupoSelect.value);
+            const asignaturaId = parseInt(asignaturaSelect.value);
+            if (!grupoId || !asignaturaId) {
+                alert('Seleccione grupo y asignatura.');
+                return;
+            }
+
+            const estudiantesGrupo = estudiantes.filter(e => e.groupId === grupoId);
+            if (estudiantesGrupo.length === 0) {
+                estudiantesContainer.innerHTML = '<div class="text-center text-gray-500 py-8">No hay estudiantes en este grupo.</div>';
+                return;
+            }
+
+            // Aplicar filtro de nombre
+            const filtro = filtroNombre.value.toLowerCase();
+            let filtered = estudiantesGrupo;
+            if (filtro) {
+                filtered = estudiantesGrupo.filter(e => e.nombre.toLowerCase().includes(filtro));
+            }
+
+            if (filtered.length === 0) {
+                estudiantesContainer.innerHTML = '<div class="text-center text-gray-500 py-8">No se encontraron estudiantes con ese nombre.</div>';
+                return;
+            }
+
+            // Mostrar lista con botones
+            estudiantesContainer.innerHTML = filtered.map(e => `
+                <div class="student-card">
+                    <div class="student-header">
+                        <span class="student-name">${escapeHtml(e.nombre)}</span>
+                        <button class="btn-pdf" data-id="${e.id}"><i class="fas fa-file-pdf"></i> Descargar Reporte en PDF</button>
+                    </div>
+                </div>
+            `).join('');
+
+            // Asignar eventos a los botones
+            document.querySelectorAll('.btn-pdf').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const estudianteId = parseInt(btn.dataset.id);
+                    descargarPDF(estudianteId, asignaturaId);
+                });
+            });
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/[&<>]/g, function(m) {
+                if (m === '&') return '&amp;';
+                if (m === '<') return '&lt;';
+                if (m === '>') return '&gt;';
+                return m;
+            });
+        }
+
+        cargarBtn.addEventListener('click', cargarEstudiantes);
+        filtroNombre.addEventListener('input', cargarEstudiantes); // al escribir, recarga lista
+
+        await openDB();
+        await cargarDatos();
+    </script>
+</body>
+</html>
