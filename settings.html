@@ -566,26 +566,32 @@
             if (!components.length) {
                 container.innerHTML = '<p class="empty-table">No hay componentes. Cree uno nuevo o precargue por modalidad.</p>';
             } else {
-                container.innerHTML = components.map(comp => `
-                    <div class="entity-card">
-                        <div class="entity-header">
-                            <span class="entity-title">${escapeHtml(comp.nombre)}</span>
-                            <div class="action-icons">
-                                <i class="fas fa-edit" data-id="${comp.id}" data-action="editComponent"></i>
-                                <i class="fas fa-trash-alt" data-id="${comp.id}" data-action="deleteComponent"></i>
+                const nombresPrecargados = ['I Ciclo', 'II Ciclo', 'III Ciclo', 'Diversificada', 'Educación Adultos', 'Educación Especial'];
+                container.innerHTML = components.map(comp => {
+                    const isPrecargado = nombresPrecargados.includes(comp.nombre);
+                    return `
+                        <div class="entity-card">
+                            <div class="entity-header">
+                                <span class="entity-title">${escapeHtml(comp.nombre)} ${isPrecargado ? '<span class="entity-badge" style="background:#FF9800; color:white;">Precargado</span>' : ''}</span>
+                                <div class="action-icons">
+                                    <i class="fas fa-edit" data-id="${comp.id}" data-action="editComponent"></i>
+                                    <i class="fas fa-trash-alt" data-id="${comp.id}" data-action="deleteComponent"></i>
+                                </div>
+                            </div>
+                            <div class="subcomponent-list">
+                                ${comp.subcomponentes.map(sub => `
+                                    <div class="subcomponent-item">
+                                        <span>${escapeHtml(sub.nombre)}</span>
+                                        <span>${sub.porcentaje}%</span>
+                                    </div>
+                                `).join('')}
+                            </div>
+                            <div class="total-percent">
+                                Total: ${comp.subcomponentes.reduce((s, sub) => s + sub.porcentaje, 0)}%
                             </div>
                         </div>
-                        <div class="subcomponent-list">
-                            ${comp.subcomponentes.map(sub => `
-                                <div class="subcomponent-item">
-                                    <span>${escapeHtml(sub.nombre)}</span>
-                                    <span>${sub.porcentaje}%</span>
-                                </div>
-                            `).join('')}
-                        </div>
-                        <div class="total-percent valid">Total: ${comp.subcomponentes.reduce((s, sub) => s + sub.porcentaje, 0)}%</div>
-                    </div>
-                `).join('');
+                    `;
+                }).join('');
                 attachComponentActions();
             }
         }
