@@ -6,12 +6,7 @@
     <title>Tareas - PNFT Articulador</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/html-docx-js@0.3.1/dist/html-docx.js"></script>
     <style>
-        /* Estilos (igual que antes) */
         body { background-color: #f8fafc; }
         .sidebar { background: linear-gradient(180deg, #1e5a20 0%, #2E7D32 100%); }
         .nav-item.active { background: white; color: #2E7D32; box-shadow: 0 10px 20px -5px rgba(0,0,0,0.2); }
@@ -30,7 +25,6 @@
         .grade-table th { background: #f1f5f9; }
         .grade-table input { width: 80px; padding: 0.3rem; border: 1px solid #ccc; border-radius: 4px; }
         .flex-between { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem; }
-        .export-buttons { display: flex; gap: 0.5rem; flex-wrap: wrap; }
     </style>
 </head>
 <body class="font-sans antialiased">
@@ -75,14 +69,7 @@
             <div id="evaluacionesContainer" class="bg-white p-6 border border-gray-200 rounded-xl shadow-sm mb-8">
                 <div class="flex-between">
                     <h2 class="text-xl font-semibold text-gray-800">Tareas</h2>
-                    <div class="flex gap-2">
-                        <button id="agregarEvaluacionBtn" class="bg-green-800 text-white px-4 py-2 rounded-lg shadow hover:bg-green-900"><i class="fas fa-plus"></i> Agregar tarea</button>
-                        <div class="export-buttons">
-                            <button id="exportExcelBtn" class="bg-green-600 text-white px-3 py-2 rounded-lg shadow hover:bg-green-700"><i class="fas fa-file-excel"></i> Excel</button>
-                            <button id="exportPdfBtn" class="bg-red-600 text-white px-3 py-2 rounded-lg shadow hover:bg-red-700"><i class="fas fa-file-pdf"></i> PDF</button>
-                            <button id="exportWordBtn" class="bg-blue-600 text-white px-3 py-2 rounded-lg shadow hover:bg-blue-700"><i class="fas fa-file-word"></i> Word</button>
-                        </div>
-                    </div>
+                    <button id="agregarEvaluacionBtn" class="bg-green-800 text-white px-4 py-2 rounded-lg shadow hover:bg-green-900"><i class="fas fa-plus"></i> Agregar tarea</button>
                 </div>
                 <div id="evaluacionesLista" class="space-y-4 mt-4"></div>
             </div>
@@ -126,9 +113,6 @@
         const evaluacionesLista = document.getElementById('evaluacionesLista');
         const tablaNotas = document.getElementById('tablaNotas');
         const guardarNotasBtn = document.getElementById('guardarNotasBtn');
-        const exportExcelBtn = document.getElementById('exportExcelBtn');
-        const exportPdfBtn = document.getElementById('exportPdfBtn');
-        const exportWordBtn = document.getElementById('exportWordBtn');
         const modalEval = document.getElementById('modalEvaluacion');
         const closeModalEval = document.getElementById('closeModalEval');
         const cancelarEvalBtn = document.getElementById('cancelarEvalBtn');
@@ -160,17 +144,17 @@
                 return;
             }
             let html = '';
-            currentEvaluations.forEach(eval => {
+            currentEvaluations.forEach(evalObj => {
                 html += `
                     <div class="evaluacion-card">
                         <div class="flex justify-between items-center">
                             <div>
-                                <span class="font-semibold">${escapeHtml(eval.name)}</span>
-                                <span class="text-sm text-gray-500 ml-2">Puntaje máximo: ${eval.maxScore}</span>
+                                <span class="font-semibold">${escapeHtml(evalObj.name)}</span>
+                                <span class="text-sm text-gray-500 ml-2">Puntaje máximo: ${evalObj.maxScore}</span>
                             </div>
                             <div>
-                                <button class="edit-eval text-blue-600 mr-2" data-id="${eval.id}"><i class="fas fa-edit"></i></button>
-                                <button class="delete-eval text-red-600" data-id="${eval.id}"><i class="fas fa-trash-alt"></i></button>
+                                <button class="edit-eval text-blue-600 mr-2" data-id="${evalObj.id}"><i class="fas fa-edit"></i></button>
+                                <button class="delete-eval text-red-600" data-id="${evalObj.id}"><i class="fas fa-trash-alt"></i></button>
                             </div>
                         </div>
                     </div>
@@ -225,19 +209,21 @@
 
             let html = '<table class="grade-table"><thead> ';
             html += '<th>Estudiante</th>';
-            currentEvaluations.forEach(eval => {
-                html += `<th>${escapeHtml(eval.name)} (/${eval.maxScore})</th>`;
+            currentEvaluations.forEach(evalObj => {
+                html += `<th>${escapeHtml(evalObj.name)} (/${evalObj.maxScore})</th>`;
             });
             html += ' </thead><tbody>';
 
             currentStudents.forEach(student => {
-                html += `<tr><td>${escapeHtml(student.nombre)} ${escapeHtml(student.apellido1)}</td>`;
-                currentEvaluations.forEach(eval => {
-                    const grade = currentGrades.find(g => g.studentId === student.id && g.metadata?.evaluationId === eval.id);
+                html += `\\
+                    <td>${escapeHtml(student.nombre)} ${escapeHtml(student.apellido1)}</td>
+                `;
+                currentEvaluations.forEach(evalObj => {
+                    const grade = currentGrades.find(g => g.studentId === student.id && g.metadata?.evaluationId === evalObj.id);
                     const value = grade ? grade.value : '';
-                    html += `<td><input type="number" step="0.1" min="0" max="${eval.maxScore}" class="grade-input" data-student="${student.id}" data-eval="${eval.id}" value="${value}"></td>`;
+                    html += `<td><input type="number" step="0.1" min="0" max="${evalObj.maxScore}" class="grade-input" data-student="${student.id}" data-eval="${evalObj.id}" value="${value}"></td>`;
                 });
-                html += '</tr>';
+                html += `</tr>`;
             });
             html += '</tbody></table>';
             tablaNotas.innerHTML = html;
@@ -282,31 +268,6 @@
                 await guardarNota(studentId, evalId, isNaN(value) ? null : value);
             }
             alert('Notas guardadas');
-        }
-
-        // Exportaciones (similares a daily-works)
-        function exportarExcel() {
-            const tabla = document.querySelector('#notasContainer table');
-            if (!tabla) { alert('Primero cargue un grupo y período.'); return; }
-            const ws = XLSX.utils.table_to_sheet(tabla);
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, 'Tareas');
-            XLSX.writeFile(wb, `tareas_${new Date().toISOString().slice(0,19)}.xlsx`);
-        }
-
-        function exportarPDF() {
-            const element = document.getElementById('notasContainer');
-            if (!element || element.innerText.includes('Primero')) { alert('Primero cargue un grupo y período.'); return; }
-            html2pdf().set({ margin: 0.5, filename: `tareas_${new Date().toISOString().slice(0,19)}.pdf`, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2 }, jsPDF: { unit: 'in', format: 'a4', orientation: 'landscape' } }).from(element).save();
-        }
-
-        function exportarWord() {
-            const element = document.getElementById('notasContainer');
-            if (!element || element.innerText.includes('Primero')) { alert('Primero cargue un grupo y período.'); return; }
-            const style = `<style>table { border-collapse: collapse; width: 100%; } th, td { border: 1px solid #000; padding: 8px; text-align: center; } th { background: #f0f0f0; }</style>`;
-            const htmlContent = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Tareas</title>${style}</head><body>${element.innerHTML}</body></html>`;
-            const blob = htmlDocx.asBlob(htmlContent);
-            saveAs(blob, `tareas_${new Date().toISOString().slice(0,19)}.docx`);
         }
 
         function abrirModalEvaluacion(evaluacion = null) {
@@ -366,9 +327,6 @@
 
         cargarBtn.addEventListener('click', cargarTodo);
         guardarNotasBtn.addEventListener('click', guardarTodasNotas);
-        exportExcelBtn.addEventListener('click', exportarExcel);
-        exportPdfBtn.addEventListener('click', exportarPDF);
-        exportWordBtn.addEventListener('click', exportarWord);
 
         function escapeHtml(str) {
             if (!str) return '';
