@@ -1,4 +1,4 @@
-// js/db.js - Versión 9 (estable)
+// js/db.js - Versión 9 (estable y corregida)
 const DB_NAME = 'PNFT_DB';
 const DB_VERSION = 9;
 
@@ -28,6 +28,7 @@ export async function openDB() {
             for (let storeName of stores) {
                 if (!db.objectStoreNames.contains(storeName)) {
                     console.log(`Creando store: ${storeName}`);
+
                     if (storeName === 'evaluation_indicators') {
                         const store = db.createObjectStore(storeName, { keyPath: 'id' });
                         store.createIndex('groupId', 'groupId', { unique: false });
@@ -82,7 +83,7 @@ export async function openDB() {
                 }
             }
 
-            // Añadir índices a stores que ya existían (para versiones anteriores)
+            // Añadir índices adicionales para stores que ya existían (migración)
             if (db.objectStoreNames.contains('attendance')) {
                 const attendanceStore = event.target.transaction.objectStore('attendance');
                 if (!attendanceStore.indexNames.contains('subjectId')) {
