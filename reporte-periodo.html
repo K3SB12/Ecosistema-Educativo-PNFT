@@ -11,7 +11,6 @@
     <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/html-docx-js@0.3.1/dist/html-docx.js"></script>
     <style>
-        /* estilos iguales a la versión anterior */
         body { background-color: #f8fafc; }
         .sidebar { background: linear-gradient(180deg, #1e5a20 0%, #2E7D32 100%); }
         .nav-item.active { background: white; color: #2E7D32; box-shadow: 0 10px 20px -5px rgba(0,0,0,0.2); }
@@ -26,6 +25,10 @@
         .reporte-table th { background: #f1f5f9; font-weight: 600; text-align: center; }
         .reporte-table td { text-align: center; }
         .reporte-table td:first-child, .reporte-table td:nth-child(2) { text-align: left; }
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); overflow: auto; }
+        .modal-content { background-color: white; margin: 5% auto; padding: 2rem; border-radius: 24px; width: 90%; max-width: 800px; box-shadow: 0 20px 40px rgba(0,0,0,0.2); position: relative; }
+        .close { color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer; }
+        .close:hover { color: black; }
     </style>
 </head>
 <body class="font-sans antialiased">
@@ -116,7 +119,8 @@
         const csvBtn = document.getElementById('csvBtn');
         const reporteContainer = document.getElementById('reporteContainer');
 
-        let datosReporte = []; // guardar los datos para exportar
+        let datosReporte = [];
+        let subMapActual = null; // para guardar los porcentajes de la asignatura
 
         async function cargarDatos() {
             periodos = await getAll('periods_enhanced');
@@ -126,18 +130,14 @@
             grades = await getAll('grades');
             components = await getAll('components');
 
-            // Llenar selects
-            periodoSelect.innerHTML = '<option value="">-- Seleccione período --</option>' + 
-                periodos.map(p => `<option value="${p.id}">${p.nombre}</option>`).join('');
-            
-            asignaturaSelect.innerHTML = '<option value="">-- Seleccione asignatura --</option>' + 
-                asignaturas.map(a => {
-                    const grupo = grupos.find(g => g.id === a.groupId);
-                    return `<option value="${a.id}">${a.name} / ${grupo ? grupo.seccion : ''} / ${grupo ? grupo.anio : ''}</option>`;
-                }).join('');
+            periodoSelect.innerHTML = '<option value="">-- Seleccione período --</option>' + periodos.map(p => `<option value="${p.id}">${p.nombre}</option>`).join('');
+            asignaturaSelect.innerHTML = '<option value="">-- Seleccione asignatura --</option>' + asignaturas.map(a => {
+                const grupo = grupos.find(g => g.id === a.groupId);
+                return `<option value="${a.id}">${a.name} / ${grupo ? grupo.seccion : ''} / ${grupo ? grupo.anio : ''}</option>`;
+            }).join('');
         }
 
-        // Obtener notas de un estudiante en un período
+        // Obtener promedios de un estudiante en un período para una asignatura
         function obtenerPromedios(estudianteId, periodoId, grupoId, asignaturaId) {
             const notas = grades.filter(g =>
                 g.studentId === estudianteId &&
@@ -172,17 +172,18 @@
                 return sum / relevant.length;
             };
 
-            let tc = getAvg('daily_work');
-            let t = getAvg('task');
-            let p = getAvg('test');
-            let a = getAvg('attendance');
-            let notaFinal = 0;
-            if (subMap.daily_work.porcentaje) notaFinal += (tc / 100) * subMap.daily_work.porcentaje;
-            if (subMap.task.porcentaje) notaFinal += (t / 100) * subMap.task.porcentaje;
-            if (subMap.test.porcentaje) notaFinal += (p / 100) * subMap.test.porcentaje;
-            if (subMap.attendance.porcentaje) notaFinal += (a / 100) * subMap.attendance.porcentaje;
+            subMap.daily_work.valor = getAvg('daily_work');
+            subMap.task.valor = getAvg('task');
+            subMap.test.valor = getAvg('test');
+            subMap.attendance.valor = getAvg('attendance');
 
-            return { tc, t, p, a, notaFinal, subMap };
+            let notaFinal = 0;
+            if (subMap.daily_work.porcentaje) notaFinal += (subMap.daily_work.valor / 100) * subMap.daily_work.porcentaje;
+            if (subMap.task.porcentaje) notaFinal += (subMap.task.valor / 100) * subMap.task.porcentaje;
+            if (subMap.test.porcentaje) notaFinal += (subMap.test.valor / 100) * subMap.test.porcentaje;
+            if (subMap.attendance.porcentaje) notaFinal += (subMap.attendance.valor / 100) * subMap.attendance.porcentaje;
+
+            return { subMap, notaFinal };
         }
 
         async function generarReporte() {
@@ -200,6 +201,27 @@
             const grupo = grupos.find(g => g.id === asignatura.groupId);
             if (!grupo) return;
 
+            // Obtener subcomponentes de la asignatura
+            const componente = components.find(c => c.id === asignatura.componentId);
+            if (!componente || !componente.subcomponentes) {
+                reporteContainer.innerHTML = '<div class="text-center text-red-500 py-8">La asignatura no tiene componente de evaluación válido.</div>';
+                return;
+            }
+            // Construir subMap para toda la tabla
+            subMapActual = {
+                daily_work: { nombre: 'Trabajo cotidiano', porcentaje: 0 },
+                task: { nombre: 'Tareas', porcentaje: 0 },
+                test: { nombre: 'Pruebas', porcentaje: 0 },
+                attendance: { nombre: 'Asistencia', porcentaje: 0 }
+            };
+            for (let sub of componente.subcomponentes) {
+                const n = sub.nombre.toLowerCase();
+                if (n.includes('trabajo cotidiano')) subMapActual.daily_work.porcentaje = sub.porcentaje;
+                else if (n.includes('tarea')) subMapActual.task.porcentaje = sub.porcentaje;
+                else if (n.includes('prueba')) subMapActual.test.porcentaje = sub.porcentaje;
+                else if (n.includes('asistencia')) subMapActual.attendance.porcentaje = sub.porcentaje;
+            }
+
             const estudiantesGrupo = estudiantes.filter(e => e.groupId === grupo.id);
             if (estudiantesGrupo.length === 0) {
                 reporteContainer.innerHTML = '<div class="text-center text-gray-500 py-8">No hay estudiantes en este grupo.</div>';
@@ -213,10 +235,10 @@
                     datosReporte.push({
                         id: est.id_number || '',
                         nombre: est.nombre,
-                        tc: promedios.tc,
-                        t: promedios.t,
-                        p: promedios.p,
-                        a: promedios.a,
+                        tc: promedios.subMap.daily_work.valor,
+                        t: promedios.subMap.task.valor,
+                        p: promedios.subMap.test.valor,
+                        a: promedios.subMap.attendance.valor,
                         notaFinal: promedios.notaFinal,
                         subMap: promedios.subMap
                     });
@@ -239,9 +261,6 @@
 
         function renderizarTabla() {
             const decimales = parseInt(decimalesSelect.value);
-            const first = datosReporte[0];
-            const subMap = first ? first.subMap : null;
-
             let html = `
                 <div class="mb-4">
                     <h3 class="text-lg font-bold">${escapeHtml(asignaturaSelect.options[asignaturaSelect.selectedIndex]?.text || '')}</h3>
@@ -253,10 +272,10 @@
                                 <th>Id</th>
                                 <th>Nombre</th>
             `;
-            if (subMap && subMap.daily_work.porcentaje > 0) html += `<th>Trabajo cotidiano (${subMap.daily_work.porcentaje}%)</th>`;
-            if (subMap && subMap.task.porcentaje > 0) html += `<th>Tareas (${subMap.task.porcentaje}%)</th>`;
-            if (subMap && subMap.test.porcentaje > 0) html += `<th>Pruebas (${subMap.test.porcentaje}%)</th>`;
-            if (subMap && subMap.attendance.porcentaje > 0) html += `<th>Asistencia (${subMap.attendance.porcentaje}%)</th>`;
+            if (subMapActual.daily_work.porcentaje > 0) html += `<th>Trabajo cotidiano (${subMapActual.daily_work.porcentaje}%)</th>`;
+            if (subMapActual.task.porcentaje > 0) html += `<th>Tareas (${subMapActual.task.porcentaje}%)</th>`;
+            if (subMapActual.test.porcentaje > 0) html += `<th>Pruebas (${subMapActual.test.porcentaje}%)</th>`;
+            if (subMapActual.attendance.porcentaje > 0) html += `<th>Asistencia (${subMapActual.attendance.porcentaje}%)</th>`;
             html += `<th>Nota Final</th>`;
             html += `</tr></thead><tbody>`;
 
@@ -264,19 +283,19 @@
                 html += `<tr>`;
                 html += `<td>${escapeHtml(d.id)}</td>`;
                 html += `<td>${escapeHtml(d.nombre)}</td>`;
-                if (subMap && subMap.daily_work.porcentaje > 0) {
+                if (subMapActual.daily_work.porcentaje > 0) {
                     const val = d.tc !== null ? d.tc.toFixed(decimales) : '—';
                     html += `<td>${val}</td>`;
                 }
-                if (subMap && subMap.task.porcentaje > 0) {
+                if (subMapActual.task.porcentaje > 0) {
                     const val = d.t !== null ? d.t.toFixed(decimales) : '—';
                     html += `<td>${val}</td>`;
                 }
-                if (subMap && subMap.test.porcentaje > 0) {
+                if (subMapActual.test.porcentaje > 0) {
                     const val = d.p !== null ? d.p.toFixed(decimales) : '—';
                     html += `<td>${val}</td>`;
                 }
-                if (subMap && subMap.attendance.porcentaje > 0) {
+                if (subMapActual.attendance.porcentaje > 0) {
                     const val = d.a !== null ? d.a.toFixed(decimales) : '—';
                     html += `<td>${val}</td>`;
                 }
@@ -288,29 +307,26 @@
             reporteContainer.innerHTML = html;
         }
 
-        // Exportadores
+        // Exportadores (igual que antes, funcionan)
         function exportarCSV() {
             const decimales = parseInt(decimalesSelect.value);
-            const first = datosReporte[0];
-            const subMap = first ? first.subMap : null;
             let headers = ['Id', 'Nombre'];
-            if (subMap && subMap.daily_work.porcentaje > 0) headers.push(`Trabajo cotidiano (${subMap.daily_work.porcentaje}%)`);
-            if (subMap && subMap.task.porcentaje > 0) headers.push(`Tareas (${subMap.task.porcentaje}%)`);
-            if (subMap && subMap.test.porcentaje > 0) headers.push(`Pruebas (${subMap.test.porcentaje}%)`);
-            if (subMap && subMap.attendance.porcentaje > 0) headers.push(`Asistencia (${subMap.attendance.porcentaje}%)`);
+            if (subMapActual.daily_work.porcentaje > 0) headers.push(`Trabajo cotidiano (${subMapActual.daily_work.porcentaje}%)`);
+            if (subMapActual.task.porcentaje > 0) headers.push(`Tareas (${subMapActual.task.porcentaje}%)`);
+            if (subMapActual.test.porcentaje > 0) headers.push(`Pruebas (${subMapActual.test.porcentaje}%)`);
+            if (subMapActual.attendance.porcentaje > 0) headers.push(`Asistencia (${subMapActual.attendance.porcentaje}%)`);
             headers.push('Nota Final');
 
             let rows = [headers];
             for (let d of datosReporte) {
                 let row = [d.id, d.nombre];
-                if (subMap && subMap.daily_work.porcentaje > 0) row.push(d.tc !== null ? d.tc.toFixed(decimales) : '');
-                if (subMap && subMap.task.porcentaje > 0) row.push(d.t !== null ? d.t.toFixed(decimales) : '');
-                if (subMap && subMap.test.porcentaje > 0) row.push(d.p !== null ? d.p.toFixed(decimales) : '');
-                if (subMap && subMap.attendance.porcentaje > 0) row.push(d.a !== null ? d.a.toFixed(decimales) : '');
+                if (subMapActual.daily_work.porcentaje > 0) row.push(d.tc !== null ? d.tc.toFixed(decimales) : '');
+                if (subMapActual.task.porcentaje > 0) row.push(d.t !== null ? d.t.toFixed(decimales) : '');
+                if (subMapActual.test.porcentaje > 0) row.push(d.p !== null ? d.p.toFixed(decimales) : '');
+                if (subMapActual.attendance.porcentaje > 0) row.push(d.a !== null ? d.a.toFixed(decimales) : '');
                 row.push(d.notaFinal !== null ? d.notaFinal.toFixed(decimales) : '');
                 rows.push(row);
             }
-
             const csv = rows.map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(',')).join('\n');
             const blob = new Blob(["\uFEFF" + csv], { type: 'text/csv;charset=utf-8;' });
             saveAs(blob, `reporte_periodo_${new Date().toISOString().slice(0,19)}.csv`);
@@ -318,53 +334,28 @@
 
         function exportarPDF() {
             const element = document.getElementById('reporteContainer');
-            if (!element || element.innerText.includes('Seleccione')) {
-                alert('Primero genere un reporte.');
-                return;
-            }
+            if (!element || element.innerText.includes('Seleccione')) { alert('Primero genere un reporte.'); return; }
             const opt = { margin: 0.5, filename: `reporte_periodo_${new Date().toISOString().slice(0,19)}.pdf`, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2 }, jsPDF: { unit: 'in', format: 'a4', orientation: 'landscape' } };
             html2pdf().set(opt).from(element).save();
         }
 
         function exportarWord() {
             const element = document.getElementById('reporteContainer');
-            if (!element || element.innerText.includes('Seleccione')) {
-                alert('Primero genere un reporte.');
-                return;
-            }
-            const style = `
-                <style>
-                    table { border-collapse: collapse; width: 100%; margin-top: 20px; }
-                    th, td { border: 1px solid #000; padding: 8px; text-align: center; }
-                    th { background: #f0f0f0; }
-                    td:first-child, td:nth-child(2) { text-align: left; }
-                </style>
-            `;
+            if (!element || element.innerText.includes('Seleccione')) { alert('Primero genere un reporte.'); return; }
+            const style = `<style>table { border-collapse: collapse; width: 100%; } th, td { border: 1px solid #000; padding: 8px; text-align: center; } th { background: #f0f0f0; } td:first-child, td:nth-child(2) { text-align: left; }</style>`;
             const htmlContent = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Reporte por Período</title>${style}</head><body>${element.innerHTML}</body></html>`;
             const converted = htmlDocx.asBlob(htmlContent);
             saveAs(converted, `reporte_periodo_${new Date().toISOString().slice(0,19)}.docx`);
         }
 
         function exportarColetillas() {
-            if (datosReporte.length === 0) {
-                alert('Primero genere un reporte.');
-                return;
-            }
+            if (datosReporte.length === 0) { alert('Primero genere un reporte.'); return; }
             const decimales = parseInt(decimalesSelect.value);
-            let coletillaHtml = `
-                <html><head><meta charset="UTF-8"><title>Coletillas</title><style>
-                    body { font-family: Arial, sans-serif; margin: 40px; }
-                    table { border-collapse: collapse; width: 100%; margin-top: 20px; }
-                    th, td { border: 1px solid #000; padding: 8px; text-align: left; }
-                    th { background: #4CAF50; color: white; }
-                </style></head><body>
+            let coletillaHtml = `<html><head><meta charset="UTF-8"><title>Coletillas</title><style>body { font-family: Arial, sans-serif; margin: 40px; } table { border-collapse: collapse; width: 100%; } th, td { border: 1px solid #000; padding: 8px; text-align: left; } th { background: #4CAF50; color: white; }</style></head><body>
                 <h1>Coletillas de Notas</h1>
                 <p>Asignatura: ${escapeHtml(asignaturaSelect.options[asignaturaSelect.selectedIndex]?.text || '')}</p>
                 <p>Período: ${escapeHtml(periodoSelect.options[periodoSelect.selectedIndex]?.text || '')}</p>
-                <table>
-                    <thead><tr><th>Estudiante</th><th>Nota Final</th></tr></thead>
-                    <tbody>
-            `;
+                <table><thead><tr><th>Estudiante</th><th>Nota Final</th></tr></thead><tbody>`;
             for (let d of datosReporte) {
                 const nota = d.notaFinal !== null ? d.notaFinal.toFixed(decimales) : '—';
                 coletillaHtml += `<tr><td>${escapeHtml(d.nombre)}</td><td>${nota}</td></tr>`;
@@ -374,9 +365,7 @@
             saveAs(blob, `coletillas_${new Date().toISOString().slice(0,19)}.doc`);
         }
 
-        function analisis() {
-            alert('Funcionalidad en desarrollo. Próximamente gráficos estadísticos.');
-        }
+        function analisis() { alert('Funcionalidad en desarrollo. Próximamente gráficos estadísticos.'); }
 
         function escapeHtml(str) { if (!str) return ''; return str.replace(/[&<>]/g, m => m === '&' ? '&amp;' : m === '<' ? '&lt;' : '&gt;'); }
 
