@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
+        /* mismos estilos que projects.html */
         body { background-color: #f8fafc; }
         .sidebar { background: linear-gradient(180deg, #1e5a20 0%, #2E7D32 100%); }
         .nav-item.active { background: white; color: #2E7D32; box-shadow: 0 10px 20px -5px rgba(0,0,0,0.2); }
@@ -25,6 +26,7 @@
         .grade-table th { background: #f1f5f9; }
         .grade-table input { width: 80px; padding: 0.3rem; border: 1px solid #ccc; border-radius: 4px; }
         .flex-between { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem; }
+        .export-buttons { display: flex; gap: 0.5rem; flex-wrap: wrap; }
     </style>
 </head>
 <body class="font-sans antialiased">
@@ -44,11 +46,6 @@
                 <a href="students.html"><li class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10"><i class="fas fa-users w-5"></i> Estudiantes</li></a>
                 <a href="groups.html"><li class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10"><i class="fas fa-layer-group w-5"></i> Grupos</li></a>
                 <a href="subjects.html"><li class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10"><i class="fas fa-book w-5"></i> Asignaturas</li></a>
-                <a href="schedules.html"><li class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10"><i class="fas fa-clock w-5"></i> Horario</li></a>
-                <a href="daily-works.html"><li class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10"><i class="fas fa-chalkboard-user w-5"></i> Trabajo Cotidiano</li></a>
-                <a href="tasks.html"><li class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10"><i class="fas fa-tasks w-5"></i> Tareas</li></a>
-                <a href="tests.html"><li class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10"><i class="fas fa-pen w-5"></i> Pruebas</li></a>
-                <a href="projects.html"><li class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10"><i class="fas fa-project-diagram w-5"></i> Proyectos</li></a>
                 <a href="portfolio.html"><li class="flex items-center gap-3 px-4 py-3 rounded-xl bg-white text-green-800 font-semibold shadow-md"><i class="fas fa-folder-open w-5"></i> Portafolio</li></a>
                 <a href="settings.html"><li class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10"><i class="fas fa-cog w-5"></i> Configuración</li></a>
             </ul>
@@ -74,7 +71,14 @@
             <div id="evaluacionesContainer" class="bg-white p-6 border border-gray-200 rounded-xl shadow-sm mb-8">
                 <div class="flex-between">
                     <h2 class="text-xl font-semibold text-gray-800">Portafolio</h2>
-                    <button id="agregarEvaluacionBtn" class="bg-green-800 text-white px-4 py-2 rounded-lg shadow hover:bg-green-900"><i class="fas fa-plus"></i> Agregar trabajo</button>
+                    <div class="flex gap-2">
+                        <button id="agregarEvaluacionBtn" class="bg-green-800 text-white px-4 py-2 rounded-lg shadow hover:bg-green-900"><i class="fas fa-plus"></i> Agregar trabajo</button>
+                        <div class="export-buttons">
+                            <button id="exportExcelBtn" class="bg-green-600 text-white px-3 py-2 rounded-lg shadow hover:bg-green-700"><i class="fas fa-file-excel"></i> Excel</button>
+                            <button id="exportPdfBtn" class="bg-red-600 text-white px-3 py-2 rounded-lg shadow hover:bg-red-700"><i class="fas fa-file-pdf"></i> PDF</button>
+                            <button id="exportWordBtn" class="bg-blue-600 text-white px-3 py-2 rounded-lg shadow hover:bg-blue-700"><i class="fas fa-file-word"></i> Word</button>
+                        </div>
+                    </div>
                 </div>
                 <div id="evaluacionesLista" class="space-y-4 mt-4"></div>
             </div>
@@ -89,13 +93,15 @@
         </main>
     </div>
 
+    <!-- Modal para agregar/editar trabajo de portafolio -->
     <div id="modalEvaluacion" class="modal">
         <div class="modal-content">
             <span class="close" id="closeModalEval">&times;</span>
-            <h2 id="modalEvalTitulo" class="text-xl font-bold mb-4">Agregar trabajo de portafolio</h2>
+            <h2 id="modalEvalTitulo" class="text-xl font-bold mb-4">Agregar trabajo</h2>
             <form id="formEvaluacion">
                 <div class="mb-4"><label class="block text-sm font-medium text-gray-700 mb-1">Nombre del trabajo *</label><input type="text" id="evalNombre" required class="w-full border rounded-lg p-2"></div>
                 <div class="mb-4"><label class="block text-sm font-medium text-gray-700 mb-1">Puntaje máximo</label><input type="number" id="evalPuntaje" value="100" step="1" min="0" class="w-full border rounded-lg p-2"></div>
+                <div class="mb-4"><label class="block text-sm font-medium text-gray-700 mb-1">Peso (%)</label><input type="number" id="evalPeso" value="10" step="0.1" min="0" max="100" class="w-full border rounded-lg p-2" placeholder="Porcentaje que aporta a la nota final"></div>
                 <div class="flex justify-end gap-3"><button type="submit" class="bg-green-800 text-white px-5 py-2 rounded-lg hover:bg-green-900">Guardar</button><button type="button" id="cancelarEvalBtn" class="bg-gray-200 text-gray-800 px-5 py-2 rounded-lg hover:bg-gray-300">Cancelar</button></div>
             </form>
         </div>
@@ -117,12 +123,16 @@
         const evaluacionesLista = document.getElementById('evaluacionesLista');
         const tablaNotas = document.getElementById('tablaNotas');
         const guardarNotasBtn = document.getElementById('guardarNotasBtn');
+        const exportExcelBtn = document.getElementById('exportExcelBtn');
+        const exportPdfBtn = document.getElementById('exportPdfBtn');
+        const exportWordBtn = document.getElementById('exportWordBtn');
         const modalEval = document.getElementById('modalEvaluacion');
         const closeModalEval = document.getElementById('closeModalEval');
         const cancelarEvalBtn = document.getElementById('cancelarEvalBtn');
         const formEvaluacion = document.getElementById('formEvaluacion');
         const evalNombre = document.getElementById('evalNombre');
         const evalPuntaje = document.getElementById('evalPuntaje');
+        const evalPeso = document.getElementById('evalPeso');
         let currentEvalId = null;
 
         async function cargarGrupos() {
@@ -148,17 +158,18 @@
                 return;
             }
             let html = '';
-            currentEvaluations.forEach(eval => {
+            currentEvaluations.forEach(evalObj => {
                 html += `
                     <div class="evaluacion-card">
                         <div class="flex justify-between items-center">
                             <div>
-                                <span class="font-semibold">${escapeHtml(eval.name)}</span>
-                                <span class="text-sm text-gray-500 ml-2">Puntaje máximo: ${eval.maxScore}</span>
+                                <span class="font-semibold">${escapeHtml(evalObj.name)}</span>
+                                <span class="text-sm text-gray-500 ml-2">Puntaje máximo: ${evalObj.maxScore}</span>
+                                <span class="text-sm text-gray-500 ml-2">Peso: ${evalObj.weight}%</span>
                             </div>
                             <div>
-                                <button class="edit-eval text-blue-600 mr-2" data-id="${eval.id}"><i class="fas fa-edit"></i></button>
-                                <button class="delete-eval text-red-600" data-id="${eval.id}"><i class="fas fa-trash-alt"></i></button>
+                                <button class="edit-eval text-blue-600 mr-2" data-id="${evalObj.id}"><i class="fas fa-edit"></i></button>
+                                <button class="delete-eval text-red-600" data-id="${evalObj.id}"><i class="fas fa-trash-alt"></i></button>
                             </div>
                         </div>
                     </div>
@@ -169,8 +180,8 @@
             document.querySelectorAll('.edit-eval').forEach(btn => {
                 btn.addEventListener('click', () => {
                     const id = parseInt(btn.dataset.id);
-                    const eval = currentEvaluations.find(e => e.id === id);
-                    if (eval) abrirModalEvaluacion(eval);
+                    const evalObj = currentEvaluations.find(e => e.id === id);
+                    if (evalObj) abrirModalEvaluacion(evalObj);
                 });
             });
             document.querySelectorAll('.delete-eval').forEach(btn => {
@@ -211,18 +222,32 @@
                 return;
             }
 
-            let html = '<table class="grade-table"><thead><tr><th>Estudiante</th>';
-            currentEvaluations.forEach(eval => {
-                html += `<th>${escapeHtml(eval.name)} (/${eval.maxScore})</th>`;
+            let html = '<table class="grade-table"><thead>';
+            html += '<th>Estudiante</th>';
+            currentEvaluations.forEach(evalObj => {
+                html += `<th colspan="3">${escapeHtml(evalObj.name)} (${evalObj.maxScore} pts) <br> Valor: ${evalObj.weight}%</th>`;
             });
-            html += '</tr></thead><tbody>';
+            html += '</thead>';
+            html += '<thead><th></th>';
+            currentEvaluations.forEach(() => {
+                html += '<th>Puntos</th><th>Nota</th><th>% Obtenido</th>';
+            });
+            html += '</thead><tbody>';
 
             currentStudents.forEach(student => {
-                html += `<tr><td>${escapeHtml(student.nombre)} ${escapeHtml(student.apellido1)}</td>`;
-                currentEvaluations.forEach(eval => {
-                    const grade = currentGrades.find(g => g.studentId === student.id && g.metadata?.evaluationId === eval.id);
-                    const value = grade ? grade.value : '';
-                    html += `<td><input type="number" step="0.1" min="0" max="${eval.maxScore}" class="grade-input" data-student="${student.id}" data-eval="${eval.id}" value="${value}"></td>`;
+                html += `\\
+                    <td class="whitespace-nowrap">${escapeHtml(student.nombre)} ${escapeHtml(student.apellido1)}</td>
+                `;
+                currentEvaluations.forEach(evalObj => {
+                    const grade = currentGrades.find(g => g.studentId === student.id && g.metadata?.evaluationId === evalObj.id);
+                    const points = grade ? grade.value : '';
+                    const nota = points ? (points / evalObj.maxScore * 100).toFixed(1) : '';
+                    const obtenido = points ? (points / evalObj.maxScore * evalObj.weight).toFixed(1) : '';
+                    html += `
+                        <td><input type="number" step="0.1" min="0" max="${evalObj.maxScore}" class="grade-input" data-student="${student.id}" data-eval="${evalObj.id}" value="${points}"></td>
+                        <td>${nota}</td>
+                        <td>${obtenido}%</td>
+                    `;
                 });
                 html += '</tr>';
             });
@@ -235,6 +260,7 @@
                     const evalId = parseInt(input.dataset.eval);
                     const value = parseFloat(input.value);
                     await guardarNota(studentId, evalId, isNaN(value) ? null : value);
+                    await cargarNotas();
                 });
             });
         }
@@ -257,7 +283,6 @@
                 grade.value = value;
                 await put('grades', grade);
             }
-            await cargarNotas();
         }
 
         async function guardarTodasNotas() {
@@ -268,7 +293,32 @@
                 const value = parseFloat(input.value);
                 await guardarNota(studentId, evalId, isNaN(value) ? null : value);
             }
+            await cargarNotas();
             alert('Notas guardadas');
+        }
+
+        function exportarExcel() {
+            const tabla = document.querySelector('#notasContainer table');
+            if (!tabla) { alert('Primero cargue un grupo y período.'); return; }
+            const ws = XLSX.utils.table_to_sheet(tabla);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, 'Portafolio');
+            XLSX.writeFile(wb, `portafolio_${new Date().toISOString().slice(0,19)}.xlsx`);
+        }
+
+        function exportarPDF() {
+            const element = document.getElementById('notasContainer');
+            if (!element || element.innerText.includes('Primero')) { alert('Primero cargue un grupo y período.'); return; }
+            html2pdf().set({ margin: 0.5, filename: `portafolio_${new Date().toISOString().slice(0,19)}.pdf`, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2 }, jsPDF: { unit: 'in', format: 'a4', orientation: 'landscape' } }).from(element).save();
+        }
+
+        function exportarWord() {
+            const element = document.getElementById('notasContainer');
+            if (!element || element.innerText.includes('Primero')) { alert('Primero cargue un grupo y período.'); return; }
+            const style = `<style>table { border-collapse: collapse; width: 100%; } th, td { border: 1px solid #000; padding: 8px; text-align: center; } th { background: #f0f0f0; }</style>`;
+            const htmlContent = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Portafolio</title>${style}</head><body>${element.innerHTML}</body></html>`;
+            const blob = htmlDocx.asBlob(htmlContent);
+            saveAs(blob, `portafolio_${new Date().toISOString().slice(0,19)}.docx`);
         }
 
         function abrirModalEvaluacion(evaluacion = null) {
@@ -276,6 +326,7 @@
             document.getElementById('modalEvalTitulo').innerText = evaluacion ? 'Editar trabajo' : 'Agregar trabajo';
             evalNombre.value = evaluacion ? evaluacion.name : '';
             evalPuntaje.value = evaluacion ? evaluacion.maxScore : 100;
+            evalPeso.value = evaluacion ? evaluacion.weight : 10;
             modalEval.style.display = 'block';
         }
 
@@ -283,6 +334,7 @@
             e.preventDefault();
             const name = evalNombre.value.trim();
             const maxScore = parseInt(evalPuntaje.value) || 0;
+            const weight = parseFloat(evalPeso.value) || 0;
             if (!name) { alert('El nombre es obligatorio'); return; }
             const evaluacion = {
                 id: currentEvalId || Date.now(),
@@ -291,6 +343,7 @@
                 periodId: currentPeriodId,
                 name,
                 maxScore,
+                weight,
                 createdAt: new Date().toISOString()
             };
             await put('evaluations', evaluacion);
@@ -328,15 +381,13 @@
 
         cargarBtn.addEventListener('click', cargarTodo);
         guardarNotasBtn.addEventListener('click', guardarTodasNotas);
+        exportExcelBtn.addEventListener('click', exportarExcel);
+        exportPdfBtn.addEventListener('click', exportarPDF);
+        exportWordBtn.addEventListener('click', exportarWord);
 
         function escapeHtml(str) {
             if (!str) return '';
-            return str.replace(/[&<>]/g, function(m) {
-                if (m === '&') return '&amp;';
-                if (m === '<') return '&lt;';
-                if (m === '>') return '&gt;';
-                return m;
-            });
+            return str.replace(/[&<>]/g, m => m === '&' ? '&amp;' : m === '<' ? '&lt;' : '&gt;');
         }
 
         await openDB();
