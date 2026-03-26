@@ -1,8 +1,9 @@
-// js/db.js - Versión 7
+// js/db.js - Versión 8
 // Gestor centralizado de IndexedDB para PNFT Articulador
+// Añadido: accommodation_types, campos extendidos en students, índices
 
 const DB_NAME = 'PNFT_DB';
-const DB_VERSION = 7;  // Aumentamos la versión para nuevas stores
+const DB_VERSION = 8;  // Aumentamos la versión para nuevas stores e índices
 
 let db = null;
 
@@ -34,13 +35,14 @@ export async function openDB() {
                 'students',
                 'attendance',
                 'grades',
-                'subjects',                // NUEVA: asignaturas
-                'schedules',               // NUEVA: horario
-                'daily_work_indicators',   // NUEVA: indicadores de trabajo cotidiano
-                'evaluations',             // NUEVA: tareas, pruebas, proyectos, portafolio
-                'bitacoras',               // NUEVA: bitácora de clase
-                'conducta',                // NUEVA: reporte de conducta
-                'alertas'                  // NUEVA: alertas tempranas
+                'subjects',
+                'schedules',
+                'daily_work_indicators',
+                'evaluations',
+                'bitacoras',
+                'conducta',
+                'alertas',
+                'accommodation_types'      // NUEVA store
             ];
             
             // Crear cada store si no existe
@@ -96,9 +98,26 @@ export async function openDB() {
                         store.createIndex('studentId', 'studentId', { unique: false });
                         store.createIndex('status', 'status', { unique: false });
                     }
+                    else if (storeName === 'accommodation_types') {
+                        const store = db.createObjectStore(storeName, { keyPath: 'id' });
+                    }
                     else {
                         db.createObjectStore(storeName, { keyPath: 'id' });
                     }
+                }
+            }
+            
+            // Añadir índices a la store 'students' si no existen (para búsquedas)
+            if (db.objectStoreNames.contains('students')) {
+                const studentStore = event.target.transaction.objectStore('students');
+                if (!studentStore.indexNames.contains('id_number')) {
+                    studentStore.createIndex('id_number', 'id_number', { unique: false });
+                }
+                if (!studentStore.indexNames.contains('mep_email')) {
+                    studentStore.createIndex('mep_email', 'mep_email', { unique: false });
+                }
+                if (!studentStore.indexNames.contains('accommodation_type_id')) {
+                    studentStore.createIndex('accommodation_type_id', 'accommodation_type_id', { unique: false });
                 }
             }
         };
@@ -287,5 +306,20 @@ export async function initDefaultData() {
             await put('components', comp);
         }
         console.log('Componentes estándar creados');
+    }
+    
+    // ===== TIPOS DE ADECUACIÓN =====
+    const accommodationTypes = await getAll('accommodation_types');
+    if (accommodationTypes.length === 0) {
+        const defaultTypes = [
+            { id: 1, name: 'No presenta' },
+            { id: 2, name: 'Adecuación curricular' },
+            { id: 3, name: 'Adecuación significativa' },
+            { id: 4, name: 'Adecuación no significativa' }
+        ];
+        for (let type of defaultTypes) {
+            await put('accommodation_types', type);
+        }
+        console.log('Tipos de adecuación creados');
     }
 }
