@@ -34,9 +34,9 @@
         .student-table { width: 100%; border-collapse: collapse; }
         .student-table th, .student-table td { border: 1px solid #e5e7eb; padding: 0.5rem; text-align: left; }
         .student-table th { background: #f3f4f6; }
-        /* Estilo para modal de confirmación doble */
         .confirm-modal { max-width: 450px; text-align: center; }
         .confirm-modal input { margin-top: 1rem; width: 100%; padding: 0.5rem; border: 1px solid #ccc; border-radius: 8px; }
+        .accommodation-select { padding: 0.3rem; border-radius: 6px; border: 1px solid #ccc; }
     </style>
 </head>
 <body class="font-sans antialiased">
@@ -117,9 +117,9 @@
         </div>
     </div>
 
-    <!-- Modal para gestión de estudiantes -->
+    <!-- Modal para gestión de estudiantes (ampliado con nuevos campos) -->
     <div id="modalEstudiantes" class="modal">
-        <div class="modal-content" style="max-width: 900px;">
+        <div class="modal-content" style="max-width: 1100px;">
             <span class="close" id="closeModalEstudiantes">&times;</span>
             <h2 class="text-xl font-bold mb-4">Estudiantes</h2>
             <div class="flex justify-between items-center mb-4">
@@ -127,12 +127,26 @@
                     <button id="btnAgregarEstudiante" class="bg-green-600 text-white px-3 py-1 rounded-lg text-sm flex items-center gap-1"><i class="fas fa-plus"></i> Agregar manual</button>
                     <button id="btnImportarExcel" class="bg-blue-600 text-white px-3 py-1 rounded-lg text-sm flex items-center gap-1"><i class="fas fa-file-excel"></i> Importar Excel</button>
                     <button id="btnExportarExcel" class="bg-purple-600 text-white px-3 py-1 rounded-lg text-sm flex items-center gap-1"><i class="fas fa-download"></i> Exportar Excel</button>
+                    <button id="btnDescargarPlantilla" class="bg-yellow-600 text-white px-3 py-1 rounded-lg text-sm flex items-center gap-1"><i class="fas fa-download"></i> Descargar plantilla</button>
                 </div>
                 <input type="text" id="buscarEstudiante" placeholder="Buscar estudiante..." class="border rounded-lg px-3 py-1 text-sm w-64">
             </div>
             <div id="estudiantesLista" class="overflow-x-auto">
                 <table class="student-table w-full">
-                    <thead><tr><th>Nombre</th><th>Apellido1</th><th>Apellido2</th><th>Email</th><th>Teléfono</th><th>Acciones</th></tr></thead>
+                    <thead>
+                        <tr>
+                            <th>Cédula</th>
+                            <th>Nombre</th>
+                            <th>Encargado 1</th>
+                            <th>Teléfono 1</th>
+                            <th>Encargado 2</th>
+                            <th>Teléfono 2</th>
+                            <th>Cumpleaños</th>
+                            <th>Correo MEP</th>
+                            <th>Adecuación</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
                     <tbody id="tablaEstudiantes"></tbody>
                 </table>
             </div>
@@ -140,19 +154,25 @@
         </div>
     </div>
 
-    <!-- Modal para agregar/editar estudiante -->
+    <!-- Modal para agregar/editar estudiante (ampliado) -->
     <div id="modalFormEstudiante" class="modal">
-        <div class="modal-content" style="max-width: 500px;">
+        <div class="modal-content" style="max-width: 650px;">
             <span class="close" id="closeFormEstudiante">&times;</span>
             <h2 id="formEstudianteTitulo" class="text-xl font-bold mb-4">Agregar Estudiante</h2>
             <form id="formEstudiante">
                 <input type="hidden" id="estudianteId">
-                <div class="mb-3"><label class="block text-sm font-medium">Nombre *</label><input type="text" id="estNombre" required class="w-full border rounded p-2"></div>
-                <div class="mb-3"><label class="block text-sm font-medium">Primer Apellido *</label><input type="text" id="estApellido1" required class="w-full border rounded p-2"></div>
-                <div class="mb-3"><label class="block text-sm font-medium">Segundo Apellido</label><input type="text" id="estApellido2" class="w-full border rounded p-2"></div>
-                <div class="mb-3"><label class="block text-sm font-medium">Email</label><input type="email" id="estEmail" class="w-full border rounded p-2"></div>
-                <div class="mb-3"><label class="block text-sm font-medium">Teléfono</label><input type="text" id="estTelefono" class="w-full border rounded p-2"></div>
-                <div class="flex justify-end gap-2"><button type="submit" class="bg-green-600 text-white px-4 py-2 rounded-lg">Guardar</button><button type="button" id="cancelarFormEstudiante" class="bg-gray-200 px-4 py-2 rounded-lg">Cancelar</button></div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="mb-3"><label class="block text-sm font-medium">Cédula *</label><input type="text" id="estCedula" required class="w-full border rounded p-2"></div>
+                    <div class="mb-3"><label class="block text-sm font-medium">Nombre completo *</label><input type="text" id="estNombre" required class="w-full border rounded p-2"></div>
+                    <div class="mb-3"><label class="block text-sm font-medium">Encargado 1</label><input type="text" id="estEncargado1" class="w-full border rounded p-2"></div>
+                    <div class="mb-3"><label class="block text-sm font-medium">Teléfono 1</label><input type="text" id="estTelefono1" class="w-full border rounded p-2"></div>
+                    <div class="mb-3"><label class="block text-sm font-medium">Encargado 2</label><input type="text" id="estEncargado2" class="w-full border rounded p-2"></div>
+                    <div class="mb-3"><label class="block text-sm font-medium">Teléfono 2</label><input type="text" id="estTelefono2" class="w-full border rounded p-2"></div>
+                    <div class="mb-3"><label class="block text-sm font-medium">Fecha de cumpleaños</label><input type="date" id="estCumpleanos" class="w-full border rounded p-2"></div>
+                    <div class="mb-3"><label class="block text-sm font-medium">Correo MEP</label><input type="email" id="estCorreoMEP" class="w-full border rounded p-2" placeholder="cedula@est.mep.go.cr"></div>
+                    <div class="mb-3"><label class="block text-sm font-medium">Adecuación</label><select id="estAdecuacion" class="w-full border rounded p-2"></select></div>
+                </div>
+                <div class="flex justify-end gap-2 mt-2"><button type="submit" class="bg-green-600 text-white px-4 py-2 rounded-lg">Guardar</button><button type="button" id="cancelarFormEstudiante" class="bg-gray-200 px-4 py-2 rounded-lg">Cancelar</button></div>
             </form>
         </div>
     </div>
@@ -191,6 +211,7 @@
         let currentPage = 1;
         const itemsPerPage = 10;
         let attendanceStudents = [];
+        let accommodationTypes = [];
 
         // ==================== DATOS DE EJEMPLO (solo si no existen) ====================
         const datosEjemplo = {
@@ -226,6 +247,16 @@
                 if (m === '>') return '&gt;';
                 return m;
             });
+        }
+
+        // ==================== TIPOS DE ADECUACIÓN ====================
+        async function cargarAdecuaciones() {
+            const types = await getAll('accommodation_types');
+            accommodationTypes = types;
+            const select = document.getElementById('estAdecuacion');
+            if (select) {
+                select.innerHTML = '<option value="">-- Seleccione --</option>' + types.map(t => `<option value="${t.id}">${escapeHtml(t.name)}</option>`).join('');
+            }
         }
 
         // ==================== GRUPOS (CRUD) ====================
@@ -426,7 +457,7 @@
 
         function closeModal() { document.getElementById('modalGrupo').style.display = 'none'; currentGroupId = null; }
 
-        // ==================== ESTUDIANTES ====================
+        // ==================== ESTUDIANTES (ampliado) ====================
         async function cargarEstudiantes(groupId) {
             const all = await getAll('students');
             estudiantesList = all.filter(s => s.groupId === groupId);
@@ -439,30 +470,38 @@
             if (search) {
                 filtered = estudiantesList.filter(s => 
                     s.nombre.toLowerCase().includes(search) || 
-                    s.apellido1.toLowerCase().includes(search) ||
-                    (s.apellido2 && s.apellido2.toLowerCase().includes(search))
+                    s.id_number?.toLowerCase().includes(search) ||
+                    s.guardian_1_name?.toLowerCase().includes(search) ||
+                    s.guardian_2_name?.toLowerCase().includes(search)
                 );
             }
             const start = (currentPage - 1) * itemsPerPage;
             const paginated = filtered.slice(start, start + itemsPerPage);
             const tbody = document.getElementById('tablaEstudiantes');
             if (paginated.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="6" class="text-center text-gray-500">No hay estudiantes</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="10" class="text-center text-gray-500">No hay estudiantes</td></tr>';
                 return;
             }
-            tbody.innerHTML = paginated.map(s => `
-                <tr>
-                    <td>${escapeHtml(s.nombre)}</td>
-                    <td>${escapeHtml(s.apellido1)}</td>
-                    <td>${escapeHtml(s.apellido2 || '')}</td>
-                    <td>${escapeHtml(s.email || '')}</td>
-                    <td>${escapeHtml(s.telefono || '')}</td>
-                    <td class="whitespace-nowrap">
-                        <button class="editar-estudiante text-blue-600 hover:text-blue-800 mr-2" data-id="${s.id}"><i class="fas fa-edit"></i></button>
-                        <button class="eliminar-estudiante text-red-600 hover:text-red-800" data-id="${s.id}"><i class="fas fa-trash-alt"></i></button>
-                    </td>
-                </tr>
-            `).join('');
+            tbody.innerHTML = paginated.map(s => {
+                const accommodation = accommodationTypes.find(a => a.id === s.accommodation_type_id) || { name: s.accommodation_type || 'No presenta' };
+                return `
+                    <tr>
+                        <td>${escapeHtml(s.id_number || '')}</td>
+                        <td>${escapeHtml(s.nombre)}</td>
+                        <td>${escapeHtml(s.guardian_1_name || '')}</td>
+                        <td>${escapeHtml(s.guardian_1_phone || '')}</td>
+                        <td>${escapeHtml(s.guardian_2_name || '')}</td>
+                        <td>${escapeHtml(s.guardian_2_phone || '')}</td>
+                        <td>${escapeHtml(s.birthday || '')}</td>
+                        <td>${escapeHtml(s.mep_email || '')}</td>
+                        <td>${escapeHtml(accommodation.name)}</td>
+                        <td class="whitespace-nowrap">
+                            <button class="editar-estudiante text-blue-600 hover:text-blue-800 mr-2" data-id="${s.id}"><i class="fas fa-edit"></i></button>
+                            <button class="eliminar-estudiante text-red-600 hover:text-red-800" data-id="${s.id}"><i class="fas fa-trash-alt"></i></button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
             // Paginación
             const totalPages = Math.ceil(filtered.length / itemsPerPage);
             const pagContainer = document.getElementById('paginacionEstudiantes');
@@ -501,11 +540,20 @@
         function abrirFormEstudiante(estudiante = null) {
             document.getElementById('formEstudianteTitulo').innerText = estudiante ? 'Editar Estudiante' : 'Agregar Estudiante';
             document.getElementById('estudianteId').value = estudiante ? estudiante.id : '';
+            document.getElementById('estCedula').value = estudiante ? estudiante.id_number : '';
             document.getElementById('estNombre').value = estudiante ? estudiante.nombre : '';
-            document.getElementById('estApellido1').value = estudiante ? estudiante.apellido1 : '';
-            document.getElementById('estApellido2').value = estudiante ? estudiante.apellido2 : '';
-            document.getElementById('estEmail').value = estudiante ? estudiante.email : '';
-            document.getElementById('estTelefono').value = estudiante ? estudiante.telefono : '';
+            document.getElementById('estEncargado1').value = estudiante ? estudiante.guardian_1_name : '';
+            document.getElementById('estTelefono1').value = estudiante ? estudiante.guardian_1_phone : '';
+            document.getElementById('estEncargado2').value = estudiante ? estudiante.guardian_2_name : '';
+            document.getElementById('estTelefono2').value = estudiante ? estudiante.guardian_2_phone : '';
+            document.getElementById('estCumpleanos').value = estudiante ? estudiante.birthday : '';
+            document.getElementById('estCorreoMEP').value = estudiante ? estudiante.mep_email : '';
+            const selectAdecuacion = document.getElementById('estAdecuacion');
+            if (estudiante && estudiante.accommodation_type_id) {
+                selectAdecuacion.value = estudiante.accommodation_type_id;
+            } else {
+                selectAdecuacion.value = '';
+            }
             document.getElementById('modalFormEstudiante').style.display = 'block';
         }
 
@@ -514,32 +562,68 @@
             document.getElementById('formEstudiante').reset();
         }
 
-        // Importar/Exportar Excel
+        // Importar/Exportar Excel (adaptado)
         async function importarExcel(file) {
             const data = await file.arrayBuffer();
             const workbook = XLSX.read(data);
             const sheet = workbook.Sheets[workbook.SheetNames[0]];
             const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
             if (rows.length < 2) { alert('El archivo no contiene datos.'); return; }
-            const headers = rows[0];
-            const nameIdx = headers.findIndex(h => h?.toLowerCase().includes('nombre'));
-            const ap1Idx = headers.findIndex(h => h?.toLowerCase().includes('primer') && h?.toLowerCase().includes('apellido'));
-            const ap2Idx = headers.findIndex(h => h?.toLowerCase().includes('segundo') && h?.toLowerCase().includes('apellido'));
-            const emailIdx = headers.findIndex(h => h?.toLowerCase() === 'email');
-            const phoneIdx = headers.findIndex(h => h?.toLowerCase() === 'teléfono' || h?.toLowerCase() === 'telefono');
-            if (nameIdx === -1 || ap1Idx === -1) { alert('El Excel debe tener columnas "Nombre" y "Primer Apellido".'); return; }
+            const headers = rows[0].map(h => String(h).toLowerCase().trim());
+            const mapCol = (searchTerms) => headers.findIndex(h => searchTerms.some(term => h.includes(term)));
+            const colCedula = mapCol(['cédula', 'cedula', 'id']);
+            const colNombre = mapCol(['nombre', 'name', 'estudiante']);
+            const colEnc1 = mapCol(['encargado 1', 'encargado1', 'responsable 1']);
+            const colTel1 = mapCol(['teléfono 1', 'telefono 1', 'tel1']);
+            const colEnc2 = mapCol(['encargado 2', 'encargado2', 'responsable 2']);
+            const colTel2 = mapCol(['teléfono 2', 'telefono 2', 'tel2']);
+            const colCumple = mapCol(['cumpleaños', 'fecha nacimiento', 'birthday']);
+            const colCorreo = mapCol(['correo mep', 'email mep', 'mep']);
+            const colAdecuacion = mapCol(['adecuación', 'adecuacion', 'accommodation']);
+
+            if (colNombre === -1) { alert('El Excel debe tener una columna de nombre.'); return; }
             const nuevos = [];
             for (let i = 1; i < rows.length; i++) {
                 const row = rows[i];
-                if (!row[nameIdx] || !row[ap1Idx]) continue;
+                if (!row[colNombre]) continue;
+                const idNumber = colCedula !== -1 ? row[colCedula]?.toString().trim() : '';
+                const nombre = row[colNombre].toString().trim();
+                const guardian1Name = colEnc1 !== -1 ? row[colEnc1]?.toString().trim() : '';
+                const guardian1Phone = colTel1 !== -1 ? row[colTel1]?.toString().trim() : '';
+                const guardian2Name = colEnc2 !== -1 ? row[colEnc2]?.toString().trim() : '';
+                const guardian2Phone = colTel2 !== -1 ? row[colTel2]?.toString().trim() : '';
+                let birthday = colCumple !== -1 ? row[colCumple]?.toString().trim() : '';
+                if (birthday && !/^\d{4}-\d{2}-\d{2}$/.test(birthday)) {
+                    // Intenta parsear fechas en formato dd/mm/yyyy
+                    const parts = birthday.split(/[/-]/);
+                    if (parts.length === 3) {
+                        birthday = `${parts[2]}-${parts[1].padStart(2,'0')}-${parts[0].padStart(2,'0')}`;
+                    } else {
+                        birthday = '';
+                    }
+                }
+                const mepEmail = colCorreo !== -1 ? row[colCorreo]?.toString().trim() : '';
+                let accommodationTypeId = null;
+                if (colAdecuacion !== -1) {
+                    const typeName = row[colAdecuacion]?.toString().trim();
+                    if (typeName) {
+                        const found = accommodationTypes.find(t => t.name.toLowerCase() === typeName.toLowerCase());
+                        if (found) accommodationTypeId = found.id;
+                    }
+                }
                 nuevos.push({
                     id: Date.now() + i,
                     groupId: currentGroupId,
-                    nombre: row[nameIdx].toString().trim(),
-                    apellido1: row[ap1Idx].toString().trim(),
-                    apellido2: ap2Idx !== -1 ? row[ap2Idx]?.toString().trim() : '',
-                    email: emailIdx !== -1 ? row[emailIdx]?.toString().trim() : '',
-                    telefono: phoneIdx !== -1 ? row[phoneIdx]?.toString().trim() : ''
+                    id_number: idNumber,
+                    nombre: nombre,
+                    guardian_1_name: guardian1Name,
+                    guardian_1_phone: guardian1Phone,
+                    guardian_2_name: guardian2Name,
+                    guardian_2_phone: guardian2Phone,
+                    birthday: birthday,
+                    mep_email: mepEmail,
+                    accommodation_type_id: accommodationTypeId,
+                    created_at: new Date().toISOString()
                 });
             }
             if (nuevos.length === 0) { alert('No se encontraron estudiantes válidos.'); return; }
@@ -552,14 +636,36 @@
         async function exportarExcel() {
             const estudiantes = await getAll('students');
             const groupStudents = estudiantes.filter(s => s.groupId === currentGroupId);
-            const data = [['Nombre', 'Primer Apellido', 'Segundo Apellido', 'Email', 'Teléfono']];
+            const data = [['Cédula', 'Nombre', 'Encargado 1', 'Teléfono 1', 'Encargado 2', 'Teléfono 2', 'Cumpleaños', 'Correo MEP', 'Adecuación']];
             for (let s of groupStudents) {
-                data.push([s.nombre, s.apellido1, s.apellido2 || '', s.email || '', s.telefono || '']);
+                const accommodation = accommodationTypes.find(a => a.id === s.accommodation_type_id) || { name: s.accommodation_type || '' };
+                data.push([
+                    s.id_number || '',
+                    s.nombre,
+                    s.guardian_1_name || '',
+                    s.guardian_1_phone || '',
+                    s.guardian_2_name || '',
+                    s.guardian_2_phone || '',
+                    s.birthday || '',
+                    s.mep_email || '',
+                    accommodation.name
+                ]);
             }
             const ws = XLSX.utils.aoa_to_sheet(data);
             const wb = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(wb, ws, 'Estudiantes');
             XLSX.writeFile(wb, `estudiantes_${currentGroupId}.xlsx`);
+        }
+
+        function descargarPlantilla() {
+            const plantilla = [
+                ['Cédula', 'Nombre', 'Encargado 1', 'Teléfono 1', 'Encargado 2', 'Teléfono 2', 'Cumpleaños (YYYY-MM-DD)', 'Correo MEP', 'Adecuación (opcional)'],
+                ['210580759', 'ARIAS VARGAS LUCA MATHEO', 'Ana Vargas', '8888-8888', '', '', '2015-05-20', '210580759@est.mep.go.cr', 'No presenta']
+            ];
+            const ws = XLSX.utils.aoa_to_sheet(plantilla);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, 'Plantilla_Estudiantes');
+            XLSX.writeFile(wb, 'plantilla_estudiantes.xlsx');
         }
 
         // ==================== ASISTENCIA ====================
@@ -585,7 +691,7 @@
                 const att = attendanceMap[s.id] || { estado: 'presente', observaciones: '' };
                 return `
                     <tr>
-                        <td class="p-2">${escapeHtml(s.nombre)} ${escapeHtml(s.apellido1)}</td>
+                        <td class="p-2">${escapeHtml(s.nombre)}</td>
                         <td class="p-2">
                             <select class="estado-select" data-id="${s.id}" class="w-full border rounded p-1">
                                 <option value="presente" ${att.estado === 'presente' ? 'selected' : ''}>Presente</option>
@@ -650,7 +756,7 @@
 
         // ==================== BACKUP ====================
         async function exportarBackup() {
-            const stores = ['centros_educativos', 'school_years', 'periods_enhanced', 'components', 'groups', 'students', 'attendance', 'grades'];
+            const stores = ['centros_educativos', 'school_years', 'periods_enhanced', 'components', 'groups', 'students', 'attendance', 'grades', 'accommodation_types'];
             const backup = {};
             for (let store of stores) {
                 backup[store] = await getAll(store);
@@ -798,21 +904,31 @@
                 input.click();
             };
             document.getElementById('btnExportarExcel').onclick = exportarExcel;
+            document.getElementById('btnDescargarPlantilla').onclick = descargarPlantilla;
             document.getElementById('buscarEstudiante').addEventListener('input', () => { currentPage = 1; renderTablaEstudiantes(); });
 
             // Formulario estudiante
             document.getElementById('formEstudiante').addEventListener('submit', async (e) => {
                 e.preventDefault();
                 const id = document.getElementById('estudianteId').value;
+                const idNumber = document.getElementById('estCedula').value.trim();
+                const nombre = document.getElementById('estNombre').value.trim();
+                if (!nombre) { alert('El nombre es obligatorio'); return; }
                 const estudiante = {
                     id: id ? parseInt(id) : Date.now(),
                     groupId: currentGroupId,
-                    nombre: document.getElementById('estNombre').value.trim(),
-                    apellido1: document.getElementById('estApellido1').value.trim(),
-                    apellido2: document.getElementById('estApellido2').value.trim(),
-                    email: document.getElementById('estEmail').value.trim(),
-                    telefono: document.getElementById('estTelefono').value.trim()
+                    id_number: idNumber,
+                    nombre: nombre,
+                    guardian_1_name: document.getElementById('estEncargado1').value.trim(),
+                    guardian_1_phone: document.getElementById('estTelefono1').value.trim(),
+                    guardian_2_name: document.getElementById('estEncargado2').value.trim(),
+                    guardian_2_phone: document.getElementById('estTelefono2').value.trim(),
+                    birthday: document.getElementById('estCumpleanos').value,
+                    mep_email: document.getElementById('estCorreoMEP').value.trim(),
+                    accommodation_type_id: parseInt(document.getElementById('estAdecuacion').value) || null,
+                    updated_at: new Date().toISOString()
                 };
+                if (!id) estudiante.created_at = new Date().toISOString();
                 await put('students', estudiante);
                 await cargarEstudiantes(currentGroupId);
                 await renderGrupos();
@@ -851,6 +967,7 @@
             await cargarDatosEjemplo();
             await cargarFiltros();
             await renderGrupos();
+            await cargarAdecuaciones(); // cargar tipos de adecuación para el select
             configurarEventos();
             document.getElementById('fechaAsistencia').value = currentAttendanceDate;
         })();
