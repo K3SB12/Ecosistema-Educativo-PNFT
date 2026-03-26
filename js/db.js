@@ -1,6 +1,6 @@
 // js/db.js - Versión 8 (estable)
 const DB_NAME = 'PNFT_DB';
-const DB_VERSION = 8;
+const DB_VERSION = 9;
 
 let db = null;
 
@@ -57,6 +57,14 @@ export async function openDB() {
                         store.createIndex('groupId', 'groupId', { unique: false });
                         store.createIndex('studentId', 'studentId', { unique: false });
                         store.createIndex('date', 'date', { unique: false });
+                     } else if (storeName === 'attendance') {
+                        const store = db.createObjectStore(storeName, { keyPath: 'id' });
+                        store.createIndex('groupId', 'groupId', { unique: false });
+                        store.createIndex('estudianteId', 'estudianteId', { unique: false });
+                        store.createIndex('fecha', 'fecha', { unique: false });
+                        store.createIndex('subjectId', 'subjectId', { unique: false });
+                        store.createIndex('lesson', 'lesson', { unique: false });
+                    }  
                     } else if (storeName === 'conducta') {
                         const store = db.createObjectStore(storeName, { keyPath: 'id' });
                         store.createIndex('groupId', 'groupId', { unique: false });
@@ -76,6 +84,16 @@ export async function openDB() {
             }
 
             // Índices adicionales para students
+            if (db.objectStoreNames.contains('attendance')) {
+                const attendanceStore = event.target.transaction.objectStore('attendance');
+                if (!attendanceStore.indexNames.contains('subjectId')) {
+                    attendanceStore.createIndex('subjectId', 'subjectId', { unique: false });
+                }
+                if (!attendanceStore.indexNames.contains('lesson')) {
+                    attendanceStore.createIndex('lesson', 'lesson', { unique: false });
+                }
+            }
+        
             if (db.objectStoreNames.contains('students')) {
                 const studentStore = event.target.transaction.objectStore('students');
                 if (!studentStore.indexNames.contains('id_number')) {
