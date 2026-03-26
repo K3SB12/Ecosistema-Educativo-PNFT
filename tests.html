@@ -6,6 +6,10 @@
     <title>Pruebas - PNFT Articulador</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/html-docx-js@0.3.1/dist/html-docx.js"></script>
     <style>
         body { background-color: #f8fafc; }
         .sidebar { background: linear-gradient(180deg, #1e5a20 0%, #2E7D32 100%); }
@@ -25,6 +29,7 @@
         .grade-table th { background: #f1f5f9; }
         .grade-table input { width: 80px; padding: 0.3rem; border: 1px solid #ccc; border-radius: 4px; }
         .flex-between { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem; }
+        .export-buttons { display: flex; gap: 0.5rem; flex-wrap: wrap; }
     </style>
 </head>
 <body class="font-sans antialiased">
@@ -44,9 +49,6 @@
                 <a href="students.html"><li class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10"><i class="fas fa-users w-5"></i> Estudiantes</li></a>
                 <a href="groups.html"><li class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10"><i class="fas fa-layer-group w-5"></i> Grupos</li></a>
                 <a href="subjects.html"><li class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10"><i class="fas fa-book w-5"></i> Asignaturas</li></a>
-                <a href="schedules.html"><li class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10"><i class="fas fa-clock w-5"></i> Horario</li></a>
-                <a href="daily-works.html"><li class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10"><i class="fas fa-chalkboard-user w-5"></i> Trabajo Cotidiano</li></a>
-                <a href="tasks.html"><li class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10"><i class="fas fa-tasks w-5"></i> Tareas</li></a>
                 <a href="tests.html"><li class="flex items-center gap-3 px-4 py-3 rounded-xl bg-white text-green-800 font-semibold shadow-md"><i class="fas fa-pen w-5"></i> Pruebas</li></a>
                 <a href="settings.html"><li class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10"><i class="fas fa-cog w-5"></i> Configuración</li></a>
             </ul>
@@ -72,7 +74,14 @@
             <div id="evaluacionesContainer" class="bg-white p-6 border border-gray-200 rounded-xl shadow-sm mb-8">
                 <div class="flex-between">
                     <h2 class="text-xl font-semibold text-gray-800">Pruebas</h2>
-                    <button id="agregarEvaluacionBtn" class="bg-green-800 text-white px-4 py-2 rounded-lg shadow hover:bg-green-900"><i class="fas fa-plus"></i> Agregar prueba</button>
+                    <div class="flex gap-2">
+                        <button id="agregarEvaluacionBtn" class="bg-green-800 text-white px-4 py-2 rounded-lg shadow hover:bg-green-900"><i class="fas fa-plus"></i> Agregar prueba</button>
+                        <div class="export-buttons">
+                            <button id="exportExcelBtn" class="bg-green-600 text-white px-3 py-2 rounded-lg shadow hover:bg-green-700"><i class="fas fa-file-excel"></i> Excel</button>
+                            <button id="exportPdfBtn" class="bg-red-600 text-white px-3 py-2 rounded-lg shadow hover:bg-red-700"><i class="fas fa-file-pdf"></i> PDF</button>
+                            <button id="exportWordBtn" class="bg-blue-600 text-white px-3 py-2 rounded-lg shadow hover:bg-blue-700"><i class="fas fa-file-word"></i> Word</button>
+                        </div>
+                    </div>
                 </div>
                 <div id="evaluacionesLista" class="space-y-4 mt-4"></div>
             </div>
@@ -116,6 +125,9 @@
         const evaluacionesLista = document.getElementById('evaluacionesLista');
         const tablaNotas = document.getElementById('tablaNotas');
         const guardarNotasBtn = document.getElementById('guardarNotasBtn');
+        const exportExcelBtn = document.getElementById('exportExcelBtn');
+        const exportPdfBtn = document.getElementById('exportPdfBtn');
+        const exportWordBtn = document.getElementById('exportWordBtn');
         const modalEval = document.getElementById('modalEvaluacion');
         const closeModalEval = document.getElementById('closeModalEval');
         const cancelarEvalBtn = document.getElementById('cancelarEvalBtn');
@@ -270,6 +282,30 @@
             alert('Notas guardadas');
         }
 
+        function exportarExcel() {
+            const tabla = document.querySelector('#notasContainer table');
+            if (!tabla) { alert('Primero cargue un grupo y período.'); return; }
+            const ws = XLSX.utils.table_to_sheet(tabla);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, 'Pruebas');
+            XLSX.writeFile(wb, `pruebas_${new Date().toISOString().slice(0,19)}.xlsx`);
+        }
+
+        function exportarPDF() {
+            const element = document.getElementById('notasContainer');
+            if (!element || element.innerText.includes('Primero')) { alert('Primero cargue un grupo y período.'); return; }
+            html2pdf().set({ margin: 0.5, filename: `pruebas_${new Date().toISOString().slice(0,19)}.pdf`, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2 }, jsPDF: { unit: 'in', format: 'a4', orientation: 'landscape' } }).from(element).save();
+        }
+
+        function exportarWord() {
+            const element = document.getElementById('notasContainer');
+            if (!element || element.innerText.includes('Primero')) { alert('Primero cargue un grupo y período.'); return; }
+            const style = `<style>table { border-collapse: collapse; width: 100%; } th, td { border: 1px solid #000; padding: 8px; text-align: center; } th { background: #f0f0f0; }</style>`;
+            const htmlContent = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Pruebas</title>${style}</head><body>${element.innerHTML}</body></html>`;
+            const blob = htmlDocx.asBlob(htmlContent);
+            saveAs(blob, `pruebas_${new Date().toISOString().slice(0,19)}.docx`);
+        }
+
         function abrirModalEvaluacion(evaluacion = null) {
             currentEvalId = evaluacion ? evaluacion.id : null;
             document.getElementById('modalEvalTitulo').innerText = evaluacion ? 'Editar prueba' : 'Agregar prueba';
@@ -327,6 +363,9 @@
 
         cargarBtn.addEventListener('click', cargarTodo);
         guardarNotasBtn.addEventListener('click', guardarTodasNotas);
+        exportExcelBtn.addEventListener('click', exportarExcel);
+        exportPdfBtn.addEventListener('click', exportarPDF);
+        exportWordBtn.addEventListener('click', exportarWord);
 
         function escapeHtml(str) {
             if (!str) return '';
