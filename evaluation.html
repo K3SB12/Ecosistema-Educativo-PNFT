@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="css/style.css">
     <script src="js/curriculum.js"></script>
     <style>
-        /* Estilos (igual que antes) */
+        /* ========== ESTILOS (sin cambios) ========== */
         .indicador-card { background: white; border-radius: 16px; padding: 1.2rem; margin-bottom: 1rem; box-shadow: 0 4px 12px rgba(0,0,0,0.05); border-left: 4px solid #2E7D32; transition: all 0.2s; }
         .indicador-card:hover { box-shadow: 0 8px 20px rgba(0,0,0,0.08); }
         .indicador-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; }
@@ -55,14 +55,6 @@
                 <a href="logbook.html"><li class="nav-item"><i class="fas fa-book-open"></i> Bitácora</li></a>
                 <a href="students.html"><li class="nav-item"><i class="fas fa-users"></i> Estudiantes</li></a>
                 <a href="groups.html"><li class="nav-item"><i class="fas fa-layer-group"></i> Grupos</li></a>
-                <a href="subjects.html"><li class="nav-item"><i class="fas fa-book"></i> Asignaturas</li></a>
-                <a href="schedules.html"><li class="nav-item"><i class="fas fa-clock"></i> Horario</li></a>
-                <a href="conducta.html"><li class="nav-item"><i class="fas fa-clipboard-list"></i> Conducta</li></a>
-                <a href="alertas.html"><li class="nav-item"><i class="fas fa-exclamation-triangle"></i> Alertas</li></a>
-                <a href="reporte-periodo.html"><li class="nav-item"><i class="fas fa-chart-line"></i> Reporte Período</li></a>
-                <a href="reporte-anual.html"><li class="nav-item"><i class="fas fa-chart-line"></i> Reporte Anual</li></a>
-                <a href="reporte-individual.html"><li class="nav-item"><i class="fas fa-file-alt"></i> Reporte Individual</li></a>
-                <a href="eximidos.html"><li class="nav-item"><i class="fas fa-check-circle"></i> Eximidos</li></a>
                 <a href="settings.html"><li class="nav-item"><i class="fas fa-cog"></i> Configuración</li></a>
             </ul>
         </aside>
@@ -97,14 +89,67 @@
         </main>
     </div>
 
-    <!-- Modales (sin cambios) -->
-    <div id="modalImportarCurriculum" class="modal">...</div>
-    <div id="modalIndicador" class="modal">...</div>
+    <!-- Modal importar desde currículo -->
+    <div id="modalImportarCurriculum" class="modal">
+        <div class="modal-content">
+            <span class="close" id="closeModalCurr">&times;</span>
+            <h2><i class="fas fa-book-open"></i> Importar indicadores desde el currículo</h2>
+            <div class="form-inline">
+                <div><label>Ciclo</label><select id="cicloCurr"><option value="">-- Seleccione --</option><option value="preescolar">Preescolar</option><option value="primaria">I Ciclo</option><option value="primaria">II Ciclo</option><option value="secundaria">III Ciclo</option></select></div>
+                <div><label>Nivel</label><select id="nivelCurr"><option value="">-- Primero seleccione ciclo --</option></select></div>
+                <div><label>Módulo</label><select id="moduloCurr"><option value="1">Módulo 1</option><option value="2">Módulo 2</option><option value="ambos">Ambos módulos</option></select></div>
+                <div><button id="cargarIndicadoresCurrBtn" class="btn-accion"><i class="fas fa-search"></i> Cargar saberes</button></div>
+            </div>
+            <div id="saberesCurrContainer" class="checkbox-group"><p>Seleccione ciclo, nivel y módulo, luego haga clic en "Cargar saberes".</p></div>
+            <div style="text-align: right; margin-top: 1.5rem;">
+                <button id="confirmarImportarBtn" class="btn-accion">Importar seleccionados</button>
+                <button id="cancelarImportarBtn" class="btn-secundario">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal agregar/editar indicador manual -->
+    <div id="modalIndicador" class="modal">
+        <div class="modal-content">
+            <span class="close" id="closeModalInd">&times;</span>
+            <h2 id="modalIndTitulo">Agregar indicador</h2>
+            <div class="form-group">
+                <label>Nombre del aprendizaje / tema *</label>
+                <textarea id="indicadorDesc" rows="3" placeholder="Ej: Identificar las partes internas del hardware de la computadora"></textarea>
+            </div>
+            <div class="form-group">
+                <label>Puntaje máximo</label>
+                <input type="number" id="indicadorPuntaje" value="100" step="1">
+            </div>
+            <div class="form-group date-wrapper">
+                <label>Fecha inicio (opcional)</label>
+                <i class="fas fa-calendar-alt"></i>
+                <input type="date" id="indicadorFechaInicio">
+            </div>
+            <div class="form-group date-wrapper">
+                <label>Fecha fin (opcional)</label>
+                <i class="fas fa-calendar-check"></i>
+                <input type="date" id="indicadorFechaFin">
+            </div>
+            <div class="form-group">
+                <label>Instrumento sugerido</label>
+                <select id="indicadorInstrumento">
+                    <option value="Escala">Escala de valoración</option>
+                    <option value="Lista de cotejo">Lista de cotejo</option>
+                    <option value="Rúbrica analítica">Rúbrica analítica</option>
+                </select>
+            </div>
+            <div style="text-align: right; margin-top: 1.5rem;">
+                <button id="guardarIndicadorBtn" class="btn-accion">Guardar</button>
+                <button id="cancelarIndicadorBtn" class="btn-secundario">Cancelar</button>
+            </div>
+        </div>
+    </div>
 
     <script type="module">
-        import { openDB, getAll, put, remove } from './js/db.js';
+        import { openDB, getAll, put, remove, getById } from './js/db.js';
 
-        // Generador de ID entero
+        // ---------- Generador de IDs enteros ----------
         let lastId = 0;
         function generarIdEntero() {
             const now = Date.now();
@@ -121,11 +166,35 @@
         const agregarManualBtn = document.getElementById('agregarManualBtn');
         const indicadoresLista = document.getElementById('indicadoresLista');
 
+        // Modal importar currículo
+        const modalCurr = document.getElementById('modalImportarCurriculum');
+        const closeModalCurr = document.getElementById('closeModalCurr');
+        const cicloCurr = document.getElementById('cicloCurr');
+        const nivelCurr = document.getElementById('nivelCurr');
+        const moduloCurr = document.getElementById('moduloCurr');
+        const cargarIndicadoresCurrBtn = document.getElementById('cargarIndicadoresCurrBtn');
+        const saberesCurrContainer = document.getElementById('saberesCurrContainer');
+        const confirmarImportarBtn = document.getElementById('confirmarImportarBtn');
+        const cancelarImportarBtn = document.getElementById('cancelarImportarBtn');
+
+        // Modal indicador manual
+        const modalInd = document.getElementById('modalIndicador');
+        const closeModalInd = document.getElementById('closeModalInd');
+        const modalIndTitulo = document.getElementById('modalIndTitulo');
+        const indicadorDesc = document.getElementById('indicadorDesc');
+        const indicadorPuntaje = document.getElementById('indicadorPuntaje');
+        const indicadorFechaInicio = document.getElementById('indicadorFechaInicio');
+        const indicadorFechaFin = document.getElementById('indicadorFechaFin');
+        const indicadorInstrumento = document.getElementById('indicadorInstrumento');
+        const guardarIndicadorBtn = document.getElementById('guardarIndicadorBtn');
+        const cancelarIndicadorBtn = document.getElementById('cancelarIndicadorBtn');
+
+        let currentIndicadorId = null;
         let currentGroupId = null;
         let currentPeriodId = null;
         let currentIndicadores = [];
 
-        // Cargar grupos y períodos
+        // ---------- Cargar selects ----------
         async function cargarGrupos() {
             const grupos = await getAll('groups');
             grupoSelect.innerHTML = '<option value="">-- Seleccione grupo --</option>';
@@ -148,6 +217,7 @@
             });
         }
 
+        // ---------- CRUD indicadores ----------
         async function cargarIndicadores(groupId, periodId) {
             if (!groupId || !periodId) {
                 indicadoresLista.innerHTML = '<p class="empty-table">Seleccione un grupo y período, luego presione "Cargar".</p>';
@@ -188,15 +258,8 @@
             indicadoresLista.innerHTML = html;
         }
 
-        // Delegación de eventos para editar/eliminar
+        // Eliminar indicador
         indicadoresLista.addEventListener('click', async (e) => {
-            const editBtn = e.target.closest('.edit-indicador');
-            if (editBtn) {
-                const id = parseInt(editBtn.dataset.id);
-                const indicador = currentIndicadores.find(i => i.id === id);
-                if (indicador) abrirModalEditar(indicador);
-                return;
-            }
             const deleteBtn = e.target.closest('.delete-indicador');
             if (deleteBtn) {
                 const id = parseInt(deleteBtn.dataset.id);
@@ -206,22 +269,169 @@
                 }
                 return;
             }
+            const editBtn = e.target.closest('.edit-indicador');
+            if (editBtn) {
+                const id = parseInt(editBtn.dataset.id);
+                const indicador = currentIndicadores.find(i => i.id === id);
+                if (indicador) abrirModalEditar(indicador);
+            }
         });
 
-        // Funciones de modal (similares a la versión anterior pero con async/await)
-        async function abrirModalNuevo() {
-            // Implementación según la versión original
+        // ---------- Modal agregar/editar manual ----------
+        function abrirModalNuevo() {
+            modalIndTitulo.textContent = 'Agregar indicador';
+            currentIndicadorId = null;
+            indicadorDesc.value = '';
+            indicadorPuntaje.value = 100;
+            indicadorFechaInicio.value = '';
+            indicadorFechaFin.value = '';
+            indicadorInstrumento.value = 'Escala';
+            modalInd.style.display = 'block';
         }
 
-        async function abrirModalEditar(indicador) {
-            // Implementación según la versión original
+        function abrirModalEditar(indicador) {
+            modalIndTitulo.textContent = 'Editar indicador';
+            currentIndicadorId = indicador.id;
+            indicadorDesc.value = indicador.descripcion;
+            indicadorPuntaje.value = indicador.puntajeMaximo || 100;
+            indicadorFechaInicio.value = indicador.fechaInicio || '';
+            indicadorFechaFin.value = indicador.fechaFin || '';
+            indicadorInstrumento.value = indicador.instrumento || 'Escala';
+            modalInd.style.display = 'block';
         }
 
-        function escapeHtml(str) {
-            if (!str) return '';
-            return str.replace(/[&<>]/g, m => m === '&' ? '&amp;' : m === '<' ? '&lt;' : '&gt;');
-        }
+        guardarIndicadorBtn.addEventListener('click', async () => {
+            if (!currentGroupId || !currentPeriodId) {
+                alert('Primero debe seleccionar un grupo y período.');
+                modalInd.style.display = 'none';
+                return;
+            }
+            const descripcion = indicadorDesc.value.trim();
+            if (!descripcion) {
+                alert('La descripción es obligatoria');
+                return;
+            }
+            const nuevoIndicador = {
+                id: currentIndicadorId || generarIdEntero(),
+                groupId: currentGroupId,
+                periodId: currentPeriodId,
+                descripcion: descripcion,
+                puntajeMaximo: parseInt(indicadorPuntaje.value) || 100,
+                fechaInicio: indicadorFechaInicio.value || null,
+                fechaFin: indicadorFechaFin.value || null,
+                instrumento: indicadorInstrumento.value,
+                origen: 'manual'
+            };
+            await put('evaluation_indicators', nuevoIndicador);
+            await cargarIndicadores(currentGroupId, currentPeriodId);
+            modalInd.style.display = 'none';
+            alert('✅ Indicador guardado');
+        });
 
+        cancelarIndicadorBtn.addEventListener('click', () => modalInd.style.display = 'none');
+        closeModalInd.onclick = () => modalInd.style.display = 'none';
+
+        // ---------- Importar desde currículo ----------
+        function actualizarNivelesCurr() {
+            const ciclo = cicloCurr.value;
+            nivelCurr.innerHTML = '<option value="">-- Seleccione --</option>';
+            const niveles = {
+                preescolar: ['Educación Preescolar'],
+                primaria: ['Primero','Segundo','Tercero','Cuarto','Quinto','Sexto'],
+                secundaria: ['Sétimo','Octavo','Noveno']
+            }[ciclo] || [];
+            niveles.forEach(n => {
+                const option = document.createElement('option');
+                option.value = n;
+                option.textContent = n;
+                nivelCurr.appendChild(option);
+            });
+        }
+        cicloCurr.addEventListener('change', actualizarNivelesCurr);
+
+        cargarIndicadoresCurrBtn.addEventListener('click', () => {
+            const ciclo = cicloCurr.value, nivel = nivelCurr.value, moduloVal = moduloCurr.value;
+            if (!ciclo || !nivel) {
+                alert('Seleccione ciclo y nivel');
+                return;
+            }
+            let modulos = moduloVal === 'ambos' ? [1,2] : [parseInt(moduloVal)];
+            let saberes = [];
+            modulos.forEach(mod => {
+                let moduloData = null;
+                if (ciclo === 'preescolar') {
+                    moduloData = window.CURRICULO.preescolar?.find(m => m.nivel === nivel && m.modulo === mod);
+                } else if (ciclo === 'primaria') {
+                    const nivelKey = nivel.toLowerCase();
+                    moduloData = window.CURRICULO.primaria?.[nivelKey]?.find(m => m.modulo === mod);
+                } else if (ciclo === 'secundaria') {
+                    const nivelMap = { 'Sétimo':'setimo','Octavo':'octavo','Noveno':'noveno' };
+                    const nivelKey = nivelMap[nivel];
+                    moduloData = window.CURRICULO.secundaria?.[nivelKey]?.find(m => m.modulo === mod);
+                }
+                if (moduloData) {
+                    moduloData.areas.forEach(area => {
+                        area.saberesConceptuales.forEach(s => {
+                            saberes.push({
+                                concepto: s.concepto,
+                                indicador: s.indicadorLogro
+                            });
+                        });
+                    });
+                }
+            });
+            if (saberes.length === 0) {
+                saberesCurrContainer.innerHTML = '<p>No se encontraron saberes para esta combinación.</p>';
+                return;
+            }
+            let html = '';
+            saberes.forEach((s, idx) => {
+                html += `<label>
+                    <input type="checkbox" data-idx="${idx}" data-concepto="${escapeHtml(s.concepto)}" data-indicador="${escapeHtml(s.indicador)}">
+                    <strong>${escapeHtml(s.concepto)}</strong>: ${escapeHtml(s.indicador)}
+                </label>`;
+            });
+            saberesCurrContainer.innerHTML = html;
+        });
+
+        confirmarImportarBtn.addEventListener('click', async () => {
+            if (!currentGroupId || !currentPeriodId) {
+                alert('Primero debe seleccionar un grupo y período en la página principal.');
+                modalCurr.style.display = 'none';
+                return;
+            }
+            const checkboxes = saberesCurrContainer.querySelectorAll('input[type="checkbox"]:checked');
+            if (checkboxes.length === 0) {
+                alert('Seleccione al menos un saber para importar.');
+                return;
+            }
+            const nuevosIndicadores = [];
+            for (let cb of checkboxes) {
+                const concepto = cb.dataset.concepto;
+                const indicadorTexto = cb.dataset.indicador;
+                const descripcion = `${concepto}: ${indicadorTexto}`;
+                nuevosIndicadores.push({
+                    id: generarIdEntero(),
+                    groupId: currentGroupId,
+                    periodId: currentPeriodId,
+                    descripcion: descripcion,
+                    puntajeMaximo: 100,
+                    fechaInicio: null,
+                    fechaFin: null,
+                    instrumento: 'Escala',
+                    origen: 'curriculum'
+                });
+            }
+            for (let ind of nuevosIndicadores) await put('evaluation_indicators', ind);
+            await cargarIndicadores(currentGroupId, currentPeriodId);
+            modalCurr.style.display = 'none';
+            alert(`✅ Se importaron ${nuevosIndicadores.length} indicadores.`);
+        });
+
+        cancelarImportarBtn.addEventListener('click', () => modalCurr.style.display = 'none');
+        closeModalCurr.onclick = () => modalCurr.style.display = 'none';
+
+        // ---------- Eventos principales ----------
         cargarBtn.addEventListener('click', async () => {
             const groupId = parseInt(grupoSelect.value);
             const periodId = parseInt(periodoSelect.value);
@@ -232,10 +442,41 @@
             await cargarIndicadores(groupId, periodId);
         });
 
-        // Inicialización
+        importarCurriculumBtn.addEventListener('click', () => {
+            if (!currentGroupId || !currentPeriodId) {
+                alert('Primero debe seleccionar un grupo y período en la página principal y hacer clic en "Cargar".');
+                return;
+            }
+            modalCurr.style.display = 'block';
+        });
+
+        agregarManualBtn.addEventListener('click', () => {
+            if (!currentGroupId || !currentPeriodId) {
+                alert('Primero debe seleccionar un grupo y período en la página principal y hacer clic en "Cargar".');
+                return;
+            }
+            abrirModalNuevo();
+        });
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/[&<>]/g, function(m) {
+                if (m === '&') return '&amp;';
+                if (m === '<') return '&lt;';
+                if (m === '>') return '&gt;';
+                return m;
+            });
+        }
+
+        // ---------- Inicialización ----------
         await openDB();
         await cargarGrupos();
         await cargarPeriodos();
+
+        window.onclick = (e) => {
+            if (e.target === modalCurr) modalCurr.style.display = 'none';
+            if (e.target === modalInd) modalInd.style.display = 'none';
+        };
     </script>
 </body>
 </html>
