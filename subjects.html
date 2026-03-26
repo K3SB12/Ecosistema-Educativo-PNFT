@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
+        /* Estilos iguales a la versión anterior */
         body { background-color: #f8fafc; }
         .sidebar { background: linear-gradient(180deg, #1e5a20 0%, #2E7D32 100%); }
         .nav-item.active { background: white; color: #2E7D32; box-shadow: 0 10px 20px -5px rgba(0,0,0,0.2); }
@@ -456,10 +457,37 @@
         
         window.onclick = (e) => { if (e.target === modal) closeModalHandler(); };
         
+        // Crear asignatura de ejemplo si no existe ninguna (opcional)
+        async function crearAsignaturaEjemplo() {
+            const asignaturas = await getAll('subjects');
+            if (asignaturas.length === 0) {
+                const grupos = await getAll('groups');
+                if (grupos.length > 0) {
+                    const grupo = grupos[0];
+                    const componentes = await getAll('components');
+                    if (componentes.length > 0) {
+                        const asignaturaEjemplo = {
+                            id: Date.now(),
+                            name: 'Ejemplo - Formación Tecnológica',
+                            groupId: grupo.id,
+                            year: grupo.anio,
+                            institutionId: grupo.centroId,
+                            componentId: componentes[0].id,
+                            createdAt: new Date().toISOString(),
+                            updatedAt: new Date().toISOString()
+                        };
+                        await put('subjects', asignaturaEjemplo);
+                        console.log('Asignatura de ejemplo creada');
+                    }
+                }
+            }
+        }
+        
         await openDB();
         await cargarSelects();
         await cargarFiltros();
         await recargarComponentes();
+        await crearAsignaturaEjemplo(); // <-- esto crea una asignatura de prueba si no hay ninguna
         await cargarAsignaturas();
         
         filtroGrupo.addEventListener('change', cargarAsignaturas);
