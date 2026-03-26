@@ -158,7 +158,20 @@
             const componentes = await getAll('components');
             componentesCache = componentes;
             console.log('Componentes recargados:', componentesCache.map(c => ({ id: c.id, nombre: c.nombre })));
-            componenteSelect.innerHTML = '<option value="">-- Seleccione componente --</option>' + componentesCache.map(c => `<option value="${c.id}">${c.nombre}</option>`).join('');
+            
+            const nombresPrecargados = ['I Ciclo', 'II Ciclo', 'III Ciclo', 'Diversificada', 'Educación Adultos', 'Educación Especial'];
+            
+            // Ordenar: primero los personalizados, luego los precargados
+            const personalizados = componentesCache.filter(c => !nombresPrecargados.includes(c.nombre));
+            const precargados = componentesCache.filter(c => nombresPrecargados.includes(c.nombre));
+            const componentesOrdenados = [...personalizados, ...precargados];
+            
+            componenteSelect.innerHTML = '<option value="">-- Seleccione componente --</option>' + 
+                componentesOrdenados.map(c => {
+                    const esPrecargado = nombresPrecargados.includes(c.nombre);
+                    const texto = esPrecargado ? `${c.nombre} 🔒` : c.nombre;
+                    return `<option value="${c.id}">${escapeHtml(texto)}</option>`;
+                }).join('');
         }
 
         async function cargarAsignaturas() {
