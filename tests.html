@@ -6,10 +6,6 @@
     <title>Pruebas - PNFT Articulador</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/html-docx-js@0.3.1/dist/html-docx.js"></script>
     <style>
         body { background-color: #f8fafc; }
         .sidebar { background: linear-gradient(180deg, #1e5a20 0%, #2E7D32 100%); }
@@ -96,7 +92,7 @@
         </main>
     </div>
 
-    <!-- Modal para agregar/editar prueba -->
+    <!-- Modal para agregar/editar prueba (con campo peso) -->
     <div id="modalEvaluacion" class="modal">
         <div class="modal-content">
             <span class="close" id="closeModalEval">&times;</span>
@@ -104,6 +100,7 @@
             <form id="formEvaluacion">
                 <div class="mb-4"><label class="block text-sm font-medium text-gray-700 mb-1">Nombre de la prueba *</label><input type="text" id="evalNombre" required class="w-full border rounded-lg p-2"></div>
                 <div class="mb-4"><label class="block text-sm font-medium text-gray-700 mb-1">Puntaje máximo</label><input type="number" id="evalPuntaje" value="100" step="1" min="0" class="w-full border rounded-lg p-2"></div>
+                <div class="mb-4"><label class="block text-sm font-medium text-gray-700 mb-1">Peso (%)</label><input type="number" id="evalPeso" value="10" step="0.1" min="0" max="100" class="w-full border rounded-lg p-2" placeholder="Porcentaje que aporta a la nota final"></div>
                 <div class="flex justify-end gap-3"><button type="submit" class="bg-green-800 text-white px-5 py-2 rounded-lg hover:bg-green-900">Guardar</button><button type="button" id="cancelarEvalBtn" class="bg-gray-200 text-gray-800 px-5 py-2 rounded-lg hover:bg-gray-300">Cancelar</button></div>
             </form>
         </div>
@@ -134,6 +131,7 @@
         const formEvaluacion = document.getElementById('formEvaluacion');
         const evalNombre = document.getElementById('evalNombre');
         const evalPuntaje = document.getElementById('evalPuntaje');
+        const evalPeso = document.getElementById('evalPeso');
         let currentEvalId = null;
 
         async function cargarGrupos() {
@@ -159,17 +157,18 @@
                 return;
             }
             let html = '';
-            currentEvaluations.forEach(eval => {
+            currentEvaluations.forEach(evalObj => {
                 html += `
                     <div class="evaluacion-card">
                         <div class="flex justify-between items-center">
                             <div>
-                                <span class="font-semibold">${escapeHtml(eval.name)}</span>
-                                <span class="text-sm text-gray-500 ml-2">Puntaje máximo: ${eval.maxScore}</span>
+                                <span class="font-semibold">${escapeHtml(evalObj.name)}</span>
+                                <span class="text-sm text-gray-500 ml-2">Puntaje máximo: ${evalObj.maxScore}</span>
+                                <span class="text-sm text-gray-500 ml-2">Peso: ${evalObj.weight}%</span>
                             </div>
                             <div>
-                                <button class="edit-eval text-blue-600 mr-2" data-id="${eval.id}"><i class="fas fa-edit"></i></button>
-                                <button class="delete-eval text-red-600" data-id="${eval.id}"><i class="fas fa-trash-alt"></i></button>
+                                <button class="edit-eval text-blue-600 mr-2" data-id="${evalObj.id}"><i class="fas fa-edit"></i></button>
+                                <button class="delete-eval text-red-600" data-id="${evalObj.id}"><i class="fas fa-trash-alt"></i></button>
                             </div>
                         </div>
                     </div>
@@ -180,8 +179,8 @@
             document.querySelectorAll('.edit-eval').forEach(btn => {
                 btn.addEventListener('click', () => {
                     const id = parseInt(btn.dataset.id);
-                    const eval = currentEvaluations.find(e => e.id === id);
-                    if (eval) abrirModalEvaluacion(eval);
+                    const evalObj = currentEvaluations.find(e => e.id === id);
+                    if (evalObj) abrirModalEvaluacion(evalObj);
                 });
             });
             document.querySelectorAll('.delete-eval').forEach(btn => {
@@ -222,30 +221,48 @@
                 return;
             }
 
-            let html = '<table class="grade-table"><thead><tr><th>Estudiante</th>';
-            currentEvaluations.forEach(eval => {
-                html += `<th>${escapeHtml(eval.name)} (/${eval.maxScore})</th>`;
+            // Construir encabezados con pesos
+            let html = '<table class="grade-table"><thead>';
+            html += '<th>Estudiante</th>';
+            currentEvaluations.forEach(evalObj => {
+                html += `<th colspan="3">${escapeHtml(evalObj.name)} (${evalObj.maxScore} pts) <br> Valor: ${evalObj.weight}%</th>`;
             });
-            html += '</tr></thead><tbody>';
+            html += '</thead>';
+            html += '<thead><th></th>';
+            currentEvaluations.forEach(() => {
+                html += '<th>Puntos</th><th>Nota</th><th>% Obtenido</th>';
+            });
+            html += '</thead><tbody>';
 
             currentStudents.forEach(student => {
-                html += `<tr><td>${escapeHtml(student.nombre)} ${escapeHtml(student.apellido1)}</td>`;
-                currentEvaluations.forEach(eval => {
-                    const grade = currentGrades.find(g => g.studentId === student.id && g.metadata?.evaluationId === eval.id);
-                    const value = grade ? grade.value : '';
-                    html += `<td><input type="number" step="0.1" min="0" max="${eval.maxScore}" class="grade-input" data-student="${student.id}" data-eval="${eval.id}" value="${value}"></td>`;
+                html += `\\
+                    <td class="whitespace-nowrap">${escapeHtml(student.nombre)} ${escapeHtml(student.apellido1)}</td>
+                `;
+                currentEvaluations.forEach(evalObj => {
+                    const grade = currentGrades.find(g => g.studentId === student.id && g.metadata?.evaluationId === evalObj.id);
+                    const points = grade ? grade.value : '';
+                    const nota = points ? (points / evalObj.maxScore * 100).toFixed(1) : '';
+                    const obtenido = points ? (points / evalObj.maxScore * evalObj.weight).toFixed(1) : '';
+                    html += `
+                        <td><input type="number" step="0.1" min="0" max="${evalObj.maxScore}" class="grade-input" data-student="${student.id}" data-eval="${evalObj.id}" value="${points}"></td>
+                        <td>${nota}</td>
+                        <td>${obtenido}%</td>
+                    `;
                 });
                 html += '</tr>';
             });
             html += '</tbody></table>';
             tablaNotas.innerHTML = html;
 
+            // Asignar eventos de cambio a los inputs (para guardar automáticamente)
             document.querySelectorAll('.grade-input').forEach(input => {
                 input.addEventListener('change', async (e) => {
                     const studentId = parseInt(input.dataset.student);
                     const evalId = parseInt(input.dataset.eval);
                     const value = parseFloat(input.value);
                     await guardarNota(studentId, evalId, isNaN(value) ? null : value);
+                    // Refrescar la tabla para actualizar notas y % obtenido
+                    await cargarNotas();
                 });
             });
         }
@@ -268,7 +285,6 @@
                 grade.value = value;
                 await put('grades', grade);
             }
-            await cargarNotas();
         }
 
         async function guardarTodasNotas() {
@@ -279,9 +295,11 @@
                 const value = parseFloat(input.value);
                 await guardarNota(studentId, evalId, isNaN(value) ? null : value);
             }
+            await cargarNotas();
             alert('Notas guardadas');
         }
 
+        // Exportaciones (Excel, PDF, Word)
         function exportarExcel() {
             const tabla = document.querySelector('#notasContainer table');
             if (!tabla) { alert('Primero cargue un grupo y período.'); return; }
@@ -311,6 +329,7 @@
             document.getElementById('modalEvalTitulo').innerText = evaluacion ? 'Editar prueba' : 'Agregar prueba';
             evalNombre.value = evaluacion ? evaluacion.name : '';
             evalPuntaje.value = evaluacion ? evaluacion.maxScore : 100;
+            evalPeso.value = evaluacion ? evaluacion.weight : 10;
             modalEval.style.display = 'block';
         }
 
@@ -318,6 +337,7 @@
             e.preventDefault();
             const name = evalNombre.value.trim();
             const maxScore = parseInt(evalPuntaje.value) || 0;
+            const weight = parseFloat(evalPeso.value) || 0;
             if (!name) { alert('El nombre es obligatorio'); return; }
             const evaluacion = {
                 id: currentEvalId || Date.now(),
@@ -326,6 +346,7 @@
                 periodId: currentPeriodId,
                 name,
                 maxScore,
+                weight,
                 createdAt: new Date().toISOString()
             };
             await put('evaluations', evaluacion);
@@ -369,12 +390,7 @@
 
         function escapeHtml(str) {
             if (!str) return '';
-            return str.replace(/[&<>]/g, function(m) {
-                if (m === '&') return '&amp;';
-                if (m === '<') return '&lt;';
-                if (m === '>') return '&gt;';
-                return m;
-            });
+            return str.replace(/[&<>]/g, m => m === '&' ? '&amp;' : m === '<' ? '&lt;' : '&gt;');
         }
 
         await openDB();
