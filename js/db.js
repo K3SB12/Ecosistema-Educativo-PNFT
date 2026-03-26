@@ -1,4 +1,4 @@
-// js/db.js - Versión 8 (estable)
+// js/db.js - Versión 9 (estable)
 const DB_NAME = 'PNFT_DB';
 const DB_VERSION = 9;
 
@@ -57,7 +57,7 @@ export async function openDB() {
                         store.createIndex('groupId', 'groupId', { unique: false });
                         store.createIndex('studentId', 'studentId', { unique: false });
                         store.createIndex('date', 'date', { unique: false });
-                     } else if (storeName === 'attendance') {
+                    } else if (storeName === 'attendance') {
                         const store = db.createObjectStore(storeName, { keyPath: 'id' });
                         store.createIndex('groupId', 'groupId', { unique: false });
                         store.createIndex('estudianteId', 'estudianteId', { unique: false });
@@ -82,7 +82,7 @@ export async function openDB() {
                 }
             }
 
-            // Índices adicionales para students
+            // Añadir índices a stores que ya existían (para versiones anteriores)
             if (db.objectStoreNames.contains('attendance')) {
                 const attendanceStore = event.target.transaction.objectStore('attendance');
                 if (!attendanceStore.indexNames.contains('subjectId')) {
@@ -92,7 +92,7 @@ export async function openDB() {
                     attendanceStore.createIndex('lesson', 'lesson', { unique: false });
                 }
             }
-        
+
             if (db.objectStoreNames.contains('students')) {
                 const studentStore = event.target.transaction.objectStore('students');
                 if (!studentStore.indexNames.contains('id_number')) {
