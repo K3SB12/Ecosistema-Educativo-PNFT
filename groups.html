@@ -41,7 +41,6 @@
 </head>
 <body class="font-sans antialiased">
     <div class="flex min-h-screen">
-        <!-- Sidebar -->
         <aside class="w-72 bg-gradient-to-b from-green-800 to-green-700 text-white flex-shrink-0 sticky top-0 h-screen overflow-y-auto">
             <div class="text-center py-8 border-b border-white/20">
                 <div class="w-20 h-20 bg-white/10 rounded-full flex items-center justify-center text-3xl font-bold mx-auto mb-4 border-2 border-white/20">PNFT</div>
@@ -61,7 +60,6 @@
         </aside>
 
         <main class="flex-1 p-8 bg-gray-50">
-            <!-- Header -->
             <div class="flex justify-between items-center mb-8 bg-white p-4 rounded-2xl shadow-sm">
                 <h1 class="text-2xl font-bold text-gray-800">Secciones</h1>
                 <div class="flex gap-4">
@@ -70,7 +68,6 @@
                 </div>
             </div>
 
-            <!-- Botones acción -->
             <div class="flex flex-wrap justify-between items-center gap-4 mb-8">
                 <div class="flex gap-3">
                     <button id="exportBackupBtn" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg shadow transition flex items-center gap-2"><i class="fas fa-download"></i> Exportar respaldo</button>
@@ -79,7 +76,6 @@
                 <button id="agregarSeccionBtn" class="bg-green-800 hover:bg-green-900 text-white px-5 py-2 rounded-lg shadow flex items-center gap-2"><i class="fas fa-plus"></i> Agregar Sección</button>
             </div>
 
-            <!-- Filtros -->
             <div class="bg-white p-6 border border-gray-200 rounded-xl shadow-sm mb-8">
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                     <div><label class="block text-sm font-semibold text-gray-700 mb-1"> Institución </label><select id="filtroInstitucion" class="w-full border-gray-300 rounded-lg py-2"><option value="todos">Todas las Instituciones</option></select></div>
@@ -88,7 +84,6 @@
                 </div>
             </div>
 
-            <!-- Contenedor de grupos -->
             <div id="gruposContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
         </main>
     </div>
@@ -117,7 +112,7 @@
         </div>
     </div>
 
-    <!-- Modal para gestión de estudiantes (ampliado con nuevos campos) -->
+    <!-- Modal para gestión de estudiantes -->
     <div id="modalEstudiantes" class="modal">
         <div class="modal-content" style="max-width: 1100px;">
             <span class="close" id="closeModalEstudiantes">&times;</span>
@@ -145,8 +140,7 @@
                             <th>Correo MEP</th>
                             <th>Adecuación</th>
                             <th>Acciones</th>
-                        </tr>
-                    </thead>
+                        </thead>
                     <tbody id="tablaEstudiantes"></tbody>
                 </table>
             </div>
@@ -154,7 +148,7 @@
         </div>
     </div>
 
-    <!-- Modal para agregar/editar estudiante (ampliado) -->
+    <!-- Modal para agregar/editar estudiante -->
     <div id="modalFormEstudiante" class="modal">
         <div class="modal-content" style="max-width: 650px;">
             <span class="close" id="closeFormEstudiante">&times;</span>
@@ -204,8 +198,8 @@
 
         // ==================== VARIABLES GLOBALES ====================
         let db;
-        let currentGroupId = null;            // para edición de grupo
-        let currentAttendanceGroupId = null;   // para asistencia
+        let currentGroupId = null;
+        let currentAttendanceGroupId = null;
         let currentAttendanceDate = new Date().toISOString().slice(0,10);
         let estudiantesList = [];
         let currentPage = 1;
@@ -213,7 +207,7 @@
         let attendanceStudents = [];
         let accommodationTypes = [];
 
-        // ==================== DATOS DE EJEMPLO (solo si no existen) ====================
+        // ==================== DATOS DE EJEMPLO ====================
         const datosEjemplo = {
             centros: [{ id: 1001, nombre: 'Escuela Tranquilino Sáenz Rojas', codigo: 'CE1', activo: true }],
             years: [{ id: 2026, nombre: '2026', activo: true }],
@@ -334,7 +328,7 @@
                     if (grupo) abrirModalEdicion(grupo);
                 });
             });
-            // Eliminar con doble confirmación
+            // Eliminar grupo con confirmación (igual que antes)
             document.querySelectorAll('.eliminar-grupo').forEach(btn => {
                 btn.addEventListener('click', async (e) => {
                     const id = parseInt(btn.dataset.id);
@@ -364,9 +358,7 @@
                         if (input.value.trim() === grupo.seccion) {
                             await remove('groups', id);
                             const estudiantes = await getAll('students');
-                            for (let s of estudiantes.filter(s => s.groupId === id)) {
-                                await remove('students', s.id);
-                            }
+                            for (let s of estudiantes.filter(s => s.groupId === id)) await remove('students', s.id);
                             const attendance = await getAll('attendance');
                             for (let a of attendance.filter(a => a.groupId === id)) await remove('attendance', a.id);
                             const grades = await getAll('grades');
@@ -485,7 +477,7 @@
             tbody.innerHTML = paginated.map(s => {
                 const accommodation = accommodationTypes.find(a => a.id === s.accommodation_type_id) || { name: s.accommodation_type || 'No presenta' };
                 return `
-                    <tr>
+                    <tr data-student-id="${s.id}">
                         <td>${escapeHtml(s.id_number || '')}</td>
                         <td>${escapeHtml(s.nombre)}</td>
                         <td>${escapeHtml(s.guardian_1_name || '')}</td>
@@ -502,7 +494,7 @@
                     </tr>
                 `;
             }).join('');
-            // Paginación
+
             const totalPages = Math.ceil(filtered.length / itemsPerPage);
             const pagContainer = document.getElementById('paginacionEstudiantes');
             if (totalPages <= 1) { pagContainer.innerHTML = ''; return; }
@@ -517,28 +509,28 @@
                     renderTablaEstudiantes();
                 });
             });
-            // ==================== DELEGACIÓN DE EVENTOS PARA EDITAR/ELIMINAR ====================
-            // Escuchamos los clics en el contenedor #estudiantesLista
-            document.getElementById('estudiantesLista').addEventListener('click', async (e) => {
-                // Editar
-                if (e.target.closest('.editar-estudiante')) {
-                    const btn = e.target.closest('.editar-estudiante');
-                    const id = parseInt(btn.dataset.id);
-                    const estudiante = estudiantesList.find(s => s.id === id);
-                    if (estudiante) abrirFormEstudiante(estudiante);
-                }
-                // Eliminar
-                if (e.target.closest('.eliminar-estudiante')) {
-                    const btn = e.target.closest('.eliminar-estudiante');
-                    const id = parseInt(btn.dataset.id);
-                    if (confirm('¿Eliminar este estudiante?')) {
-                        await remove('students', id);
-                        await cargarEstudiantes(currentGroupId);
-                        await renderGrupos();
-                    }
-                }
-            });
         }
+
+        // ==================== DELEGACIÓN DE EVENTOS PARA EDITAR/ELIMINAR ESTUDIANTES ====================
+        document.getElementById('estudiantesLista').addEventListener('click', async (e) => {
+            const editBtn = e.target.closest('.editar-estudiante');
+            if (editBtn) {
+                const id = parseInt(editBtn.dataset.id);
+                const estudiante = estudiantesList.find(s => s.id === id);
+                if (estudiante) abrirFormEstudiante(estudiante);
+                return;
+            }
+            const deleteBtn = e.target.closest('.eliminar-estudiante');
+            if (deleteBtn) {
+                const id = parseInt(deleteBtn.dataset.id);
+                if (confirm('¿Eliminar este estudiante?')) {
+                    await remove('students', id);
+                    await cargarEstudiantes(currentGroupId);
+                    await renderGrupos();
+                }
+                return;
+            }
+        });
 
         function abrirFormEstudiante(estudiante = null) {
             document.getElementById('formEstudianteTitulo').innerText = estudiante ? 'Editar Estudiante' : 'Agregar Estudiante';
@@ -565,7 +557,7 @@
             document.getElementById('formEstudiante').reset();
         }
 
-        // Importar/Exportar Excel (adaptado)
+        // Importar/Exportar Excel (igual que antes)
         async function importarExcel(file) {
             const data = await file.arrayBuffer();
             const workbook = XLSX.read(data);
@@ -597,7 +589,6 @@
                 const guardian2Phone = colTel2 !== -1 ? row[colTel2]?.toString().trim() : '';
                 let birthday = colCumple !== -1 ? row[colCumple]?.toString().trim() : '';
                 if (birthday && !/^\d{4}-\d{2}-\d{2}$/.test(birthday)) {
-                    // Intenta parsear fechas en formato dd/mm/yyyy
                     const parts = birthday.split(/[/-]/);
                     if (parts.length === 3) {
                         birthday = `${parts[2]}-${parts[1].padStart(2,'0')}-${parts[0].padStart(2,'0')}`;
@@ -709,7 +700,6 @@
                     </tr>
                 `;
             }).join('');
-            // Eventos para guardar cada estudiante individualmente
             document.querySelectorAll('.estado-select, .observacion-input').forEach(el => {
                 el.addEventListener('change', async (e) => {
                     const estudianteId = parseInt(el.dataset.id);
@@ -898,15 +888,22 @@
             document.getElementById('closeModalAsistencia').onclick = () => document.getElementById('modalAsistencia').style.display = 'none';
 
             // Botones estudiantes
-            document.getElementById('btnAgregarEstudiante').onclick = () => abrirFormEstudiante();
+            document.getElementById('btnAgregarEstudiante').onclick = () => {
+                if (!currentGroupId) { alert('Primero seleccione un grupo'); return; }
+                abrirFormEstudiante();
+            };
             document.getElementById('btnImportarExcel').onclick = () => {
+                if (!currentGroupId) { alert('Primero seleccione un grupo'); return; }
                 const input = document.createElement('input');
                 input.type = 'file';
                 input.accept = '.xlsx, .xls';
                 input.onchange = (e) => { if (e.target.files[0]) importarExcel(e.target.files[0]); };
                 input.click();
             };
-            document.getElementById('btnExportarExcel').onclick = exportarExcel;
+            document.getElementById('btnExportarExcel').onclick = () => {
+                if (!currentGroupId) { alert('Primero seleccione un grupo'); return; }
+                exportarExcel();
+            };
             document.getElementById('btnDescargarPlantilla').onclick = descargarPlantilla;
             document.getElementById('buscarEstudiante').addEventListener('input', () => { currentPage = 1; renderTablaEstudiantes(); });
 
@@ -963,9 +960,9 @@
                 alert('Asistencia limpiada para esta fecha');
             });
         }
-        
- // ==================== INICIALIZACIÓN ====================
-       (async function init() {
+
+        // ==================== INICIALIZACIÓN ====================
+        (async function init() {
             await openDB();
             await cargarDatosEjemplo();
             await cargarFiltros();
