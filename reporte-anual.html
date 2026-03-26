@@ -25,6 +25,13 @@
         .reporte-table th { background: #f1f5f9; font-weight: 600; text-align: center; }
         .reporte-table td { text-align: center; }
         .reporte-table td:first-child { text-align: left; }
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); overflow: auto; }
+        .modal-content { background-color: white; margin: 5% auto; padding: 2rem; border-radius: 24px; width: 90%; max-width: 800px; box-shadow: 0 20px 40px rgba(0,0,0,0.2); position: relative; }
+        .close { color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer; }
+        .close:hover { color: black; }
+        .detalle-table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+        .detalle-table th, .detalle-table td { border: 1px solid #ccc; padding: 0.4rem; text-align: center; }
+        .detalle-table th { background: #e8f5e9; }
     </style>
 </head>
 <body class="font-sans antialiased">
@@ -87,6 +94,15 @@
         </main>
     </div>
 
+    <!-- Modal para detalles (estilos restaurados) -->
+    <div id="modalDetalle" class="modal">
+        <div class="modal-content">
+            <span class="close" id="closeDetalle">&times;</span>
+            <h2 id="detalleTitulo" class="text-xl font-bold mb-4">Detalle de notas</h2>
+            <div id="detalleContenido"></div>
+        </div>
+    </div>
+
     <script type="module">
         import { openDB, getAll, getById } from './js/db.js';
 
@@ -107,6 +123,10 @@
         const wordBtn = document.getElementById('wordBtn');
         const coletillaBtn = document.getElementById('coletillaBtn');
         const reporteContainer = document.getElementById('reporteContainer');
+        const modalDetalle = document.getElementById('modalDetalle');
+        const closeDetalle = document.getElementById('closeDetalle');
+        const detalleTitulo = document.getElementById('detalleTitulo');
+        const detalleContenido = document.getElementById('detalleContenido');
 
         let datosReporte = [];
 
@@ -216,7 +236,7 @@
             for (let d of datosReporte) {
                 const notaDisplay = d.sinNotas ? '—' : d.nota.toFixed(2);
                 html += `<tr><td>${escapeHtml(d.estudiante.nombre)}</td><td>${notaDisplay}</td>
-                         <td><button class="detalle-btn" data-id="${d.estudiante.id}" data-nombre="${escapeHtml(d.estudiante.nombre)}">Mostrar detalles</button></td></tr>`;
+                          <td><button class="detalle-btn" data-id="${d.estudiante.id}" data-nombre="${escapeHtml(d.estudiante.nombre)}">Mostrar detalles</button></td></tr>`;
             }
             html += `</tbody></table></div>`;
             reporteContainer.innerHTML = html;
@@ -227,7 +247,7 @@
                     const nombre = btn.dataset.nombre;
                     const periodosGrupo = periodos.filter(p => p.schoolYearId === grupo.anioId);
                     const pesos = periodosPorcentajes.get(grupo.id) || {};
-                    let detalleHtml = `<p><strong>Estudiante:</strong> ${escapeHtml(nombre)}</p><table class="reporte-table"><thead><tr><th>Período</th><th>Nota</th><th>% Anual</th><th>Aporta</th></tr></thead><tbody>`;
+                    let detalleHtml = `<p><strong>Estudiante:</strong> ${escapeHtml(nombre)}</p><table class="detalle-table"><thead><tr><th>Período</th><th>Nota</th><th>% Anual</th><th>Aporta</th></tr></thead><tbody>`;
                     let sumaP = 0, totalP = 0;
                     for (let p of periodosGrupo) {
                         const peso = pesos[p.id] || 0;
@@ -239,15 +259,17 @@
                     }
                     const notaAnual = totalP > 0 ? (sumaP / totalP).toFixed(2) : '—';
                     detalleHtml += `<tr><td colspan="3"><strong>Nota Anual</strong></td><td><strong>${notaAnual}</strong></td></tr></tbody></table>`;
-                    const modal = document.createElement('div'); modal.className = 'modal'; modal.innerHTML = `<div class="modal-content"><span class="close">&times;</span><h2 class="text-xl font-bold mb-4">Detalle de notas</h2>${detalleHtml}</div>`;
-                    document.body.appendChild(modal); modal.style.display = 'block';
-                    modal.querySelector('.close').onclick = () => modal.remove();
+                    detalleTitulo.innerText = `Detalle de notas - ${escapeHtml(nombre)}`;
+                    detalleContenido.innerHTML = detalleHtml;
+                    modalDetalle.style.display = 'block';
                 });
             });
         }
 
         function exportarExcel() {
-            const ws = XLSX.utils.table_to_sheet(document.querySelector('#reporteContainer table'));
+            const tabla = document.querySelector('#reporteContainer table');
+            if (!tabla) { alert('Primero genere un reporte.'); return; }
+            const ws = XLSX.utils.table_to_sheet(tabla);
             const wb = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(wb, ws, 'Reporte Anual');
             XLSX.writeFile(wb, `reporte_anual_${new Date().toISOString().slice(0,19)}.xlsx`);
@@ -287,6 +309,8 @@
         pdfBtn.addEventListener('click', exportarPDF);
         wordBtn.addEventListener('click', exportarWord);
         coletillaBtn.addEventListener('click', exportarColetilla);
+        closeDetalle.addEventListener('click', () => modalDetalle.style.display = 'none');
+        window.onclick = (e) => { if (e.target === modalDetalle) modalDetalle.style.display = 'none'; };
 
         await openDB();
         await cargarDatos();
