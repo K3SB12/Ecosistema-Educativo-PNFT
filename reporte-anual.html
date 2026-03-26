@@ -7,8 +7,9 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" integrity="sha512-GsLlZN/3F2ErC5ifS5QtgpiJtWd43JWSuIgh7mbzZ8zBps+dvLusV+eNQATqgA/HdeKFVgA5v3S/cIrLF7QnIg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-    <script src="https://cdn.jsdelivr.net/npm/html-docx-js/dist/html-docx.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/html-docx-js@0.3.1/dist/html-docx.js"></script>
     <style>
         body { background-color: #f8fafc; }
         .sidebar { background: linear-gradient(180deg, #1e5a20 0%, #2E7D32 100%); }
@@ -18,26 +19,16 @@
         .btn-accion:hover { background: #1e5a20; transform: translateY(-2px); }
         .btn-secundario { background: #f0f0f0; color: #333; border: 1px solid #ccc; }
         .btn-secundario:hover { background: #e0e0e0; }
-        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); overflow: auto; }
-        .modal-content { background-color: white; margin: 5% auto; padding: 2rem; border-radius: 24px; width: 90%; max-width: 800px; box-shadow: 0 20px 40px rgba(0,0,0,0.2); position: relative; }
-        .close { color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer; }
-        .close:hover { color: black; }
+        .flex-between { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem; }
         .reporte-table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
         .reporte-table th, .reporte-table td { border: 1px solid #e2e8f0; padding: 0.5rem; text-align: left; }
-        .reporte-table th { background: #f1f5f9; font-weight: 600; }
+        .reporte-table th { background: #f1f5f9; font-weight: 600; text-align: center; }
         .reporte-table td { text-align: center; }
         .reporte-table td:first-child { text-align: left; }
-        .flex-between { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem; }
-        .export-buttons button { margin-right: 0.5rem; }
-        .detalle-modal { max-width: 600px; }
-        .detalle-table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
-        .detalle-table th, .detalle-table td { border: 1px solid #ccc; padding: 0.4rem; text-align: center; }
-        .detalle-table th { background: #e8f5e9; }
     </style>
 </head>
 <body class="font-sans antialiased">
     <div class="flex min-h-screen">
-        <!-- Sidebar -->
         <aside class="w-72 bg-gradient-to-b from-green-800 to-green-700 text-white flex-shrink-0 sticky top-0 h-screen overflow-y-auto">
             <div class="text-center py-8 border-b border-white/20">
                 <div class="w-20 h-20 bg-white/10 rounded-full flex items-center justify-center text-3xl font-bold mx-auto mb-4 border-2 border-white/20">PNFT</div>
@@ -67,7 +58,6 @@
                 </div>
             </div>
 
-            <!-- Filtros -->
             <div class="bg-white p-6 border border-gray-200 rounded-xl shadow-sm mb-8">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
@@ -84,27 +74,17 @@
                 </div>
                 <div class="mt-4 flex justify-end gap-2">
                     <button id="generarBtn" class="bg-green-800 text-white px-4 py-2 rounded-lg shadow hover:bg-green-900"><i class="fas fa-chart-line"></i> Generar Reporte</button>
-                    <button id="exportExcelBtn" class="bg-green-600 text-white px-4 py-2 rounded-lg shadow hover:bg-green-700"><i class="fas fa-file-excel"></i> Exportar Excel</button>
-                    <button id="exportPdfBtn" class="bg-red-600 text-white px-4 py-2 rounded-lg shadow hover:bg-red-700"><i class="fas fa-file-pdf"></i> Exportar PDF</button>
-                    <button id="exportWordBtn" class="bg-blue-600 text-white px-4 py-2 rounded-lg shadow hover:bg-blue-700"><i class="fas fa-file-word"></i> Exportar Word</button>
+                    <button id="excelBtn" class="bg-green-600 text-white px-4 py-2 rounded-lg shadow hover:bg-green-700"><i class="fas fa-file-excel"></i> Exportar Excel</button>
+                    <button id="pdfBtn" class="bg-red-600 text-white px-4 py-2 rounded-lg shadow hover:bg-red-700"><i class="fas fa-file-pdf"></i> Exportar PDF</button>
+                    <button id="wordBtn" class="bg-blue-600 text-white px-4 py-2 rounded-lg shadow hover:bg-blue-700"><i class="fas fa-file-word"></i> Exportar Word</button>
                     <button id="coletillaBtn" class="bg-yellow-600 text-white px-4 py-2 rounded-lg shadow hover:bg-yellow-700"><i class="fas fa-print"></i> Coletilla Anual</button>
                 </div>
             </div>
 
-            <!-- Contenedor del reporte -->
             <div id="reporteContainer" class="bg-white p-6 border border-gray-200 rounded-xl shadow-sm overflow-x-auto">
                 <div class="text-center text-gray-500 py-8">Seleccione una asignatura y haga clic en "Generar Reporte".</div>
             </div>
         </main>
-    </div>
-
-    <!-- Modal de detalles (por estudiante) -->
-    <div id="modalDetalle" class="modal">
-        <div class="modal-content detalle-modal">
-            <span class="close" id="closeDetalle">&times;</span>
-            <h2 id="detalleTitulo" class="text-xl font-bold mb-4">Detalle de notas</h2>
-            <div id="detalleContenido"></div>
-        </div>
     </div>
 
     <script type="module">
@@ -117,22 +97,19 @@
         let periodos = [];
         let grades = [];
         let components = [];
-        let periodosPorcentajes = new Map(); // groupId -> { periodId: porcentaje }
+        let periodosPorcentajes = new Map();
 
         const asignaturaSelect = document.getElementById('asignaturaSelect');
         const ordenSelect = document.getElementById('ordenSelect');
         const generarBtn = document.getElementById('generarBtn');
-        const exportExcelBtn = document.getElementById('exportExcelBtn');
-        const exportPdfBtn = document.getElementById('exportPdfBtn');
-        const exportWordBtn = document.getElementById('exportWordBtn');
+        const excelBtn = document.getElementById('excelBtn');
+        const pdfBtn = document.getElementById('pdfBtn');
+        const wordBtn = document.getElementById('wordBtn');
         const coletillaBtn = document.getElementById('coletillaBtn');
         const reporteContainer = document.getElementById('reporteContainer');
-        const modalDetalle = document.getElementById('modalDetalle');
-        const closeDetalle = document.getElementById('closeDetalle');
-        const detalleTitulo = document.getElementById('detalleTitulo');
-        const detalleContenido = document.getElementById('detalleContenido');
 
-        // Cargar datos iniciales
+        let datosReporte = [];
+
         async function cargarDatos() {
             asignaturas = await getAll('subjects');
             grupos = await getAll('groups');
@@ -141,12 +118,10 @@
             grades = await getAll('grades');
             components = await getAll('components');
 
-            // Cargar porcentajes de períodos por grupo (almacenados en el grupo)
             for (let grupo of grupos) {
                 if (grupo.periodosPorcentajes) {
                     periodosPorcentajes.set(grupo.id, grupo.periodosPorcentajes);
                 } else {
-                    // Si no existen, asignar por defecto: dividir equitativamente entre los períodos del año
                     const periodosGrupo = periodos.filter(p => p.schoolYearId === grupo.anioId);
                     if (periodosGrupo.length > 0) {
                         const porc = 100 / periodosGrupo.length;
@@ -159,7 +134,6 @@
                 }
             }
 
-            // Poblar select de asignaturas
             asignaturaSelect.innerHTML = '<option value="">-- Seleccione asignatura --</option>';
             for (let a of asignaturas) {
                 const grupo = grupos.find(g => g.id === a.groupId);
@@ -169,328 +143,151 @@
             }
         }
 
-        // Obtener nota final de un estudiante en una asignatura para un período específico
         async function obtenerNotaPeriodo(estudianteId, asignaturaId, periodoId, grupoId) {
-            // Filtramos notas de ese estudiante, asignatura y período
-            const notas = grades.filter(g => 
-                g.studentId === estudianteId && 
-                g.periodId === periodoId && 
-                g.groupId === grupoId
-            );
+            const notas = grades.filter(g => g.studentId === estudianteId && g.periodId === periodoId && g.groupId === grupoId);
             if (notas.length === 0) return null;
-
-            // Obtener el componente de la asignatura
             const asignatura = asignaturas.find(a => a.id === asignaturaId);
             if (!asignatura || !asignatura.componentId) return null;
             const componente = components.find(c => c.id === asignatura.componentId);
             if (!componente || !componente.subcomponentes) return null;
-
-            // Mapear subcomponentes
-            const subMap = {};
-            componente.subcomponentes.forEach(sub => {
-                const nombre = sub.nombre.toLowerCase();
-                if (nombre.includes('trabajo cotidiano')) subMap.daily_work = sub.porcentaje;
-                else if (nombre.includes('tarea')) subMap.task = sub.porcentaje;
-                else if (nombre.includes('prueba')) subMap.test = sub.porcentaje;
-                else if (nombre.includes('asistencia')) subMap.attendance = sub.porcentaje;
-                else if (nombre.includes('proyecto')) subMap.project = sub.porcentaje;
-                else if (nombre.includes('portafolio')) subMap.portfolio = sub.porcentaje;
-            });
-
-            // Calcular promedio por tipo
+            const subMap = { daily_work: 0, task: 0, test: 0, attendance: 0 };
+            for (let sub of componente.subcomponentes) {
+                const n = sub.nombre.toLowerCase();
+                if (n.includes('trabajo cotidiano')) subMap.daily_work = sub.porcentaje;
+                else if (n.includes('tarea')) subMap.task = sub.porcentaje;
+                else if (n.includes('prueba')) subMap.test = sub.porcentaje;
+                else if (n.includes('asistencia')) subMap.attendance = sub.porcentaje;
+            }
             const getAvg = (type) => {
                 const relevant = notas.filter(g => g.subcomponentId === type);
                 if (relevant.length === 0) return 0;
-                const sum = relevant.reduce((acc, g) => acc + (g.value || 0), 0);
+                const sum = relevant.reduce((acc, n) => acc + (n.value || 0), 0);
                 return sum / relevant.length;
             };
-
             let notaFinal = 0;
             if (subMap.daily_work) notaFinal += (getAvg('daily_work') / 100) * subMap.daily_work;
             if (subMap.task) notaFinal += (getAvg('task') / 100) * subMap.task;
             if (subMap.test) notaFinal += (getAvg('test') / 100) * subMap.test;
             if (subMap.attendance) notaFinal += (getAvg('attendance') / 100) * subMap.attendance;
-            if (subMap.project) notaFinal += (getAvg('project') / 100) * subMap.project;
-            if (subMap.portfolio) notaFinal += (getAvg('portfolio') / 100) * subMap.portfolio;
-
             return Math.round(notaFinal * 100) / 100;
         }
 
-        // Calcular nota anual para un estudiante y asignatura
         async function calcularNotaAnual(estudianteId, asignaturaId, grupoId) {
             const grupo = grupos.find(g => g.id === grupoId);
             if (!grupo) return null;
             const pesos = periodosPorcentajes.get(grupo.id) || {};
             const periodosGrupo = periodos.filter(p => p.schoolYearId === grupo.anioId);
             if (periodosGrupo.length === 0) return null;
-
-            let sumaPonderada = 0;
-            let totalPeso = 0;
-            for (let periodo of periodosGrupo) {
-                const peso = pesos[periodo.id] || 0;
+            let suma = 0, totalPeso = 0;
+            for (let p of periodosGrupo) {
+                const peso = pesos[p.id] || 0;
                 if (peso === 0) continue;
-                const nota = await obtenerNotaPeriodo(estudianteId, asignaturaId, periodo.id, grupoId);
+                const nota = await obtenerNotaPeriodo(estudianteId, asignaturaId, p.id, grupoId);
                 if (nota !== null) {
-                    sumaPonderada += nota * peso;
+                    suma += nota * peso;
                     totalPeso += peso;
                 }
             }
             if (totalPeso === 0) return null;
-            return sumaPonderada / totalPeso;
+            return suma / totalPeso;
         }
 
-        // Generar reporte anual
         async function generarReporte() {
             const asignaturaId = parseInt(asignaturaSelect.value);
-            if (!asignaturaId) {
-                alert('Seleccione una asignatura.');
-                return;
-            }
-
+            if (!asignaturaId) { alert('Seleccione asignatura.'); return; }
             const asignatura = asignaturas.find(a => a.id === asignaturaId);
-            if (!asignatura) {
-                alert('Asignatura no encontrada.');
-                return;
-            }
-
             const grupo = grupos.find(g => g.id === asignatura.groupId);
-            if (!grupo) {
-                alert('Grupo no encontrado.');
-                return;
-            }
-
-            // Estudiantes del grupo
+            if (!grupo) return;
             const estudiantesGrupo = estudiantes.filter(e => e.groupId === grupo.id);
-            if (estudiantesGrupo.length === 0) {
-                reporteContainer.innerHTML = '<div class="text-center text-gray-500 py-8">No hay estudiantes en este grupo.</div>';
-                return;
-            }
+            if (estudiantesGrupo.length === 0) { reporteContainer.innerHTML = '<div class="text-center text-gray-500 py-8">No hay estudiantes en este grupo.</div>'; return; }
 
-            // Calcular nota anual para cada estudiante
-            const resultados = [];
+            datosReporte = [];
             for (let est of estudiantesGrupo) {
                 const nota = await calcularNotaAnual(est.id, asignaturaId, grupo.id);
-                resultados.push({
-                    estudiante: est,
-                    nota: nota !== null ? nota : 0,
-                    sinNotas: nota === null
-                });
+                datosReporte.push({ estudiante: est, nota: nota !== null ? nota : 0, sinNotas: nota === null });
             }
 
-            // Ordenar según selección
             const orden = ordenSelect.value;
-            if (orden === 'nombre') {
-                resultados.sort((a, b) => a.estudiante.nombre.localeCompare(b.estudiante.nombre));
-            } else if (orden === 'nota') {
-                resultados.sort((a, b) => b.nota - a.nota);
-            }
+            if (orden === 'nombre') datosReporte.sort((a,b) => a.estudiante.nombre.localeCompare(b.estudiante.nombre));
+            else datosReporte.sort((a,b) => b.nota - a.nota);
 
-            // Construir tabla
-            let html = `
-                <div class="mb-4 flex justify-between items-center">
-                    <h3 class="text-lg font-bold">${escapeHtml(asignatura.name)} - ${escapeHtml(grupo.seccion)} (${grupo.anio})</h3>
-                </div>
-                <div class="overflow-x-auto">
-                    <table class="reporte-table">
-                        <thead>
-                            <tr>
-                                <th>Nombre del Estudiante</th>
-                                <th>Nota Anual</th>
-                                <th>Acción</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-            `;
-
-            for (let r of resultados) {
-                const notaDisplay = r.sinNotas ? '—' : r.nota.toFixed(2);
-                html += `
-                    <tr>
-                        <td>${escapeHtml(r.estudiante.nombre)}</td>
-                        <td>${notaDisplay}</td>
-                        <td><button class="detalle-btn text-blue-600 hover:text-blue-800" data-estudiante-id="${r.estudiante.id}" data-nombre="${escapeHtml(r.estudiante.nombre)}">Mostrar detalles</button></td>
-                    </tr>
-                `;
+            let html = `<div class="mb-4"><h3 class="text-lg font-bold">${escapeHtml(asignatura.name)} - ${escapeHtml(grupo.seccion)} (${grupo.anio})</h3></div>
+                        <div class="overflow-x-auto"><table class="reporte-table"><thead><tr><th>Nombre del Estudiante</th><th>Nota Anual</th><th>Acción</th></tr></thead><tbody>`;
+            for (let d of datosReporte) {
+                const notaDisplay = d.sinNotas ? '—' : d.nota.toFixed(2);
+                html += `<tr><td>${escapeHtml(d.estudiante.nombre)}</td><td>${notaDisplay}</td>
+                         <td><button class="detalle-btn" data-id="${d.estudiante.id}" data-nombre="${escapeHtml(d.estudiante.nombre)}">Mostrar detalles</button></td></tr>`;
             }
             html += `</tbody></table></div>`;
             reporteContainer.innerHTML = html;
 
-            // Asignar eventos a los botones de detalles
             document.querySelectorAll('.detalle-btn').forEach(btn => {
                 btn.addEventListener('click', async () => {
-                    const estudianteId = parseInt(btn.dataset.estudianteId);
+                    const estId = parseInt(btn.dataset.id);
                     const nombre = btn.dataset.nombre;
-                    await mostrarDetalle(estudianteId, asignaturaId, grupo.id, nombre);
+                    const periodosGrupo = periodos.filter(p => p.schoolYearId === grupo.anioId);
+                    const pesos = periodosPorcentajes.get(grupo.id) || {};
+                    let detalleHtml = `<p><strong>Estudiante:</strong> ${escapeHtml(nombre)}</p><table class="reporte-table"><thead><tr><th>Período</th><th>Nota</th><th>% Anual</th><th>Aporta</th></tr></thead><tbody>`;
+                    let sumaP = 0, totalP = 0;
+                    for (let p of periodosGrupo) {
+                        const peso = pesos[p.id] || 0;
+                        const nota = await obtenerNotaPeriodo(estId, asignaturaId, p.id, grupo.id);
+                        const notaDisplay = nota !== null ? nota.toFixed(2) : '—';
+                        const aporte = (nota !== null && peso > 0) ? (nota * peso).toFixed(2) : '—';
+                        detalleHtml += `<tr><td>${escapeHtml(p.nombre)}</td><td>${notaDisplay}</td><td>${peso}%</td><td>${aporte}</td></tr>`;
+                        if (nota !== null && peso > 0) { sumaP += nota * peso; totalP += peso; }
+                    }
+                    const notaAnual = totalP > 0 ? (sumaP / totalP).toFixed(2) : '—';
+                    detalleHtml += `<tr><td colspan="3"><strong>Nota Anual</strong></td><td><strong>${notaAnual}</strong></td></tr></tbody></table>`;
+                    const modal = document.createElement('div'); modal.className = 'modal'; modal.innerHTML = `<div class="modal-content"><span class="close">&times;</span><h2 class="text-xl font-bold mb-4">Detalle de notas</h2>${detalleHtml}</div>`;
+                    document.body.appendChild(modal); modal.style.display = 'block';
+                    modal.querySelector('.close').onclick = () => modal.remove();
                 });
             });
         }
 
-        // Mostrar modal con detalles por período
-        async function mostrarDetalle(estudianteId, asignaturaId, grupoId, nombre) {
-            const grupo = grupos.find(g => g.id === grupoId);
-            if (!grupo) return;
-            const periodosGrupo = periodos.filter(p => p.schoolYearId === grupo.anioId);
-            const pesos = periodosPorcentajes.get(grupo.id) || {};
-
-            let html = `<p><strong>Estudiante:</strong> ${escapeHtml(nombre)}</p>`;
-            html += `<table class="detalle-table">`;
-            html += `<thead><tr><th>Período</th><th>Nota</th><th>Porcentaje Anual</th><th>Aporta</th></tr></thead><tbody>`;
-
-            let sumaPonderada = 0;
-            let totalPeso = 0;
-
-            for (let periodo of periodosGrupo) {
-                const peso = pesos[periodo.id] || 0;
-                const nota = await obtenerNotaPeriodo(estudianteId, asignaturaId, periodo.id, grupoId);
-                const notaDisplay = (nota !== null) ? nota.toFixed(2) : '—';
-                const aporte = (nota !== null && peso > 0) ? (nota * peso).toFixed(2) : '—';
-                html += `<tr>
-                            <td>${escapeHtml(periodo.nombre)}</td>
-                            <td>${notaDisplay}</td>
-                            <td>${peso}%</td>
-                            <td>${aporte}</td>
-                         </tr>`;
-                if (nota !== null && peso > 0) {
-                    sumaPonderada += nota * peso;
-                    totalPeso += peso;
-                }
-            }
-            const notaAnual = totalPeso > 0 ? (sumaPonderada / totalPeso).toFixed(2) : '—';
-            html += `<tr><td colspan="3"><strong>Nota Anual</strong></td><td><strong>${notaAnual}</strong></td></tr>`;
-            html += `</tbody></table>`;
-
-            detalleTitulo.innerText = `Detalle de notas - ${escapeHtml(nombre)}`;
-            detalleContenido.innerHTML = html;
-            modalDetalle.style.display = 'block';
-        }
-
-        // Exportar a Excel (tabla actual)
         function exportarExcel() {
-            const tabla = document.querySelector('#reporteContainer table');
-            if (!tabla) {
-                alert('Primero genere un reporte.');
-                return;
-            }
-            const ws = XLSX.utils.table_to_sheet(tabla);
+            const ws = XLSX.utils.table_to_sheet(document.querySelector('#reporteContainer table'));
             const wb = XLSX.utils.book_new();
-            const asignatura = asignaturaSelect.options[asignaturaSelect.selectedIndex]?.text || 'Reporte_Anual';
-            XLSX.utils.book_append_sheet(wb, ws, asignatura.slice(0, 31));
+            XLSX.utils.book_append_sheet(wb, ws, 'Reporte Anual');
             XLSX.writeFile(wb, `reporte_anual_${new Date().toISOString().slice(0,19)}.xlsx`);
         }
 
-        // Exportar a PDF
-        function exportarPdf() {
+        function exportarPDF() {
             const element = document.getElementById('reporteContainer');
-            if (!element || element.children.length === 0 || element.children[0].innerText.includes('Seleccione')) {
-                alert('Primero genere un reporte.');
-                return;
-            }
-            const opt = {
-                margin: 0.5,
-                filename: `reporte_anual_${new Date().toISOString().slice(0,19)}.pdf`,
-                image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { scale: 2 },
-                jsPDF: { unit: 'in', format: 'letter', orientation: 'landscape' }
-            };
-            html2pdf().set(opt).from(element).save();
+            if (!element || element.innerText.includes('Seleccione')) { alert('Primero genere un reporte.'); return; }
+            html2pdf().set({ margin: 0.5, filename: `reporte_anual_${new Date().toISOString().slice(0,19)}.pdf`, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2 }, jsPDF: { unit: 'in', format: 'a4', orientation: 'landscape' } }).from(element).save();
         }
 
-        // Exportar a Word
         function exportarWord() {
             const element = document.getElementById('reporteContainer');
-            if (!element || element.children.length === 0 || element.children[0].innerText.includes('Seleccione')) {
-                alert('Primero genere un reporte.');
-                return;
-            }
-            const htmlContent = `
-                <html>
-                <head>
-                    <meta charset="UTF-8">
-                    <title>Reporte Anual</title>
-                    <style>
-                        table { border-collapse: collapse; width: 100%; margin-bottom: 20px; }
-                        th, td { border: 1px solid #000; padding: 8px; text-align: center; }
-                        th { background: #f0f0f0; }
-                        td:first-child { text-align: left; }
-                    </style>
-                </head>
-                <body>
-                    ${element.innerHTML}
-                </body>
-                </html>
-            `;
-            const converted = htmlDocx.asBlob(htmlContent);
-            saveAs(converted, `reporte_anual_${new Date().toISOString().slice(0,19)}.docx`);
+            if (!element || element.innerText.includes('Seleccione')) { alert('Primero genere un reporte.'); return; }
+            const style = `<style>table { border-collapse: collapse; width: 100%; } th, td { border: 1px solid #000; padding: 8px; text-align: center; } th { background: #f0f0f0; } td:first-child { text-align: left; }</style>`;
+            const htmlContent = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Reporte Anual</title>${style}</head><body>${element.innerHTML}</body></html>`;
+            const blob = htmlDocx.asBlob(htmlContent);
+            saveAs(blob, `reporte_anual_${new Date().toISOString().slice(0,19)}.docx`);
         }
 
-        // Coletilla Anual (versión simplificada)
-        function coletillaAnual() {
-            const tabla = document.querySelector('#reporteContainer table');
-            if (!tabla) {
-                alert('Primero genere un reporte.');
-                return;
+        function exportarColetilla() {
+            if (datosReporte.length === 0) { alert('Primero genere un reporte.'); return; }
+            let html = `<html><head><meta charset="UTF-8"><title>Coletilla Anual</title><style>body { font-family: Arial; margin: 40px; } table { border-collapse: collapse; width: 100%; } th, td { border: 1px solid #000; padding: 8px; text-align: left; } th { background: #4CAF50; color: white; }</style></head><body><h1>Coletilla Anual</h1><p>Asignatura: ${escapeHtml(asignaturaSelect.options[asignaturaSelect.selectedIndex]?.text || '')}</p><table><thead><tr><th>Estudiante</th><th>Nota Anual</th></tr></thead><tbody>`;
+            for (let d of datosReporte) {
+                const nota = d.sinNotas ? '—' : d.nota.toFixed(2);
+                html += `<tr><td>${escapeHtml(d.estudiante.nombre)}</td><td>${nota}</td></tr>`;
             }
-            // Extraer datos de la tabla
-            const rows = tabla.querySelectorAll('tbody tr');
-            let coletillaHtml = `
-                <html>
-                <head>
-                    <meta charset="UTF-8">
-                    <title>Coletilla Anual</title>
-                    <style>
-                        body { font-family: Arial, sans-serif; margin: 40px; }
-                        table { border-collapse: collapse; width: 100%; margin-top: 20px; }
-                        th, td { border: 1px solid #000; padding: 8px; text-align: center; }
-                        th { background: #4CAF50; color: white; }
-                        td:first-child { text-align: left; }
-                    </style>
-                </head>
-                <body>
-                    <h1>Coletilla Anual</h1>
-                    <p>Asignatura: ${escapeHtml(asignaturaSelect.options[asignaturaSelect.selectedIndex]?.text || '')}</p>
-                    <p>Fecha: ${new Date().toLocaleDateString()}</p>
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Estudiante</th>
-                                <th>Nota Anual</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-            `;
-            for (let row of rows) {
-                const cells = row.querySelectorAll('td');
-                if (cells.length >= 2) {
-                    const nombre = cells[0].innerText;
-                    const nota = cells[1].innerText;
-                    coletillaHtml += `<tr><td>${escapeHtml(nombre)}</td><td>${escapeHtml(nota)}</td></tr>`;
-                }
-            }
-            coletillaHtml += `</tbody></table></body></html>`;
-            const blob = new Blob([coletillaHtml], { type: 'application/msword' });
+            html += `</tbody></table></body></html>`;
+            const blob = new Blob([html], { type: 'application/msword' });
             saveAs(blob, `coletilla_anual_${new Date().toISOString().slice(0,19)}.doc`);
         }
 
-        function escapeHtml(str) {
-            if (!str) return '';
-            return str.replace(/[&<>]/g, function(m) {
-                if (m === '&') return '&amp;';
-                if (m === '<') return '&lt;';
-                if (m === '>') return '&gt;';
-                return m;
-            });
-        }
+        function escapeHtml(str) { if (!str) return ''; return str.replace(/[&<>]/g, m => m === '&' ? '&amp;' : m === '<' ? '&lt;' : '&gt;'); }
 
-        // Eventos
         generarBtn.addEventListener('click', generarReporte);
-        exportExcelBtn.addEventListener('click', exportarExcel);
-        exportPdfBtn.addEventListener('click', exportarPdf);
-        exportWordBtn.addEventListener('click', exportarWord);
-        coletillaBtn.addEventListener('click', coletillaAnual);
-        closeDetalle.addEventListener('click', () => modalDetalle.style.display = 'none');
-        window.onclick = (e) => { if (e.target === modalDetalle) modalDetalle.style.display = 'none'; };
+        excelBtn.addEventListener('click', exportarExcel);
+        pdfBtn.addEventListener('click', exportarPDF);
+        wordBtn.addEventListener('click', exportarWord);
+        coletillaBtn.addEventListener('click', exportarColetilla);
 
-        // Inicializar
         await openDB();
         await cargarDatos();
     </script>
