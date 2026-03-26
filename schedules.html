@@ -3,25 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Horario - PNFT Articulador</title>
+    <title>Horario · PNFT Articulador</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body { background-color: #f8fafc; }
         .sidebar { background: linear-gradient(180deg, #1e5a20 0%, #2E7D32 100%); }
-        .nav-item.active { background: white; color: #2E7D32; }
+        .nav-item.active { background: white; color: #2E7D32; box-shadow: 0 10px 20px -5px rgba(0,0,0,0.2); }
+        .nav-item.active i { color: #2E7D32; }
         .btn-accion { background: #2E7D32; transition: all 0.2s; }
         .btn-accion:hover { background: #1e5a20; transform: translateY(-2px); }
         .btn-secundario { background: #f0f0f0; color: #333; border: 1px solid #ccc; }
         .btn-secundario:hover { background: #e0e0e0; }
         .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); overflow: auto; }
-        .modal-content { background-color: white; margin: 5% auto; padding: 2rem; border-radius: 24px; width: 90%; max-width: 800px; }
+        .modal-content { background-color: white; margin: 5% auto; padding: 2rem; border-radius: 24px; width: 90%; max-width: 600px; box-shadow: 0 20px 40px rgba(0,0,0,0.2); position: relative; }
         .close { color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer; }
         .close:hover { color: black; }
-        .schedule-table { width: 100%; border-collapse: collapse; background: white; border-radius: 16px; overflow: hidden; }
-        .schedule-table th, .schedule-table td { border: 1px solid #e2e8f0; padding: 10px; text-align: left; vertical-align: top; }
-        .schedule-table th { background: #2E7D32; color: white; font-weight: 600; }
-        .schedule-table select { width: 100%; padding: 0.4rem; border-radius: 6px; border: 1px solid #ccc; background: white; }
+        .schedule-card { border: 1px solid #e2e8f0; border-radius: 16px; padding: 1rem; margin-bottom: 1rem; background: #fafcff; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
+        .schedule-info { flex: 1; }
+        .schedule-day { font-weight: bold; color: #2E7D32; background: #e8f5e9; display: inline-block; padding: 0.2rem 0.6rem; border-radius: 20px; font-size: 0.8rem; margin-bottom: 0.3rem; }
+        .schedule-time { font-size: 0.9rem; color: #1e293b; }
+        .schedule-subject { font-weight: 500; margin-top: 0.2rem; }
+        .flex-between { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem; }
+        .empty-table { text-align: center; color: #94a3b8; padding: 2rem; font-style: italic; }
+        .day-badge { background: #2E7D32; color: white; border-radius: 20px; padding: 0.2rem 0.8rem; font-size: 0.7rem; font-weight: bold; }
     </style>
 </head>
 <body class="font-sans antialiased">
@@ -48,162 +53,266 @@
 
         <main class="flex-1 p-8 bg-gray-50">
             <div class="flex justify-between items-center mb-8 bg-white p-4 rounded-2xl shadow-sm">
-                <h1 class="text-2xl font-bold text-gray-800">Horario</h1>
+                <h1 class="text-2xl font-bold text-gray-800">Horario de clases</h1>
                 <div class="flex gap-4">
                     <span class="bg-green-100 text-green-800 px-4 py-2 rounded-full text-sm font-medium flex items-center gap-2"><i class="fas fa-user-graduate"></i> Docente</span>
                     <span class="bg-green-100 text-green-800 px-4 py-2 rounded-full text-sm font-medium flex items-center gap-2"><i class="fas fa-calendar-alt"></i> 2026</span>
                 </div>
             </div>
 
+            <!-- Selección de grupo -->
             <div class="bg-white p-6 border border-gray-200 rounded-xl shadow-sm mb-8">
-                <div class="flex flex-wrap gap-4 items-end">
-                    <div class="flex-1">
-                        <label class="block text-sm font-semibold text-gray-700 mb-1">Seleccionar grupo</label>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1">Seleccione el grupo</label>
                         <select id="grupoSelect" class="w-full border-gray-300 rounded-lg py-2"></select>
                     </div>
-                    <div class="flex-1">
-                        <label class="block text-sm font-semibold text-gray-700 mb-1">Máximo de lecciones por día</label>
-                        <input type="number" id="maxLecciones" value="8" min="1" max="12" class="w-full border-gray-300 rounded-lg py-2">
-                    </div>
-                    <div>
-                        <button id="cargarHorarioBtn" class="bg-green-800 text-white px-5 py-2 rounded-lg shadow flex items-center gap-2"><i class="fas fa-sync-alt"></i> Cargar</button>
+                    <div class="flex justify-end items-end">
+                        <button id="agregarHorarioBtn" class="bg-green-800 text-white px-5 py-2 rounded-lg shadow flex items-center gap-2"><i class="fas fa-plus"></i> Agregar horario</button>
                     </div>
                 </div>
             </div>
 
-            <div id="horarioContainer" class="bg-white p-6 border border-gray-200 rounded-xl shadow-sm overflow-x-auto">
-                <p class="text-center text-gray-500">Seleccione un grupo y presione "Cargar".</p>
-            </div>
-
-            <div class="mt-6 flex justify-end gap-4">
-                <button id="guardarHorarioBtn" class="bg-green-800 text-white px-6 py-2 rounded-lg shadow hover:bg-green-900"><i class="fas fa-save"></i> Guardar Horario</button>
-                <button id="restablecerBtn" class="bg-red-500 text-white px-6 py-2 rounded-lg shadow hover:bg-red-600"><i class="fas fa-undo-alt"></i> Restablecer</button>
+            <!-- Lista de horarios -->
+            <div id="horariosContainer" class="bg-white p-6 border border-gray-200 rounded-xl shadow-sm">
+                <h2 class="text-xl font-semibold text-gray-800 mb-4">Horarios del grupo</h2>
+                <div id="horariosLista" class="space-y-4">
+                    <div class="empty-table">Seleccione un grupo para ver su horario.</div>
+                </div>
             </div>
         </main>
+    </div>
+
+    <!-- Modal para agregar/editar horario -->
+    <div id="modalHorario" class="modal">
+        <div class="modal-content">
+            <span class="close" id="closeModal">&times;</span>
+            <h2 id="modalTitulo" class="text-xl font-bold mb-4">Agregar horario</h2>
+            <form id="formHorario">
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Día *</label>
+                    <select id="diaSelect" required class="w-full border rounded-lg p-2">
+                        <option value="Lunes">Lunes</option>
+                        <option value="Martes">Martes</option>
+                        <option value="Miércoles">Miércoles</option>
+                        <option value="Jueves">Jueves</option>
+                        <option value="Viernes">Viernes</option>
+                        <option value="Sábado">Sábado</option>
+                    </select>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Hora inicio *</label>
+                    <input type="time" id="horaInicio" required class="w-full border rounded-lg p-2">
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Hora fin *</label>
+                    <input type="time" id="horaFin" required class="w-full border rounded-lg p-2">
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Asignatura *</label>
+                    <select id="asignaturaSelect" required class="w-full border rounded-lg p-2"></select>
+                </div>
+                <div class="flex justify-end gap-3">
+                    <button type="submit" class="bg-green-800 text-white px-5 py-2 rounded-lg hover:bg-green-900">Guardar</button>
+                    <button type="button" id="cancelarBtn" class="bg-gray-200 text-gray-800 px-5 py-2 rounded-lg hover:bg-gray-300">Cancelar</button>
+                </div>
+            </form>
+        </div>
     </div>
 
     <script type="module">
         import { openDB, getAll, put, remove, getById } from './js/db.js';
 
-        let db;
         let currentGroupId = null;
-        let schedules = [];
+        let currentScheduleId = null;
+        let horarios = [];
+        let asignaturas = [];
 
         const grupoSelect = document.getElementById('grupoSelect');
-        const maxLeccionesInput = document.getElementById('maxLecciones');
-        const cargarBtn = document.getElementById('cargarHorarioBtn');
-        const guardarBtn = document.getElementById('guardarHorarioBtn');
-        const restablecerBtn = document.getElementById('restablecerBtn');
-        const horarioContainer = document.getElementById('horarioContainer');
+        const agregarBtn = document.getElementById('agregarHorarioBtn');
+        const horariosLista = document.getElementById('horariosLista');
+        const modal = document.getElementById('modalHorario');
+        const closeModal = document.getElementById('closeModal');
+        const cancelarBtn = document.getElementById('cancelarBtn');
+        const form = document.getElementById('formHorario');
+        const modalTitulo = document.getElementById('modalTitulo');
+        const diaSelect = document.getElementById('diaSelect');
+        const horaInicio = document.getElementById('horaInicio');
+        const horaFin = document.getElementById('horaFin');
+        const asignaturaSelect = document.getElementById('asignaturaSelect');
 
-        const dias = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes'];
-
+        // Cargar grupos
         async function cargarGrupos() {
             const grupos = await getAll('groups');
-            grupoSelect.innerHTML = '<option value="">-- Seleccione grupo --</option>' + grupos.map(g => `<option value="${g.id}">${g.seccion} (${g.nivel}) - ${g.anio}</option>`).join('');
+            grupoSelect.innerHTML = '<option value="">-- Seleccione grupo --</option>';
+            for (let g of grupos) {
+                const option = document.createElement('option');
+                option.value = g.id;
+                option.textContent = `${g.seccion} (${g.nivel}) - ${g.anio}`;
+                grupoSelect.appendChild(option);
+            }
         }
 
-        async function cargarAsignaturas(groupId) {
-            const subjects = await getAll('subjects');
-            return subjects.filter(s => s.groupId === groupId);
+        // Cargar asignaturas del grupo seleccionado
+        async function cargarAsignaturasPorGrupo(groupId) {
+            const allSubjects = await getAll('subjects');
+            asignaturas = allSubjects.filter(s => s.groupId === groupId);
+            asignaturaSelect.innerHTML = '<option value="">-- Seleccione asignatura --</option>';
+            for (let a of asignaturas) {
+                const option = document.createElement('option');
+                option.value = a.id;
+                option.textContent = a.name;
+                asignaturaSelect.appendChild(option);
+            }
         }
 
-        async function cargarSchedules(groupId) {
-            const all = await getAll('schedules');
-            return all.filter(s => s.groupId === groupId);
-        }
-
-        async function renderHorario() {
-            const groupId = parseInt(grupoSelect.value);
-            if (!groupId) {
-                horarioContainer.innerHTML = '<p class="text-center text-gray-500">Seleccione un grupo.</p>';
+        // Cargar horarios del grupo
+        async function cargarHorarios() {
+            if (!currentGroupId) {
+                horariosLista.innerHTML = '<div class="empty-table">Seleccione un grupo para ver su horario.</div>';
                 return;
             }
-            currentGroupId = groupId;
-            const maxLecciones = parseInt(maxLeccionesInput.value) || 8;
-            const asignaturas = await cargarAsignaturas(groupId);
-            const existingSchedules = await cargarSchedules(groupId);
-            
-            // Crear mapa de horario existente
-            const scheduleMap = {};
-            existingSchedules.forEach(s => {
-                const key = `${s.dayOfWeek}_${s.lessonNumber}`;
-                scheduleMap[key] = s.subjectId;
-            });
-            
-            let html = '<table class="schedule-table"><thead><tr><th>Lección</th>';
-            dias.forEach(dia => html += `<th>${dia}</th>`);
-            html += '</tr></thead><tbody>';
-            
-            for (let lec = 1; lec <= maxLecciones; lec++) {
-                html += `<tr><td class="font-bold text-center">${lec}</td>`;
-                for (let d = 0; d < dias.length; d++) {
-                    const key = `${d}_${lec}`;
-                    const subjectId = scheduleMap[key] || '';
-                    html += `<td>
-                        <select data-day="${d}" data-lesson="${lec}" class="horario-select">
-                            <option value="">-- Sin asignatura --</option>
-                            ${asignaturas.map(a => `<option value="${a.id}" ${a.id == subjectId ? 'selected' : ''}>${escapeHtml(a.name)}</option>`).join('')}
-                        </select>
-                    </td>`;
-                }
-                html += '</tr>';
+            const all = await getAll('schedules');
+            horarios = all.filter(h => h.groupId === currentGroupId);
+            renderHorarios();
+        }
+
+        function renderHorarios() {
+            if (horarios.length === 0) {
+                horariosLista.innerHTML = '<div class="empty-table">No hay horarios para este grupo. Agregue uno.</div>';
+                return;
             }
-            html += '</tbody></table>';
-            horarioContainer.innerHTML = html;
-            
-            // Guardar cambios automáticos cuando se cambia un select
-            document.querySelectorAll('.horario-select').forEach(select => {
-                select.addEventListener('change', async (e) => {
-                    const day = parseInt(select.dataset.day);
-                    const lesson = parseInt(select.dataset.lesson);
-                    const subjectId = select.value ? parseInt(select.value) : null;
-                    await guardarHorarioCelda(day, lesson, subjectId);
+            // Ordenar por día y hora inicio
+            const ordenDias = { 'Lunes':1, 'Martes':2, 'Miércoles':3, 'Jueves':4, 'Viernes':5, 'Sábado':6 };
+            horarios.sort((a,b) => {
+                if (ordenDias[a.day] !== ordenDias[b.day]) return ordenDias[a.day] - ordenDias[b.day];
+                return a.startTime.localeCompare(b.startTime);
+            });
+            let html = '';
+            for (let h of horarios) {
+                const asignatura = asignaturas.find(a => a.id === h.subjectId);
+                const asignaturaNombre = asignatura ? asignatura.name : 'Asignatura no encontrada';
+                html += `
+                    <div class="schedule-card" data-id="${h.id}">
+                        <div class="schedule-info">
+                            <div class="schedule-day">${escapeHtml(h.day)}</div>
+                            <div class="schedule-time">${escapeHtml(h.startTime)} - ${escapeHtml(h.endTime)}</div>
+                            <div class="schedule-subject"><i class="fas fa-book"></i> ${escapeHtml(asignaturaNombre)}</div>
+                        </div>
+                        <div class="schedule-actions">
+                            <button class="edit-schedule text-blue-600 hover:text-blue-800 mr-2" data-id="${h.id}"><i class="fas fa-edit"></i></button>
+                            <button class="delete-schedule text-red-600 hover:text-red-800" data-id="${h.id}"><i class="fas fa-trash-alt"></i></button>
+                        </div>
+                    </div>
+                `;
+            }
+            horariosLista.innerHTML = html;
+            attachActions();
+        }
+
+        function attachActions() {
+            document.querySelectorAll('.edit-schedule').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const id = parseInt(btn.dataset.id);
+                    const horario = horarios.find(h => h.id === id);
+                    if (horario) abrirModalEditar(horario);
+                });
+            });
+            document.querySelectorAll('.delete-schedule').forEach(btn => {
+                btn.addEventListener('click', async () => {
+                    const id = parseInt(btn.dataset.id);
+                    if (confirm('¿Eliminar este horario?')) {
+                        await remove('schedules', id);
+                        await cargarHorarios();
+                    }
                 });
             });
         }
-        
-        async function guardarHorarioCelda(dayOfWeek, lessonNumber, subjectId) {
-            if (!currentGroupId) return;
-            const existing = (await getAll('schedules')).find(s => s.groupId === currentGroupId && s.dayOfWeek === dayOfWeek && s.lessonNumber === lessonNumber);
-            if (subjectId === null) {
-                if (existing) await remove('schedules', existing.id);
+
+        function abrirModalNuevo() {
+            modalTitulo.innerText = 'Agregar horario';
+            currentScheduleId = null;
+            diaSelect.value = 'Lunes';
+            horaInicio.value = '07:00';
+            horaFin.value = '07:40';
+            asignaturaSelect.value = '';
+            modal.style.display = 'block';
+        }
+
+        function abrirModalEditar(horario) {
+            modalTitulo.innerText = 'Editar horario';
+            currentScheduleId = horario.id;
+            diaSelect.value = horario.day;
+            horaInicio.value = horario.startTime;
+            horaFin.value = horario.endTime;
+            asignaturaSelect.value = horario.subjectId;
+            modal.style.display = 'block';
+        }
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const day = diaSelect.value;
+            const startTime = horaInicio.value;
+            const endTime = horaFin.value;
+            const subjectId = parseInt(asignaturaSelect.value);
+            if (!day || !startTime || !endTime || !subjectId) {
+                alert('Todos los campos son obligatorios');
+                return;
+            }
+            // Validar que la hora fin sea mayor que la hora inicio
+            if (startTime >= endTime) {
+                alert('La hora fin debe ser mayor que la hora inicio');
+                return;
+            }
+            // Validar que no haya solapamiento con otro horario del mismo día (opcional)
+            const exists = horarios.some(h => h.id !== currentScheduleId && h.day === day && h.startTime === startTime);
+            if (exists) {
+                alert('Ya existe un horario con este día y hora de inicio.');
+                return;
+            }
+            const schedule = {
+                id: currentScheduleId || Date.now(),
+                groupId: currentGroupId,
+                day,
+                startTime,
+                endTime,
+                subjectId,
+                updatedAt: new Date().toISOString()
+            };
+            if (!currentScheduleId) schedule.createdAt = new Date().toISOString();
+            await put('schedules', schedule);
+            await cargarHorarios();
+            modal.style.display = 'none';
+            alert('Horario guardado');
+        });
+
+        function closeModalHandler() {
+            modal.style.display = 'none';
+            form.reset();
+        }
+        closeModal.onclick = closeModalHandler;
+        cancelarBtn.onclick = closeModalHandler;
+
+        grupoSelect.addEventListener('change', async () => {
+            currentGroupId = parseInt(grupoSelect.value);
+            if (currentGroupId) {
+                await cargarAsignaturasPorGrupo(currentGroupId);
+                await cargarHorarios();
+                agregarBtn.disabled = false;
             } else {
-                const schedule = existing || { id: Date.now() + dayOfWeek + lessonNumber, groupId: currentGroupId, dayOfWeek, lessonNumber, subjectId };
-                schedule.subjectId = subjectId;
-                await put('schedules', schedule);
+                horariosLista.innerHTML = '<div class="empty-table">Seleccione un grupo para ver su horario.</div>';
+                agregarBtn.disabled = true;
             }
-        }
-        
-        async function guardarTodoHorario() {
-            // No es necesario, porque cada cambio ya se guarda. Pero por si se quiere un guardado masivo, recorremos todos los selects.
-            const selects = document.querySelectorAll('.horario-select');
-            for (let select of selects) {
-                const day = parseInt(select.dataset.day);
-                const lesson = parseInt(select.dataset.lesson);
-                const subjectId = select.value ? parseInt(select.value) : null;
-                await guardarHorarioCelda(day, lesson, subjectId);
+        });
+
+        agregarBtn.addEventListener('click', () => {
+            if (!currentGroupId) {
+                alert('Primero seleccione un grupo.');
+                return;
             }
-            alert('Horario guardado correctamente.');
-        }
-        
-        async function restablecerHorario() {
-            if (!currentGroupId) return;
-            if (confirm('¿Restablecer todo el horario? Se eliminarán todas las asignaturas asignadas.')) {
-                const existing = await getAll('schedules');
-                const toDelete = existing.filter(s => s.groupId === currentGroupId);
-                for (let s of toDelete) {
-                    await remove('schedules', s.id);
-                }
-                await renderHorario();
-                alert('Horario restablecido.');
-            }
-        }
-        
-        cargarBtn.addEventListener('click', renderHorario);
-        guardarBtn.addEventListener('click', guardarTodoHorario);
-        restablecerBtn.addEventListener('click', restablecerHorario);
-        
+            abrirModalNuevo();
+        });
+
         function escapeHtml(str) {
             if (!str) return '';
             return str.replace(/[&<>]/g, function(m) {
@@ -213,9 +322,14 @@
                 return m;
             });
         }
-        
+
+        // Inicializar
         await openDB();
         await cargarGrupos();
+
+        window.onclick = (e) => {
+            if (e.target === modal) closeModalHandler();
+        };
     </script>
 </body>
 </html>
