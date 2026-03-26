@@ -233,6 +233,21 @@ export async function getSubjectComponent(subjectId) {
     return await getById('components', subject.componentId);
 }
 
+export async function getAttendancePercentage(studentId, periodId, groupId) {
+    // Obtener todos los registros de asistencia del estudiante en ese período
+    const allAttendance = await getAll('attendance');
+    const relevant = allAttendance.filter(a =>
+        a.estudianteId === studentId &&
+        a.groupId === groupId &&
+        new Date(a.fecha) >= new Date(periodId.fechaInicio) &&
+        new Date(a.fecha) <= new Date(periodId.fechaFin)
+    );
+    if (relevant.length === 0) return null;
+    const presentCount = relevant.filter(a => a.estado === 'presente').length;
+    const total = relevant.length;
+    return (presentCount / total) * 100;
+}
+
 export async function calculatePeriodGrade(studentId, periodId, groupId, subjectId, decimals = 2) {
     const component = await getSubjectComponent(subjectId);
     if (!component || !component.subcomponentes) return null;
@@ -251,7 +266,7 @@ export async function calculatePeriodGrade(studentId, periodId, groupId, subject
     const dailyAvg = await getSubcomponentAverage(studentId, periodId, groupId, 'daily_work');
     const taskAvg = await getSubcomponentAverage(studentId, periodId, groupId, 'task');
     const testAvg = await getSubcomponentAverage(studentId, periodId, groupId, 'test');
-    const attendanceAvg = await getSubcomponentAverage(studentId, periodId, groupId, 'attendance');
+    const attendanceAvg = await getAttendancePercentage(studentId, periodId, groupId);
     const projectAvg = await getSubcomponentAverage(studentId, periodId, groupId, 'project');
     const portfolioAvg = await getSubcomponentAverage(studentId, periodId, groupId, 'portfolio');
 
