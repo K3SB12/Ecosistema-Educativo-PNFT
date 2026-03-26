@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reporte de Eximidos - PNFT Articulador</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" integrity="sha512-GsLlZN/3F2ErC5ifS5QtgpiJtWd43JWSuIgh7mbzZ8zBps+dvLusV+eNQATqgA/HdeKFVgA5v3S/cIrLF7QnIg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <style>
+        body { background-color: #f8fafc; }
+        .sidebar { background: linear-gradient(180deg, #1e5a20 0%, #2E7D32 100%); }
+        .nav-item.active { background: white; color: #2E7D32; box-shadow: 0 10px 20px -5px rgba(0,0,0,0.2); }
+        .nav-item.active i { color: #2E7D32; }
+        .btn-accion { background: #2E7D32; transition: all 0.2s; }
+        .btn-accion:hover { background: #1e5a20; transform: translateY(-2px); }
+        .btn-secundario { background: #f0f0f0; color: #333; border: 1px solid #ccc; }
+        .btn-secundario:hover { background: #e0e0e0; }
+        .flex-between { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem; }
+        .reporte-table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+        .reporte-table th, .reporte-table td { border: 1px solid #e2e8f0; padding: 0.5rem; text-align: left; }
+        .reporte-table th { background: #f1f5f9; font-weight: 600; text-align: center; }
+        .reporte-table td { text-align: center; }
+        .reporte-table td:first-child { text-align: left; }
+        .eximido { background-color: #e8f5e9; }
+        .no-eximido { background-color: #ffebee; }
+        .badge-eximido { background: #2E7D32; color: white; padding: 0.2rem 0.5rem; border-radius: 20px; font-size: 0.75rem; display: inline-block; }
+        .badge-no-eximido { background: #c62828; color: white; padding: 0.2rem 0.5rem; border-radius: 20px; font-size: 0.75rem; display: inline-block; }
+    </style>
+</head>
+<body class="font-sans antialiased">
+    <div class="flex min-h-screen">
+        <!-- Sidebar -->
+        <aside class="w-72 bg-gradient-to-b from-green-800 to-green-700 text-white flex-shrink-0 sticky top-0 h-screen overflow-y-auto">
+            <div class="text-center py-8 border-b border-white/20">
+                <div class="w-20 h-20 bg-white/10 rounded-full flex items-center justify-center text-3xl font-bold mx-auto mb-4 border-2 border-white/20">PNFT</div>
+                <h2 class="text-xl font-semibold">Articulador 2026</h2>
+                <p class="text-sm opacity-80">MEP Costa Rica</p>
+            </div>
+            <ul class="mt-6 space-y-1 px-4">
+                <a href="index.html"><li class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10"><i class="fas fa-chart-pie w-5"></i> Tablero</li></a>
+                <a href="planning.html"><li class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10"><i class="fas fa-clipboard-list w-5"></i> Planeamiento</li></a>
+                <a href="progresion.html"><li class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10"><i class="fas fa-road w-5"></i> Progresión</li></a>
+                <a href="evaluation.html"><li class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10"><i class="fas fa-check-circle w-5"></i> Evaluación</li></a>
+                <a href="logbook.html"><li class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10"><i class="fas fa-book-open w-5"></i> Bitácora</li></a>
+                <a href="students.html"><li class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10"><i class="fas fa-users w-5"></i> Estudiantes</li></a>
+                <a href="groups.html"><li class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10"><i class="fas fa-layer-group w-5"></i> Grupos</li></a>
+                <a href="subjects.html"><li class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10"><i class="fas fa-book w-5"></i> Asignaturas</li></a>
+                <a href="eximidos.html"><li class="flex items-center gap-3 px-4 py-3 rounded-xl bg-white text-green-800 font-semibold shadow-md"><i class="fas fa-check-circle w-5"></i> Eximidos</li></a>
+                <a href="settings.html"><li class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10"><i class="fas fa-cog w-5"></i> Configuración</li></a>
+            </ul>
+        </aside>
+
+        <main class="flex-1 p-8 bg-gray-50">
+            <div class="flex justify-between items-center mb-8 bg-white p-4 rounded-2xl shadow-sm">
+                <h1 class="text-2xl font-bold text-gray-800">Reporte de Eximidos</h1>
+                <div class="flex gap-4">
+                    <span class="bg-green-100 text-green-800 px-4 py-2 rounded-full text-sm font-medium flex items-center gap-2"><i class="fas fa-user-graduate"></i> Docente</span>
+                    <span class="bg-green-100 text-green-800 px-4 py-2 rounded-full text-sm font-medium flex items-center gap-2"><i class="fas fa-calendar-alt"></i> 2026</span>
+                </div>
+            </div>
+
+            <!-- Filtros -->
+            <div class="bg-white p-6 border border-gray-200 rounded-xl shadow-sm mb-8">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1">Seleccione la asignatura</label>
+                        <select id="asignaturaSelect" class="w-full border-gray-300 rounded-lg py-2"></select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1">Mostrar</label>
+                        <select id="filtroMostrar" class="w-full border-gray-300 rounded-lg py-2">
+                            <option value="todos">Todos los estudiantes</option>
+                            <option value="eximidos">Solo eximidos</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="mt-4 flex justify-end gap-2">
+                    <button id="generarBtn" class="bg-green-800 text-white px-4 py-2 rounded-lg shadow hover:bg-green-900"><i class="fas fa-chart-line"></i> Generar Reporte</button>
+                    <button id="exportExcelBtn" class="bg-green-600 text-white px-4 py-2 rounded-lg shadow hover:bg-green-700"><i class="fas fa-file-excel"></i> Exportar Excel</button>
+                    <button id="exportPdfBtn" class="bg-red-600 text-white px-4 py-2 rounded-lg shadow hover:bg-red-700"><i class="fas fa-file-pdf"></i> Exportar PDF</button>
+                </div>
+            </div>
+
+            <!-- Contenedor del reporte -->
+            <div id="reporteContainer" class="bg-white p-6 border border-gray-200 rounded-xl shadow-sm overflow-x-auto">
+                <div class="text-center text-gray-500 py-8">Seleccione una asignatura y haga clic en "Generar Reporte".</div>
+            </div>
+        </main>
+    </div>
+
+    <script type="module">
+        import { openDB, getAll, getById } from './js/db.js';
+
+        let db;
+        let asignaturas = [];
+        let grupos = [];
+        let estudiantes = [];
+        let periodos = [];
+        let grades = [];
+        let components = [];
+
+        const asignaturaSelect = document.getElementById('asignaturaSelect');
+        const filtroMostrar = document.getElementById('filtroMostrar');
+        const generarBtn = document.getElementById('generarBtn');
+        const exportExcelBtn = document.getElementById('exportExcelBtn');
+        const exportPdfBtn = document.getElementById('exportPdfBtn');
+        const reporteContainer = document.getElementById('reporteContainer');
+
+        // Cargar datos iniciales
+        async function cargarDatos() {
+            asignaturas = await getAll('subjects');
+            grupos = await getAll('groups');
+            estudiantes = await getAll('students');
+            periodos = await getAll('periods_enhanced');
+            grades = await getAll('grades');
+            components = await getAll('components');
+
+            // Poblar select de asignaturas
+            asignaturaSelect.innerHTML = '<option value="">-- Seleccione asignatura --</option>';
+            for (let a of asignaturas) {
+                const grupo = grupos.find(g => g.id === a.groupId);
+                if (grupo) {
+                    asignaturaSelect.innerHTML += `<option value="${a.id}">${a.name} / ${grupo.seccion} / ${grupo.anio}</option>`;
+                }
+            }
+        }
+
+        // Obtener el último período (con mayor fecha de fin o mayor ID)
+        function obtenerUltimoPeriodo(periodosGrupo) {
+            if (periodosGrupo.length === 0) return null;
+            return periodosGrupo.reduce((latest, p) => {
+                if (!latest) return p;
+                // Comparar por fecha de fin, si no, por ID
+                const dateLatest = latest.fechaFin ? new Date(latest.fechaFin) : null;
+                const dateCurrent = p.fechaFin ? new Date(p.fechaFin) : null;
+                if (dateLatest && dateCurrent) {
+                    return dateCurrent > dateLatest ? p : latest;
+                }
+                // Si una tiene fecha y la otra no, preferir la que tiene fecha
+                if (dateCurrent && !dateLatest) return p;
+                if (dateLatest && !dateCurrent) return latest;
+                // Por defecto, mayor ID
+                return p.id > latest.id ? p : latest;
+            }, null);
+        }
+
+        // Obtener el promedio para un tipo de evaluación (subcomponentId) en un período
+        function obtenerPromedio(estudianteId, periodoId, grupoId, subcomponentId) {
+            const notas = grades.filter(g =>
+                g.studentId === estudianteId &&
+                g.periodId === periodoId &&
+                g.groupId === grupoId &&
+                g.subcomponentId === subcomponentId
+            );
+            if (notas.length === 0) return null;
+            const sum = notas.reduce((acc, n) => acc + (n.value || 0), 0);
+            return sum / notas.length;
+        }
+
+        // Generar reporte
+        async function generarReporte() {
+            const asignaturaId = parseInt(asignaturaSelect.value);
+            if (!asignaturaId) {
+                alert('Seleccione una asignatura.');
+                return;
+            }
+
+            const asignatura = asignaturas.find(a => a.id === asignaturaId);
+            if (!asignatura) return;
+
+            const grupo = grupos.find(g => g.id === asignatura.groupId);
+            if (!grupo) return;
+
+            // Obtener los períodos del año del grupo
+            const periodosGrupo = periodos.filter(p => p.schoolYearId === grupo.anioId);
+            if (periodosGrupo.length === 0) {
+                reporteContainer.innerHTML = '<div class="text-center text-gray-500 py-8">No hay períodos configurados para este grupo.</div>';
+                return;
+            }
+
+            const ultimoPeriodo = obtenerUltimoPeriodo(periodosGrupo);
+            if (!ultimoPeriodo) {
+                reporteContainer.innerHTML = '<div class="text-center text-gray-500 py-8">No se pudo determinar el último período.</div>';
+                return;
+            }
+
+            // Obtener el componente de evaluación de la asignatura
+            const componente = components.find(c => c.id === asignatura.componentId);
+            if (!componente || !componente.subcomponentes) {
+                reporteContainer.innerHTML = '<div class="text-center text-red-500 py-8">La asignatura no tiene un componente de evaluación válido.</div>';
+                return;
+            }
+
+            // Mapear subcomponentes a tipos (daily_work, task, test, attendance)
+            const tipos = {
+                daily_work: { nombre: 'Trabajo Cotidiano', porcentaje: 0 },
+                task: { nombre: 'Tareas', porcentaje: 0 },
+                test: { nombre: 'Pruebas', porcentaje: 0 },
+                attendance: { nombre: 'Asistencia', porcentaje: 0 }
+            };
+            for (let sub of componente.subcomponentes) {
+                const nombre = sub.nombre.toLowerCase();
+                if (nombre.includes('trabajo cotidiano')) tipos.daily_work.porcentaje = sub.porcentaje;
+                else if (nombre.includes('tarea')) tipos.task.porcentaje = sub.porcentaje;
+                else if (nombre.includes('prueba')) tipos.test.porcentaje = sub.porcentaje;
+                else if (nombre.includes('asistencia')) tipos.attendance.porcentaje = sub.porcentaje;
+            }
+
+            // Filtrar estudiantes del grupo
+            const estudiantesGrupo = estudiantes.filter(e => e.groupId === grupo.id);
+            if (estudiantesGrupo.length === 0) {
+                reporteContainer.innerHTML = '<div class="text-center text-gray-500 py-8">No hay estudiantes en este grupo.</div>';
+                return;
+            }
+
+            // Para cada estudiante, calcular promedio de cada componente en el último período
+            const resultados = [];
+            for (let est of estudiantesGrupo) {
+                const notas = {
+                    daily_work: obtenerPromedio(est.id, ultimoPeriodo.id, grupo.id, 'daily_work'),
+                    task: obtenerPromedio(est.id, ultimoPeriodo.id, grupo.id, 'task'),
+                    test: obtenerPromedio(est.id, ultimoPeriodo.id, grupo.id, 'test'),
+                    attendance: obtenerPromedio(est.id, ultimoPeriodo.id, grupo.id, 'attendance')
+                };
+                // Verificar si tiene datos en todos los componentes (los que tienen porcentaje > 0)
+                const componentesRequeridos = [];
+                if (tipos.daily_work.porcentaje > 0) componentesRequeridos.push('daily_work');
+                if (tipos.task.porcentaje > 0) componentesRequeridos.push('task');
+                if (tipos.test.porcentaje > 0) componentesRequeridos.push('test');
+                if (tipos.attendance.porcentaje > 0) componentesRequeridos.push('attendance');
+
+                let eximido = true;
+                for (let tipo of componentesRequeridos) {
+                    const nota = notas[tipo];
+                    if (nota === null || nota < 85) {
+                        eximido = false;
+                        break;
+                    }
+                }
+                resultados.push({
+                    estudiante: est,
+                    notas,
+                    eximido
+                });
+            }
+
+            // Filtrar según opción
+            const mostrar = filtroMostrar.value;
+            let filtrados = resultados;
+            if (mostrar === 'eximidos') {
+                filtrados = resultados.filter(r => r.eximido);
+            }
+
+            if (filtrados.length === 0) {
+                reporteContainer.innerHTML = '<div class="text-center text-gray-500 py-8">No hay estudiantes que cumplan los criterios.</div>';
+                return;
+            }
+
+            // Ordenar alfabéticamente
+            filtrados.sort((a, b) => a.estudiante.nombre.localeCompare(b.estudiante.nombre));
+
+            // Construir tabla
+            let html = `
+                <div class="mb-4">
+                    <h3 class="text-lg font-bold">${escapeHtml(asignatura.name)} - ${escapeHtml(grupo.seccion)} (${grupo.anio})</h3>
+                    <p class="text-sm text-gray-600">Último período: ${escapeHtml(ultimoPeriodo.nombre)}</p>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="reporte-table">
+                        <thead>
+                            <tr>
+                                <th>Nombre del Estudiante</th>
+                                <th>${tipos.daily_work.porcentaje > 0 ? 'Trabajo Cotidiano' : ''}</th>
+                                <th>${tipos.task.porcentaje > 0 ? 'Tareas' : ''}</th>
+                                <th>${tipos.test.porcentaje > 0 ? 'Pruebas' : ''}</th>
+                                <th>${tipos.attendance.porcentaje > 0 ? 'Asistencia' : ''}</th>
+                                <th>Condición</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+
+            for (let r of filtrados) {
+                const eximidoClass = r.eximido ? 'eximido' : 'no-eximido';
+                const badge = r.eximido ? '<span class="badge-eximido">Eximido</span>' : '<span class="badge-no-eximido">No eximido</span>';
+                html += `<tr class="${eximidoClass}">`;
+                html += `<td>${escapeHtml(r.estudiante.nombre)}</td>`;
+                if (tipos.daily_work.porcentaje > 0) {
+                    const nota = r.notas.daily_work !== null ? r.notas.daily_work.toFixed(2) : '—';
+                    html += `<td>${nota}</td>`;
+                }
+                if (tipos.task.porcentaje > 0) {
+                    const nota = r.notas.task !== null ? r.notas.task.toFixed(2) : '—';
+                    html += `<td>${nota}</td>`;
+                }
+                if (tipos.test.porcentaje > 0) {
+                    const nota = r.notas.test !== null ? r.notas.test.toFixed(2) : '—';
+                    html += `<td>${nota}</td>`;
+                }
+                if (tipos.attendance.porcentaje > 0) {
+                    const nota = r.notas.attendance !== null ? r.notas.attendance.toFixed(2) : '—';
+                    html += `<td>${nota}</td>`;
+                }
+                html += `<td>${badge}</td>`;
+                html += `</tr>`;
+            }
+            html += `</tbody></table></div>`;
+            reporteContainer.innerHTML = html;
+        }
+
+        // Exportar a Excel
+        function exportarExcel() {
+            const tabla = document.querySelector('#reporteContainer table');
+            if (!tabla) {
+                alert('Primero genere un reporte.');
+                return;
+            }
+            const ws = XLSX.utils.table_to_sheet(tabla);
+            const wb = XLSX.utils.book_new();
+            const asignatura = asignaturaSelect.options[asignaturaSelect.selectedIndex]?.text || 'Eximidos';
+            XLSX.utils.book_append_sheet(wb, ws, asignatura.slice(0, 31));
+            XLSX.writeFile(wb, `eximidos_${new Date().toISOString().slice(0,19)}.xlsx`);
+        }
+
+        // Exportar a PDF
+        function exportarPdf() {
+            const element = document.getElementById('reporteContainer');
+            if (!element || element.children.length === 0 || element.children[0].innerText.includes('Seleccione')) {
+                alert('Primero genere un reporte.');
+                return;
+            }
+            const opt = {
+                margin: 0.5,
+                filename: `eximidos_${new Date().toISOString().slice(0,19)}.pdf`,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2 },
+                jsPDF: { unit: 'in', format: 'letter', orientation: 'landscape' }
+            };
+            html2pdf().set(opt).from(element).save();
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/[&<>]/g, function(m) {
+                if (m === '&') return '&amp;';
+                if (m === '<') return '&lt;';
+                if (m === '>') return '&gt;';
+                return m;
+            });
+        }
+
+        // Eventos
+        generarBtn.addEventListener('click', generarReporte);
+        exportExcelBtn.addEventListener('click', exportarExcel);
+        exportPdfBtn.addEventListener('click', exportarPdf);
+
+        // Inicializar
+        await openDB();
+        await cargarDatos();
+    </script>
+</body>
+</html>
