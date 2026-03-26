@@ -6,7 +6,7 @@
     <title>Secciones - PNFT Articulador</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
+   <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
     <style>
         body { background-color: #f8fafc; }
         .sidebar { background: linear-gradient(180deg, #1e5a20 0%, #2E7D32 100%); }
@@ -714,11 +714,15 @@
             alert(`${nuevos.length} estudiantes importados.`);
         }
         async function exportarExcel() {
+            await cargarAdecuaciones();
             const estudiantes = await getAll('students');
             const groupStudents = estudiantes.filter(s => s.groupId === currentGroupId);
-            const data = [['Cédula', 'Nombre', 'Encargado 1', 'Teléfono 1', 'Encargado 2', 'Teléfono 2', 'Cumpleaños', 'Correo MEP', 'Adecuación']];
+            
+            const data = [
+                ['Cédula', 'Nombre', 'Encargado 1', 'Teléfono 1', 'Encargado 2', 'Teléfono 2', 'Cumpleaños', 'Correo MEP', 'Adecuación']
+            ];
             for (let s of groupStudents) {
-                const accommodation = accommodationTypes.find(a => a.id === s.accommodation_type_id) || { name: s.accommodation_type || '' };
+                const accommodation = accommodationTypes.find(a => a.id === s.accommodation_type_id) || { name: '' };
                 data.push([
                     s.id_number || '',
                     s.nombre,
@@ -731,7 +735,33 @@
                     accommodation.name
                 ]);
             }
+            
             const ws = XLSX.utils.aoa_to_sheet(data);
+            
+            // Estilo para la fila de encabezados (fila 0)
+            const range = XLSX.utils.decode_range(ws['!ref']);
+            for (let C = range.s.c; C <= range.e.c; ++C) {
+                const address = XLSX.utils.encode_cell({ r: 0, c: C });
+                if (!ws[address]) continue;
+                ws[address].s = {
+                    fill: { fgColor: { rgb: "4CAF50" } },   // fondo verde
+                    font: { bold: true, color: { rgb: "FFFFFF" } },
+                    alignment: { horizontal: "center" }
+                };
+            }
+            
+            // Ajustar ancho de columnas
+            const colWidths = [];
+            for (let i = 0; i < data[0].length; i++) {
+                let maxLen = 0;
+                for (let j = 0; j < data.length; j++) {
+                    const cell = data[j][i] ? data[j][i].toString() : '';
+                    maxLen = Math.max(maxLen, cell.length);
+                }
+                colWidths.push({ wch: Math.min(maxLen + 2, 40) });
+            }
+            ws['!cols'] = colWidths;
+            
             const wb = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(wb, ws, 'Estudiantes');
             XLSX.writeFile(wb, `estudiantes_${currentGroupId}.xlsx`);
