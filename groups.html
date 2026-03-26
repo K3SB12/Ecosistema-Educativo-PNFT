@@ -243,6 +243,21 @@
             }
         }
 
+        // Crear tipos de adecuación si no existen
+        const types = await getAll('accommodation_types');
+        if (types.length === 0) {
+            const defaultTypes = [
+                { id: 1, name: 'No presenta' },
+                { id: 2, name: 'Adecuación curricular' },
+                { id: 3, name: 'Adecuación significativa' },
+                { id: 4, name: 'Adecuación no significativa' }
+            ];
+            for (let type of defaultTypes) {
+                await put('accommodation_types', type);
+            }
+            console.log('Tipos de adecuación creados');
+        }
+
         // ==================== UTILIDADES ====================
         function escapeHtml(str) {
             if (!str) return '';
@@ -608,13 +623,8 @@
             const colCumple = mapCol(['cumpleaños', 'fecha nacimiento', 'birthday']);
             const colCorreo = mapCol(['correo mep', 'email mep', 'mep']);
         
-            // Columna de adecuación: primero por nombre, si no se encuentra, usa la columna I (índice 8)
-            let colAdecuacion = headers.findIndex(h =>
-                h.includes('adecuación') || h.includes('adecuacion') || h.includes('accommodation')
-            );
-            if (colAdecuacion === -1 && headers.length > 8) {
-                colAdecuacion = 8; // Columna I (0‑based)
-            }
+            // Columna de adecuación: USAMOS LA COLUMNA I (índice 8) SIEMPRE
+                const colAdecuacion = 8;  // Fijo
         
             // Validar que al menos la columna de nombre exista
             if (colNombre === -1) {
