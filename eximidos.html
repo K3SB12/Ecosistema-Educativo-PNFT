@@ -28,6 +28,8 @@
         .no-eximido { background-color: #ffebee; }
         .badge-eximido { background: #2E7D32; color: white; padding: 0.2rem 0.5rem; border-radius: 20px; font-size: 0.75rem; display: inline-block; }
         .badge-no-eximido { background: #c62828; color: white; padding: 0.2rem 0.5rem; border-radius: 20px; font-size: 0.75rem; display: inline-block; }
+        .checkbox-group { display: flex; gap: 1rem; flex-wrap: wrap; margin: 1rem 0; }
+        .checkbox-group label { display: flex; align-items: center; gap: 0.3rem; font-size: 0.9rem; }
     </style>
 </head>
 <body class="font-sans antialiased">
@@ -75,6 +77,15 @@
                         </select>
                     </div>
                 </div>
+                <div class="mt-4">
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">Componentes del último período a considerar para la lista de eximidos:</label>
+                    <div class="checkbox-group" id="componentesCheckboxes">
+                        <label><input type="checkbox" value="daily_work" checked> Trabajo Cotidiano</label>
+                        <label><input type="checkbox" value="task" checked> Tareas</label>
+                        <label><input type="checkbox" value="test" checked> Pruebas</label>
+                        <label><input type="checkbox" value="attendance" checked> Asistencia</label>
+                    </div>
+                </div>
                 <div class="mt-4 flex justify-end gap-2">
                     <button id="generarBtn" class="bg-green-800 text-white px-4 py-2 rounded-lg shadow hover:bg-green-900"><i class="fas fa-chart-line"></i> Generar Reporte</button>
                     <button id="excelBtn" class="bg-green-600 text-white px-4 py-2 rounded-lg shadow hover:bg-green-700"><i class="fas fa-file-excel"></i> Exportar Excel</button>
@@ -105,8 +116,10 @@
         const excelBtn = document.getElementById('excelBtn');
         const pdfBtn = document.getElementById('pdfBtn');
         const reporteContainer = document.getElementById('reporteContainer');
+        const componentesCheckboxes = document.getElementById('componentesCheckboxes');
 
         let datosReporte = [];
+        let ultimoPeriodoNombre = '';
 
         async function cargarDatos() {
             asignaturas = await getAll('subjects');
@@ -145,6 +158,36 @@
             return sum / notas.length;
         }
 
+        function obtenerNotaPeriodoCompleta(estudianteId, periodoId, grupoId, asignaturaId) {
+            // Obtener la nota final del período (ponderada según el componente de la asignatura)
+            const notas = grades.filter(g => g.studentId === estudianteId && g.periodId === periodoId && g.groupId === grupoId);
+            if (notas.length === 0) return null;
+            const asignatura = asignaturas.find(a => a.id === asignaturaId);
+            if (!asignatura || !asignatura.componentId) return null;
+            const componente = components.find(c => c.id === asignatura.componentId);
+            if (!componente || !componente.subcomponentes) return null;
+            const subMap = { daily_work: 0, task: 0, test: 0, attendance: 0 };
+            for (let sub of componente.subcomponentes) {
+                const n = sub.nombre.toLowerCase();
+                if (n.includes('trabajo cotidiano')) subMap.daily_work = sub.porcentaje;
+                else if (n.includes('tarea')) subMap.task = sub.porcentaje;
+                else if (n.includes('prueba')) subMap.test = sub.porcentaje;
+                else if (n.includes('asistencia')) subMap.attendance = sub.porcentaje;
+            }
+            const getAvg = (type) => {
+                const relevant = notas.filter(g => g.subcomponentId === type);
+                if (relevant.length === 0) return 0;
+                const sum = relevant.reduce((acc, n) => acc + (n.value || 0), 0);
+                return sum / relevant.length;
+            };
+            let notaFinal = 0;
+            if (subMap.daily_work) notaFinal += (getAvg('daily_work') / 100) * subMap.daily_work;
+            if (subMap.task) notaFinal += (getAvg('task') / 100) * subMap.task;
+            if (subMap.test) notaFinal += (getAvg('test') / 100) * subMap.test;
+            if (subMap.attendance) notaFinal += (getAvg('attendance') / 100) * subMap.attendance;
+            return Math.round(notaFinal * 100) / 100;
+        }
+
         async function generarReporte() {
             const asignaturaId = parseInt(asignaturaSelect.value);
             if (!asignaturaId) { alert('Seleccione asignatura.'); return; }
@@ -155,20 +198,24 @@
             const periodosGrupo = periodos.filter(p => p.schoolYearId === grupo.anioId);
             const ultimoPeriodo = obtenerUltimoPeriodo(periodosGrupo);
             if (!ultimoPeriodo) { reporteContainer.innerHTML = '<div class="text-center text-gray-500 py-8">No hay períodos.</div>'; return; }
+            ultimoPeriodoNombre = ultimoPeriodo.nombre;
 
             const componente = components.find(c => c.id === asignatura.componentId);
             if (!componente || !componente.subcomponentes) { reporteContainer.innerHTML = '<div class="text-center text-red-500 py-8">Componente inválido.</div>'; return; }
 
-            const tipos = { daily_work: { nombre: 'Trabajo Cotidiano', porcentaje: 0 }, task: { nombre: 'Tareas', porcentaje: 0 }, test: { nombre: 'Pruebas', porcentaje: 0 }, attendance: { nombre: 'Asistencia', porcentaje: 0 } };
-            for (let sub of componente.subcomponentes) {
-                const n = sub.nombre.toLowerCase();
-                if (n.includes('trabajo cotidiano')) tipos.daily_work.porcentaje = sub.porcentaje;
-                else if (n.includes('tarea')) tipos.task.porcentaje = sub.porcentaje;
-                else if (n.includes('prueba')) tipos.test.porcentaje = sub.porcentaje;
-                else if (n.includes('asistencia')) tipos.attendance.porcentaje = sub.porcentaje;
-            }
-
             const estudiantesGrupo = estudiantes.filter(e => e.groupId === grupo.id);
+            if (estudiantesGrupo.length === 0) { reporteContainer.innerHTML = '<div class="text-center text-gray-500 py-8">No hay estudiantes en este grupo.</div>'; return; }
+
+            // Obtener los checkboxes activos
+            const componentesActivos = Array.from(componentesCheckboxes.querySelectorAll('input:checked')).map(cb => cb.value);
+            // Mapeo de tipos a nombres de columna
+            const nombresTipos = {
+                daily_work: 'Trabajo Cotidiano',
+                task: 'Tareas',
+                test: 'Pruebas',
+                attendance: 'Asistencia'
+            };
+
             datosReporte = [];
             for (let est of estudiantesGrupo) {
                 const notas = {
@@ -177,16 +224,12 @@
                     test: obtenerPromedio(est.id, ultimoPeriodo.id, grupo.id, 'test'),
                     attendance: obtenerPromedio(est.id, ultimoPeriodo.id, grupo.id, 'attendance')
                 };
-                const requeridos = [];
-                if (tipos.daily_work.porcentaje > 0) requeridos.push('daily_work');
-                if (tipos.task.porcentaje > 0) requeridos.push('task');
-                if (tipos.test.porcentaje > 0) requeridos.push('test');
-                if (tipos.attendance.porcentaje > 0) requeridos.push('attendance');
+                const notaPeriodo = obtenerNotaPeriodoCompleta(est.id, ultimoPeriodo.id, grupo.id, asignaturaId);
                 let eximido = true;
-                for (let t of requeridos) {
-                    if (notas[t] === null || notas[t] < 85) { eximido = false; break; }
+                for (let tipo of componentesActivos) {
+                    if (notas[tipo] === null || notas[tipo] < 85) { eximido = false; break; }
                 }
-                datosReporte.push({ estudiante: est, notas, eximido });
+                datosReporte.push({ estudiante: est, notas, notaPeriodo, eximido });
             }
 
             const mostrar = filtroMostrar.value;
@@ -195,21 +238,23 @@
 
             if (filtrados.length === 0) { reporteContainer.innerHTML = '<div class="text-center text-gray-500 py-8">No hay estudiantes que cumplan los criterios.</div>'; return; }
 
-            let html = `<div class="mb-4"><h3 class="text-lg font-bold">${escapeHtml(asignatura.name)} - ${escapeHtml(grupo.seccion)} (${grupo.anio})</h3><p>Último período: ${escapeHtml(ultimoPeriodo.nombre)}</p></div>
-                        <div class="overflow-x-auto"><table class="reporte-table"><thead><tr><th>Nombre</th>`;
-            if (tipos.daily_work.porcentaje > 0) html += `<th>${tipos.daily_work.nombre}</th>`;
-            if (tipos.task.porcentaje > 0) html += `<th>${tipos.task.nombre}</th>`;
-            if (tipos.test.porcentaje > 0) html += `<th>${tipos.test.nombre}</th>`;
-            if (tipos.attendance.porcentaje > 0) html += `<th>${tipos.attendance.nombre}</th>`;
+            // Construir tabla
+            let html = `<div class="mb-4"><h3 class="text-lg font-bold">${escapeHtml(asignatura.name)} - ${escapeHtml(grupo.seccion)} (${grupo.anio})</h3></div>`;
+            html += `<div class="overflow-x-auto"><table class="reporte-table"><thead><tr><th>Nombre</th><th>${escapeHtml(ultimoPeriodoNombre)}</th>`;
+            for (let tipo of componentesActivos) {
+                html += `<th>${nombresTipos[tipo]}</th>`;
+            }
             html += `<th>Condición</th></tr></thead><tbody>`;
+
             for (let d of filtrados) {
                 const rowClass = d.eximido ? 'eximido' : 'no-eximido';
                 const badge = d.eximido ? '<span class="badge-eximido">Eximido</span>' : '<span class="badge-no-eximido">No eximido</span>';
                 html += `<tr class="${rowClass}"><td>${escapeHtml(d.estudiante.nombre)}</td>`;
-                if (tipos.daily_work.porcentaje > 0) html += `<td>${d.notas.daily_work !== null ? d.notas.daily_work.toFixed(2) : '—'}</td>`;
-                if (tipos.task.porcentaje > 0) html += `<td>${d.notas.task !== null ? d.notas.task.toFixed(2) : '—'}</td>`;
-                if (tipos.test.porcentaje > 0) html += `<td>${d.notas.test !== null ? d.notas.test.toFixed(2) : '—'}</td>`;
-                if (tipos.attendance.porcentaje > 0) html += `<td>${d.notas.attendance !== null ? d.notas.attendance.toFixed(2) : '—'}</td>`;
+                html += `<td>${d.notaPeriodo !== null ? d.notaPeriodo.toFixed(2) : '—'}</td>`;
+                for (let tipo of componentesActivos) {
+                    const val = d.notas[tipo] !== null ? d.notas[tipo].toFixed(2) : '—';
+                    html += `<td>${val}</td>`;
+                }
                 html += `<td>${badge}</td></tr>`;
             }
             html += `</tbody></table></div>`;
