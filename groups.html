@@ -34,6 +34,9 @@
         .student-table { width: 100%; border-collapse: collapse; }
         .student-table th, .student-table td { border: 1px solid #e5e7eb; padding: 0.5rem; text-align: left; }
         .student-table th { background: #f3f4f6; }
+        /* Estilo para modal de confirmación doble */
+        .confirm-modal { max-width: 450px; text-align: center; }
+        .confirm-modal input { margin-top: 1rem; width: 100%; padding: 0.5rem; border: 1px solid #ccc; border-radius: 8px; }
     </style>
 </head>
 <body class="font-sans antialiased">
@@ -129,7 +132,7 @@
             </div>
             <div id="estudiantesLista" class="overflow-x-auto">
                 <table class="student-table w-full">
-                    <thead><tr><th>Nombre</th><th>Apellido1</th><th>Apellido2</th><th>Email</th><th>Teléfono</th><th>Acciones</th></thead>
+                    <thead><tr><th>Nombre</th><th>Apellido1</th><th>Apellido2</th><th>Email</th><th>Teléfono</th><th>Acciones</th></tr></thead>
                     <tbody id="tablaEstudiantes"></tbody>
                 </table>
             </div>
@@ -169,9 +172,7 @@
             </div>
             <div class="overflow-x-auto">
                 <table class="w-full border-collapse">
-                    <thead class="bg-gray-100">
-                        <tr><th class="p-2 text-left">Estudiante</th><th class="p-2 text-left">Estado</th><th class="p-2 text-left">Observaciones</th></tr>
-                    </thead>
+                    <thead class="bg-gray-100"><tr><th class="p-2 text-left">Estudiante</th><th class="p-2 text-left">Estado</th><th class="p-2 text-left">Observaciones</th></tr></thead>
                     <tbody id="tablaAsistencia"></tbody>
                 </table>
             </div>
@@ -302,19 +303,67 @@
                     if (grupo) abrirModalEdicion(grupo);
                 });
             });
+            // Eliminar con doble confirmación
             document.querySelectorAll('.eliminar-grupo').forEach(btn => {
                 btn.addEventListener('click', async (e) => {
                     const id = parseInt(btn.dataset.id);
-                    if (confirm('¿Eliminar esta sección? Se perderán todos los datos asociados (estudiantes, notas, asistencias).')) {
-                        await remove('groups', id);
-                        const estudiantes = await getAll('students');
-                        for (let s of estudiantes.filter(s => s.groupId === id)) {
-                            await remove('students', s.id);
+                    const grupo = (await getAll('groups')).find(g => g.id === id);
+                    if (!grupo) return;
+                    const confirmModal = document.createElement('div');
+                    confirmModal.className = 'modal';
+                    confirmModal.innerHTML = `
+                        <div class="modal-content confirm-modal">
+                            <h2 class="text-xl font-bold mb-4">Confirmar eliminación</h2>
+                            <p>¿Está seguro de eliminar la sección <strong>${escapeHtml(grupo.seccion)}</strong>?</p>
+                            <p class="text-sm text-red-600 mt-2">Esta acción eliminará todos los datos asociados (estudiantes, notas, asistencias, bitácoras, etc.) y no se puede deshacer.</p>
+                            <input type="text" id="confirmNombreGrupo" placeholder="Escriba el nombre de la sección para confirmar" class="w-full border rounded p-2 mt-4">
+                            <div class="flex justify-end gap-3 mt-4">
+                                <button id="confirmEliminarBtn" class="bg-red-600 text-white px-4 py-2 rounded-lg">Eliminar</button>
+                                <button id="cancelEliminarBtn" class="bg-gray-200 text-gray-800 px-4 py-2 rounded-lg">Cancelar</button>
+                            </div>
+                        </div>
+                    `;
+                    document.body.appendChild(confirmModal);
+                    confirmModal.style.display = 'block';
+                    const input = confirmModal.querySelector('#confirmNombreGrupo');
+                    const confirmBtn = confirmModal.querySelector('#confirmEliminarBtn');
+                    const cancelBtn = confirmModal.querySelector('#cancelEliminarBtn');
+                    const closeModal = () => confirmModal.remove();
+                    confirmBtn.addEventListener('click', async () => {
+                        if (input.value.trim() === grupo.seccion) {
+                            await remove('groups', id);
+                            const estudiantes = await getAll('students');
+                            for (let s of estudiantes.filter(s => s.groupId === id)) {
+                                await remove('students', s.id);
+                            }
+                            const attendance = await getAll('attendance');
+                            for (let a of attendance.filter(a => a.groupId === id)) await remove('attendance', a.id);
+                            const grades = await getAll('grades');
+                            for (let g of grades.filter(g => g.groupId === id)) await remove('grades', g.id);
+                            const subjects = await getAll('subjects');
+                            for (let sub of subjects.filter(s => s.groupId === id)) await remove('subjects', sub.id);
+                            const schedules = await getAll('schedules');
+                            for (let sched of schedules.filter(s => s.groupId === id)) await remove('schedules', sched.id);
+                            const dailyIndicators = await getAll('daily_work_indicators');
+                            for (let di of dailyIndicators.filter(d => d.groupId === id)) await remove('daily_work_indicators', di.id);
+                            const evaluations = await getAll('evaluations');
+                            for (let e of evaluations.filter(e => e.groupId === id)) await remove('evaluations', e.id);
+                            const bitacoras = await getAll('bitacoras');
+                            for (let b of bitacoras.filter(b => b.groupId === id)) await remove('bitacoras', b.id);
+                            const conducta = await getAll('conducta');
+                            for (let c of conducta.filter(c => c.groupId === id)) await remove('conducta', c.id);
+                            const alertas = await getAll('alertas');
+                            for (let a of alertas.filter(a => a.groupId === id)) await remove('alertas', a.id);
+                            await renderGrupos();
+                            closeModal();
+                        } else {
+                            alert('El nombre no coincide');
                         }
-                        await renderGrupos();
-                    }
+                    });
+                    cancelBtn.addEventListener('click', closeModal);
                 });
             });
+            // Botones de acción (redirecciones)
             document.querySelectorAll('.group-action-btn').forEach(btn => {
                 btn.addEventListener('click', (e) => {
                     const action = btn.dataset.action;
@@ -325,6 +374,22 @@
                         document.getElementById('modalEstudiantes').style.display = 'block';
                     } else if (action === 'asistencia') {
                         abrirModalAsistencia(id);
+                    } else if (action === 'calificaciones') {
+                        window.location.href = `grades.html?groupId=${id}`;
+                    } else if (action === 'cotidiano') {
+                        window.location.href = `daily-works.html?groupId=${id}`;
+                    } else if (action === 'pruebas') {
+                        window.location.href = `tests.html?groupId=${id}`;
+                    } else if (action === 'tareas') {
+                        window.location.href = `tasks.html?groupId=${id}`;
+                    } else if (action === 'proyecto') {
+                        window.location.href = `projects.html?groupId=${id}`;
+                    } else if (action === 'portafolio') {
+                        window.location.href = `portfolio.html?groupId=${id}`;
+                    } else if (action === 'horario') {
+                        window.location.href = `schedules.html?groupId=${id}`;
+                    } else if (action === 'ver-detalle') {
+                        window.location.href = `group-detail.html?groupId=${id}`;
                     } else {
                         alert(`Funcionalidad: ${action} para el grupo ${id} (en desarrollo)`);
                     }
@@ -787,7 +852,6 @@
             await cargarFiltros();
             await renderGrupos();
             configurarEventos();
-            // Fecha inicial para asistencia
             document.getElementById('fechaAsistencia').value = currentAttendanceDate;
         })();
     </script>
