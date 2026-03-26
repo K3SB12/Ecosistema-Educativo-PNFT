@@ -1,6 +1,6 @@
 // js/db.js - Versión 8 (estable)
 const DB_NAME = 'PNFT_DB';
-const DB_VERSION = 9;
+const DB_VERSION = 8;
 
 let db = null;
 
@@ -64,7 +64,6 @@ export async function openDB() {
                         store.createIndex('fecha', 'fecha', { unique: false });
                         store.createIndex('subjectId', 'subjectId', { unique: false });
                         store.createIndex('lesson', 'lesson', { unique: false });
-                    }  
                     } else if (storeName === 'conducta') {
                         const store = db.createObjectStore(storeName, { keyPath: 'id' });
                         store.createIndex('groupId', 'groupId', { unique: false });
