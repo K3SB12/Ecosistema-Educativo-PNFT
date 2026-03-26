@@ -579,14 +579,26 @@
 
         // Importar/Exportar Excel (adaptado)
         async function importarExcel(file) {
-            await cargarAdecuaciones(); // asegurar tipos de adecuación cargados
+            // Asegurar que los tipos de adecuación estén cargados
+            await cargarAdecuaciones();
+        
             const data = await file.arrayBuffer();
             const workbook = XLSX.read(data);
             const sheet = workbook.Sheets[workbook.SheetNames[0]];
             const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
-            if (rows.length < 2) { alert('El archivo no contiene datos.'); return; }
+        
+            if (rows.length < 2) {
+                alert('El archivo no contiene datos.');
+                return;
+            }
+        
+            // Encabezados de la primera fila (normalizados)
             const headers = rows[0].map(h => String(h).toLowerCase().trim());
+        
+            // Función auxiliar para buscar una columna por varias palabras clave
             const mapCol = (searchTerms) => headers.findIndex(h => searchTerms.some(term => h.includes(term)));
+        
+            // Detectar columnas según las palabras clave
             const colCedula = mapCol(['cédula', 'cedula', 'id']);
             const colNombre = mapCol(['nombre', 'name', 'estudiante']);
             const colEnc1 = mapCol(['encargado 1', 'encargado1', 'responsable 1']);
@@ -595,37 +607,60 @@
             const colTel2 = mapCol(['teléfono 2', 'telefono 2', 'tel2']);
             const colCumple = mapCol(['cumpleaños', 'fecha nacimiento', 'birthday']);
             const colCorreo = mapCol(['correo mep', 'email mep', 'mep']);
-            // Buscar columna de adecuación de forma flexible
-            const colAdecuacion = headers.findIndex(h => 
+        
+            // Columna de adecuación: primero por nombre, si no se encuentra, usa la columna I (índice 8)
+            let colAdecuacion = headers.findIndex(h =>
                 h.includes('adecuación') || h.includes('adecuacion') || h.includes('accommodation')
             );
-
-            if (colNombre === -1) { alert('El Excel debe tener una columna de nombre.'); return; }
+            if (colAdecuacion === -1 && headers.length > 8) {
+                colAdecuacion = 8; // Columna I (0‑based)
+            }
+        
+            // Validar que al menos la columna de nombre exista
+            if (colNombre === -1) {
+                alert('El Excel debe tener una columna de nombre.');
+                return;
+            }
+        
             const nuevos = [];
+        
+            // Recorrer filas (desde la segunda)
             for (let i = 1; i < rows.length; i++) {
                 const row = rows[i];
-                if (!row[colNombre]) continue;
+                if (!row[colNombre]) continue; // Saltar filas sin nombre
+        
+                // Cédula (opcional)
                 const idNumber = colCedula !== -1 ? row[colCedula]?.toString().trim() : '';
+        
+                // Nombre (obligatorio)
                 const nombre = row[colNombre].toString().trim();
+        
+                // Encargados y teléfonos
                 const guardian1Name = colEnc1 !== -1 ? row[colEnc1]?.toString().trim() : '';
                 const guardian1Phone = colTel1 !== -1 ? row[colTel1]?.toString().trim() : '';
                 const guardian2Name = colEnc2 !== -1 ? row[colEnc2]?.toString().trim() : '';
                 const guardian2Phone = colTel2 !== -1 ? row[colTel2]?.toString().trim() : '';
+        
+                // Fecha de cumpleaños: se espera formato YYYY-MM-DD, si es DD/MM/YYYY se convierte
                 let birthday = colCumple !== -1 ? row[colCumple]?.toString().trim() : '';
                 if (birthday && !/^\d{4}-\d{2}-\d{2}$/.test(birthday)) {
                     const parts = birthday.split(/[/-]/);
                     if (parts.length === 3) {
-                        birthday = `${parts[2]}-${parts[1].padStart(2,'0')}-${parts[0].padStart(2,'0')}`;
+                        birthday = `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
                     } else {
                         birthday = '';
                     }
                 }
+        
+                // Correo MEP
                 const mepEmail = colCorreo !== -1 ? row[colCorreo]?.toString().trim() : '';
+        
+                // Adecuación: buscar el ID a partir del nombre (normalizando acentos)
                 let accommodationTypeId = null;
                 if (colAdecuacion !== -1) {
                     const typeName = row[colAdecuacion]?.toString().trim();
                     if (typeName) {
-                        // Normalizar texto (quitar acentos y pasar a minúsculas)
+                        // Normalizar: eliminar acentos y pasar a minúsculas
                         const normalizedInput = typeName.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
                         const found = accommodationTypes.find(t => {
                             const normalizedType = t.name.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
@@ -634,6 +669,8 @@
                         if (found) accommodationTypeId = found.id;
                     }
                 }
+        
+                // Crear objeto estudiante
                 nuevos.push({
                     id: Date.now() + i,
                     groupId: currentGroupId,
@@ -649,13 +686,23 @@
                     created_at: new Date().toISOString()
                 });
             }
-            if (nuevos.length === 0) { alert('No se encontraron estudiantes válidos.'); return; }
-            for (let s of nuevos) await put('students', s);
+        
+            if (nuevos.length === 0) {
+                alert('No se encontraron estudiantes válidos.');
+                return;
+            }
+        
+            // Guardar todos los estudiantes en la base de datos
+            for (let s of nuevos) {
+                await put('students', s);
+            }
+        
+            // Refrescar la vista
             await cargarEstudiantes(currentGroupId);
             await renderGrupos();
+        
             alert(`${nuevos.length} estudiantes importados.`);
         }
-
         async function exportarExcel() {
             const estudiantes = await getAll('students');
             const groupStudents = estudiantes.filter(s => s.groupId === currentGroupId);
