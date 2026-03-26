@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reporte por Período - PNFT Articulador</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" integrity="sha512-GsLlZN/3F2ErC5ifS5QtgpiJtWd43JWSuIgh7mbzZ8zBps+dvLusV+eNQATqgA/HdeKFVgA5v3S/cIrLF7QnIg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdn.jsdelivr.net/npm/html-docx-js/dist/html-docx.js"></script>
+    <style>
+        body { background-color: #f8fafc; }
+        .sidebar { background: linear-gradient(180deg, #1e5a20 0%, #2E7D32 100%); }
+        .nav-item.active { background: white; color: #2E7D32; box-shadow: 0 10px 20px -5px rgba(0,0,0,0.2); }
+        .nav-item.active i { color: #2E7D32; }
+        .btn-accion { background: #2E7D32; transition: all 0.2s; }
+        .btn-accion:hover { background: #1e5a20; transform: translateY(-2px); }
+        .btn-secundario { background: #f0f0f0; color: #333; border: 1px solid #ccc; }
+        .btn-secundario:hover { background: #e0e0e0; }
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); overflow: auto; }
+        .modal-content { background-color: white; margin: 5% auto; padding: 2rem; border-radius: 24px; width: 90%; max-width: 800px; box-shadow: 0 20px 40px rgba(0,0,0,0.2); position: relative; }
+        .close { color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer; }
+        .close:hover { color: black; }
+        .reporte-table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+        .reporte-table th, .reporte-table td { border: 1px solid #e2e8f0; padding: 0.5rem; text-align: left; }
+        .reporte-table th { background: #f1f5f9; font-weight: 600; }
+        .reporte-table td { text-align: center; }
+        .reporte-table td:first-child { text-align: left; }
+        .flex-between { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem; }
+        .export-buttons button { margin-right: 0.5rem; }
+    </style>
+</head>
+<body class="font-sans antialiased">
+    <div class="flex min-h-screen">
+        <!-- Sidebar (igual que en otras páginas) -->
+        <aside class="w-72 bg-gradient-to-b from-green-800 to-green-700 text-white flex-shrink-0 sticky top-0 h-screen overflow-y-auto">
+            <div class="text-center py-8 border-b border-white/20">
+                <div class="w-20 h-20 bg-white/10 rounded-full flex items-center justify-center text-3xl font-bold mx-auto mb-4 border-2 border-white/20">PNFT</div>
+                <h2 class="text-xl font-semibold">Articulador 2026</h2>
+                <p class="text-sm opacity-80">MEP Costa Rica</p>
+            </div>
+            <ul class="mt-6 space-y-1 px-4">
+                <a href="index.html"><li class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10"><i class="fas fa-chart-pie w-5"></i> Tablero</li></a>
+                <a href="planning.html"><li class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10"><i class="fas fa-clipboard-list w-5"></i> Planeamiento</li></a>
+                <a href="progresion.html"><li class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10"><i class="fas fa-road w-5"></i> Progresión</li></a>
+                <a href="evaluation.html"><li class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10"><i class="fas fa-check-circle w-5"></i> Evaluación</li></a>
+                <a href="logbook.html"><li class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10"><i class="fas fa-book-open w-5"></i> Bitácora</li></a>
+                <a href="students.html"><li class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10"><i class="fas fa-users w-5"></i> Estudiantes</li></a>
+                <a href="groups.html"><li class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10"><i class="fas fa-layer-group w-5"></i> Grupos</li></a>
+                <a href="subjects.html"><li class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10"><i class="fas fa-book w-5"></i> Asignaturas</li></a>
+                <a href="reporte-periodo.html"><li class="flex items-center gap-3 px-4 py-3 rounded-xl bg-white text-green-800 font-semibold shadow-md"><i class="fas fa-chart-line w-5"></i> Reporte por Período</li></a>
+                <a href="settings.html"><li class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10"><i class="fas fa-cog w-5"></i> Configuración</li></a>
+            </ul>
+        </aside>
+
+        <main class="flex-1 p-8 bg-gray-50">
+            <div class="flex justify-between items-center mb-8 bg-white p-4 rounded-2xl shadow-sm">
+                <h1 class="text-2xl font-bold text-gray-800">Reporte por Período (SEA)</h1>
+                <div class="flex gap-4">
+                    <span class="bg-green-100 text-green-800 px-4 py-2 rounded-full text-sm font-medium flex items-center gap-2"><i class="fas fa-user-graduate"></i> Docente</span>
+                    <span class="bg-green-100 text-green-800 px-4 py-2 rounded-full text-sm font-medium flex items-center gap-2"><i class="fas fa-calendar-alt"></i> 2026</span>
+                </div>
+            </div>
+
+            <!-- Filtros -->
+            <div class="bg-white p-6 border border-gray-200 rounded-xl shadow-sm mb-8">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1">Grupo</label>
+                        <select id="grupoSelect" class="w-full border-gray-300 rounded-lg py-2"></select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1">Período</label>
+                        <select id="periodoSelect" class="w-full border-gray-300 rounded-lg py-2"></select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1">Asignatura (opcional)</label>
+                        <select id="asignaturaSelect" class="w-full border-gray-300 rounded-lg py-2">
+                            <option value="">Todas las asignaturas</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="mt-4 flex justify-end gap-2">
+                    <button id="generarBtn" class="bg-green-800 text-white px-4 py-2 rounded-lg shadow hover:bg-green-900"><i class="fas fa-chart-line"></i> Generar Reporte</button>
+                    <button id="exportExcelBtn" class="bg-green-600 text-white px-4 py-2 rounded-lg shadow hover:bg-green-700"><i class="fas fa-file-excel"></i> Exportar Excel (SEA)</button>
+                    <button id="exportPdfBtn" class="bg-red-600 text-white px-4 py-2 rounded-lg shadow hover:bg-red-700"><i class="fas fa-file-pdf"></i> Exportar PDF</button>
+                    <button id="exportWordBtn" class="bg-blue-600 text-white px-4 py-2 rounded-lg shadow hover:bg-blue-700"><i class="fas fa-file-word"></i> Exportar Word</button>
+                </div>
+            </div>
+
+            <!-- Contenedor del reporte -->
+            <div id="reporteContainer" class="bg-white p-6 border border-gray-200 rounded-xl shadow-sm overflow-x-auto">
+                <div class="text-center text-gray-500 py-8">Seleccione grupo y período, luego haga clic en "Generar Reporte".</div>
+            </div>
+        </main>
+    </div>
+
+    <script type="module">
+        import { openDB, getAll, getById } from './js/db.js';
+
+        let db;
+        let grupos = [];
+        let periodos = [];
+        let asignaturas = [];
+
+        const grupoSelect = document.getElementById('grupoSelect');
+        const periodoSelect = document.getElementById('periodoSelect');
+        const asignaturaSelect = document.getElementById('asignaturaSelect');
+        const generarBtn = document.getElementById('generarBtn');
+        const exportExcelBtn = document.getElementById('exportExcelBtn');
+        const exportPdfBtn = document.getElementById('exportPdfBtn');
+        const exportWordBtn = document.getElementById('exportWordBtn');
+        const reporteContainer = document.getElementById('reporteContainer');
+
+        // Cargar datos iniciales
+        async function cargarDatos() {
+            grupos = await getAll('groups');
+            periodos = await getAll('periods_enhanced');
+            asignaturas = await getAll('subjects');
+
+            // Llenar selects
+            grupoSelect.innerHTML = '<option value="">-- Seleccione grupo --</option>' + 
+                grupos.map(g => `<option value="${g.id}">${g.seccion} (${g.nivel}) - ${g.anio}</option>`).join('');
+            periodoSelect.innerHTML = '<option value="">-- Seleccione período --</option>' + 
+                periodos.map(p => `<option value="${p.id}">${p.nombre}</option>`).join('');
+        }
+
+        // Actualizar asignaturas según grupo seleccionado
+        grupoSelect.addEventListener('change', async () => {
+            const grupoId = parseInt(grupoSelect.value);
+            if (grupoId) {
+                const asignaturasGrupo = asignaturas.filter(a => a.groupId === grupoId);
+                asignaturaSelect.innerHTML = '<option value="">Todas las asignaturas</option>' +
+                    asignaturasGrupo.map(a => `<option value="${a.id}">${a.name}</option>`).join('');
+            } else {
+                asignaturaSelect.innerHTML = '<option value="">Todas las asignaturas</option>';
+            }
+        });
+
+        // Función principal para generar el reporte
+        async function generarReporte() {
+            const grupoId = parseInt(grupoSelect.value);
+            const periodoId = parseInt(periodoSelect.value);
+            const asignaturaId = asignaturaSelect.value ? parseInt(asignaturaSelect.value) : null;
+
+            if (!grupoId || !periodoId) {
+                alert('Debe seleccionar grupo y período.');
+                return;
+            }
+
+            // Obtener estudiantes del grupo
+            const allStudents = await getAll('students');
+            const estudiantes = allStudents.filter(s => s.groupId === grupoId);
+            if (estudiantes.length === 0) {
+                reporteContainer.innerHTML = '<div class="text-center text-gray-500 py-8">No hay estudiantes en este grupo.</div>';
+                return;
+            }
+
+            // Obtener asignaturas del grupo (si no se especificó una)
+            let asignaturasGrupo = asignaturas.filter(a => a.groupId === grupoId);
+            if (asignaturaId) {
+                asignaturasGrupo = asignaturasGrupo.filter(a => a.id === asignaturaId);
+            }
+            if (asignaturasGrupo.length === 0) {
+                reporteContainer.innerHTML = '<div class="text-center text-gray-500 py-8">No hay asignaturas para este grupo.</div>';
+                return;
+            }
+
+            // Obtener componentes de evaluación y sus subcomponentes
+            const componentes = await getAll('components');
+            const mapaComponentes = new Map();
+            componentes.forEach(c => mapaComponentes.set(c.id, c));
+
+            // Obtener todas las notas para el período
+            const allGrades = await getAll('grades');
+            const gradesPeriodo = allGrades.filter(g => g.periodId === periodoId && g.groupId === grupoId);
+
+            // Preparar estructura de datos: por estudiante y asignatura, agrupar notas por subcomponente
+            // Primero, para cada estudiante, necesitamos las notas de cada asignatura.
+            // Simplificamos: mostraremos las notas por asignatura en tablas separadas (como en Registra Profe).
+            let html = '';
+
+            for (let asignatura of asignaturasGrupo) {
+                const componente = mapaComponentes.get(asignatura.componentId);
+                if (!componente || !componente.subcomponentes) {
+                    html += `<h3 class="text-lg font-bold mt-4 mb-2">${escapeHtml(asignatura.name)}</h3>`;
+                    html += `<div class="text-red-500 mb-4">⚠️ La asignatura no tiene un componente de evaluación válido.</div>`;
+                    continue;
+                }
+
+                // Mapear subcomponentes a nombres cortos (TC, T, P, A, Pr)
+                const subMap = {};
+                componente.subcomponentes.forEach(sub => {
+                    const nombre = sub.nombre.toLowerCase();
+                    if (nombre.includes('trabajo cotidiano')) subMap.tc = { nombre: sub.nombre, porcentaje: sub.porcentaje };
+                    else if (nombre.includes('tarea')) subMap.t = { nombre: sub.nombre, porcentaje: sub.porcentaje };
+                    else if (nombre.includes('prueba')) subMap.p = { nombre: sub.nombre, porcentaje: sub.porcentaje };
+                    else if (nombre.includes('asistencia')) subMap.a = { nombre: sub.nombre, porcentaje: sub.porcentaje };
+                    else if (nombre.includes('proyecto')) subMap.pr = { nombre: sub.nombre, porcentaje: sub.porcentaje };
+                    else if (nombre.includes('portafolio')) subMap.pr = { nombre: sub.nombre, porcentaje: sub.porcentaje };
+                });
+
+                // Calcular notas para cada estudiante
+                const notasEstudiantes = [];
+                for (let estudiante of estudiantes) {
+                    // Filtrar notas de este estudiante y esta asignatura
+                    const gradesEstudiante = gradesPeriodo.filter(g => 
+                        g.studentId === estudiante.id && 
+                        g.metadata?.subjectId === asignatura.id
+                    );
+
+                    // Función para obtener el promedio de un tipo de evaluación (ej. daily_work, task, test, attendance, project, portfolio)
+                    // En nuestra estructura, cada nota tiene un subcomponentId que puede ser 'daily_work', 'task', 'test', 'attendance', 'project', 'portfolio'
+                    // También puede tener metadata con evaluationId para tareas/pruebas individuales. Para simplificar, asumimos que las notas ya están consolidadas por tipo.
+                    // En la práctica, las notas de tareas y pruebas se guardan con subcomponentId 'task' y 'test', y tienen metadata.evaluationId.
+                    // Pero para el reporte necesitamos el promedio de cada tipo. Podemos obtener los valores de todas las notas del tipo correspondiente.
+                    const getAvg = (subcomponentId) => {
+                        const relevant = gradesEstudiante.filter(g => g.subcomponentId === subcomponentId);
+                        if (relevant.length === 0) return 0;
+                        // Si hay múltiples evaluaciones (varias tareas), promediamos sus valores (esto es correcto porque ya están en porcentaje)
+                        const sum = relevant.reduce((acc, g) => acc + (g.value || 0), 0);
+                        return sum / relevant.length;
+                    };
+
+                    const tcAvg = getAvg('daily_work');
+                    const tAvg = getAvg('task');
+                    const pAvg = getAvg('test');
+                    const aAvg = getAvg('attendance');
+                    const prAvg = getAvg('project') || getAvg('portfolio');
+
+                    // Calcular nota final ponderada según porcentajes del componente
+                    let notaFinal = 0;
+                    if (subMap.tc) notaFinal += (tcAvg / 100) * subMap.tc.porcentaje;
+                    if (subMap.t) notaFinal += (tAvg / 100) * subMap.t.porcentaje;
+                    if (subMap.p) notaFinal += (pAvg / 100) * subMap.p.porcentaje;
+                    if (subMap.a) notaFinal += (aAvg / 100) * subMap.a.porcentaje;
+                    if (subMap.pr) notaFinal += (prAvg / 100) * subMap.pr.porcentaje;
+
+                    notasEstudiantes.push({
+                        estudiante,
+                        tc: tcAvg,
+                        t: tAvg,
+                        p: pAvg,
+                        a: aAvg,
+                        pr: prAvg,
+                        notaFinal: Math.round(notaFinal * 100) / 100
+                    });
+                }
+
+                // Ordenar por nombre
+                notasEstudiantes.sort((a, b) => a.estudiante.nombre.localeCompare(b.estudiante.nombre));
+
+                // Construir tabla
+                html += `<div class="mb-8">`;
+                html += `<h3 class="text-lg font-bold mt-4 mb-2">${escapeHtml(asignatura.name)}</h3>`;
+                html += `<div class="overflow-x-auto"><table class="reporte-table">`;
+                html += `<thead><tr>`;
+                html += `<th>Estudiante</th>`;
+                if (subMap.tc) html += `<th>${escapeHtml(subMap.tc.nombre)} (${subMap.tc.porcentaje}%)</th>`;
+                if (subMap.t) html += `<th>${escapeHtml(subMap.t.nombre)} (${subMap.t.porcentaje}%)</th>`;
+                if (subMap.p) html += `<th>${escapeHtml(subMap.p.nombre)} (${subMap.p.porcentaje}%)</th>`;
+                if (subMap.a) html += `<th>${escapeHtml(subMap.a.nombre)} (${subMap.a.porcentaje}%)</th>`;
+                if (subMap.pr) html += `<th>${escapeHtml(subMap.pr.nombre)} (${subMap.pr.porcentaje}%)</th>`;
+                html += `<th>Nota Final</th>`;
+                html += `</tr></thead><tbody>`;
+
+                for (let n of notasEstudiantes) {
+                    html += `<tr>`;
+                    html += `<td>${escapeHtml(n.estudiante.nombre)}</td>`;
+                    if (subMap.tc) html += `<td>${n.tc.toFixed(2)}</td>`;
+                    if (subMap.t) html += `<td>${n.t.toFixed(2)}</td>`;
+                    if (subMap.p) html += `<td>${n.p.toFixed(2)}</td>`;
+                    if (subMap.a) html += `<td>${n.a.toFixed(2)}</td>`;
+                    if (subMap.pr) html += `<td>${n.pr.toFixed(2)}</td>`;
+                    html += `<td><strong>${n.notaFinal}</strong></td>`;
+                    html += `</tr>`;
+                }
+                html += `</tbody></table></div></div>`;
+            }
+
+            if (html === '') {
+                reporteContainer.innerHTML = '<div class="text-center text-gray-500 py-8">No se encontraron datos para generar el reporte.</div>';
+            } else {
+                reporteContainer.innerHTML = html;
+            }
+        }
+
+        // Exportar a Excel (formato SEA)
+        function exportarExcel() {
+            const tablas = document.querySelectorAll('#reporteContainer table');
+            if (tablas.length === 0) {
+                alert('Primero genere un reporte.');
+                return;
+            }
+
+            const workbook = XLSX.utils.book_new();
+            tablas.forEach((tabla, idx) => {
+                const ws = XLSX.utils.table_to_sheet(tabla);
+                const asignaturaTitulo = document.querySelectorAll('#reporteContainer h3')[idx]?.innerText || `Asignatura ${idx+1}`;
+                XLSX.utils.book_append_sheet(workbook, ws, asignaturaTitulo.slice(0, 31));
+            });
+            XLSX.writeFile(workbook, `reporte_periodo_${new Date().toISOString().slice(0,19)}.xlsx`);
+        }
+
+        // Exportar a PDF usando html2pdf
+        function exportarPdf() {
+            const element = document.getElementById('reporteContainer');
+            if (!element || element.children.length === 0 || element.children[0].innerText.includes('Seleccione')) {
+                alert('Primero genere un reporte.');
+                return;
+            }
+            const opt = {
+                margin:       0.5,
+                filename:     `reporte_periodo_${new Date().toISOString().slice(0,19)}.pdf`,
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2 },
+                jsPDF:        { unit: 'in', format: 'letter', orientation: 'landscape' }
+            };
+            html2pdf().set(opt).from(element).save();
+        }
+
+        // Exportar a Word usando html-docx-js
+        function exportarWord() {
+            const element = document.getElementById('reporteContainer');
+            if (!element || element.children.length === 0 || element.children[0].innerText.includes('Seleccione')) {
+                alert('Primero genere un reporte.');
+                return;
+            }
+            const htmlContent = `
+                <html>
+                <head>
+                    <meta charset="UTF-8">
+                    <title>Reporte por Período</title>
+                    <style>
+                        table { border-collapse: collapse; width: 100%; margin-bottom: 20px; }
+                        th, td { border: 1px solid #000; padding: 8px; text-align: center; }
+                        th { background: #f0f0f0; }
+                        td:first-child { text-align: left; }
+                        h3 { margin-top: 20px; }
+                    </style>
+                </head>
+                <body>
+                    ${element.innerHTML}
+                </body>
+                </html>
+            `;
+            const converted = htmlDocx.asBlob(htmlContent);
+            saveAs(converted, `reporte_periodo_${new Date().toISOString().slice(0,19)}.docx`);
+        }
+
+        // Eventos
+        generarBtn.addEventListener('click', generarReporte);
+        exportExcelBtn.addEventListener('click', exportarExcel);
+        exportPdfBtn.addEventListener('click', exportarPdf);
+        exportWordBtn.addEventListener('click', exportarWord);
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/[&<>]/g, function(m) {
+                if (m === '&') return '&amp;';
+                if (m === '<') return '&lt;';
+                if (m === '>') return '&gt;';
+                return m;
+            });
+        }
+
+        // Inicializar
+        await openDB();
+        await cargarDatos();
+    </script>
+</body>
+</html>
