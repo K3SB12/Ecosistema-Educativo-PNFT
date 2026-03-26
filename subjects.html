@@ -145,7 +145,6 @@
         const componentePreview = document.getElementById('componentePreview');
         const subcomponentesPreview = document.getElementById('subcomponentesPreview');
 
-        // Cache de componentes (se recarga cada vez que se abre el modal)
         let componentesCache = [];
 
         async function cargarSelects() {
@@ -153,19 +152,13 @@
             grupoSelect.innerHTML = '<option value="">-- Seleccione grupo --</option>' + grupos.map(g => `<option value="${g.id}">${g.seccion} (${g.nivel}) - ${g.anio}</option>`).join('');
         }
 
-        // Recargar componentes desde la base de datos cada vez que se abre el modal
         async function recargarComponentes() {
             const componentes = await getAll('components');
             componentesCache = componentes;
-            console.log('Componentes recargados:', componentesCache.map(c => ({ id: c.id, nombre: c.nombre })));
-            
             const nombresPrecargados = ['I Ciclo', 'II Ciclo', 'III Ciclo', 'Diversificada', 'Educación Adultos', 'Educación Especial'];
-            
-            // Ordenar: primero los personalizados, luego los precargados
             const personalizados = componentesCache.filter(c => !nombresPrecargados.includes(c.nombre));
             const precargados = componentesCache.filter(c => nombresPrecargados.includes(c.nombre));
             const componentesOrdenados = [...personalizados, ...precargados];
-            
             componenteSelect.innerHTML = '<option value="">-- Seleccione componente --</option>' + 
                 componentesOrdenados.map(c => {
                     const esPrecargado = nombresPrecargados.includes(c.nombre);
@@ -204,21 +197,24 @@
                 const grupo = grupos.find(g => g.id === a.groupId);
                 const institucion = instituciones.find(i => i.id === a.institutionId);
                 const componente = componentes.find(c => c.id === a.componentId);
-                // Mostrar subcomponentes del componente si existe
+                
+                // Extraer porcentajes según subcomponentes
+                let tc = 0, t = 0, p = 0, a = 0, pr = 0;
+                if (componente && componente.subcomponentes) {
+                    for (let sub of componente.subcomponentes) {
+                        const nombre = sub.nombre.toLowerCase();
+                        if (nombre.includes('trabajo cotidiano')) tc = sub.porcentaje;
+                        else if (nombre.includes('tarea')) t = sub.porcentaje;
+                        else if (nombre.includes('prueba')) p = sub.porcentaje;
+                        else if (nombre.includes('asistencia')) a = sub.porcentaje;
+                        else if (nombre.includes('proyecto')) pr = sub.porcentaje;
+                        else if (nombre.includes('portafolio')) pr = sub.porcentaje; // algunos usan portafolio
+                    }
+                }
+                
+                // Si el componente no existe, mostrar botón reparar
                 let subcomponentesHtml = '';
-                if (componente && componente.subcomponentes && componente.subcomponentes.length) {
-                    subcomponentesHtml = `
-                        <div class="subcomponent-list mt-2">
-                            ${componente.subcomponentes.map(sub => `
-                                <div class="subcomponent-item">
-                                    <span>${escapeHtml(sub.nombre)}</span>
-                                    <span class="porcentaje-preview">${sub.porcentaje}%</span>
-                                </div>
-                            `).join('')}
-                        </div>
-                    `;
-                } else if (a.componentId && !componente) {
-                    // Componente inválido: mostrar un botón para reparar
+                if (a.componentId && !componente) {
                     subcomponentesHtml = `
                         <div class="text-xs text-red-500 mt-1 flex items-center gap-2">
                             ⚠️ Componente no encontrado (ID: ${a.componentId})
@@ -226,6 +222,7 @@
                         </div>
                     `;
                 }
+                
                 return `
                     <div class="bg-white rounded-xl shadow-md border border-gray-200 p-5 entity-card" data-id="${a.id}">
                         <div class="entity-header">
@@ -243,6 +240,13 @@
                             <div><i class="fas fa-chart-line w-4 text-green-700"></i> ${componente ? componente.nombre : 'Sin componente'}</div>
                             ${subcomponentesHtml}
                         </div>
+                        <!-- Tabla con porcentajes (como en Registra Profe) -->
+                        <div class="mt-3 grid grid-cols-5 gap-2 text-center text-sm font-medium text-gray-600 border-t pt-3">
+                            <div>TC %</div><div>T %</div><div>P %</div><div>A %</div><div>Pr %</div>
+                        </div>
+                        <div class="grid grid-cols-5 gap-2 text-center text-sm font-semibold text-green-700">
+                            <div>${tc}</div><div>${t}</div><div>${p}</div><div>${a}</div><div>${pr}</div>
+                        </div>
                     </div>
                 `;
             }).join('');
@@ -257,7 +261,7 @@
                     const id = parseInt(btn.dataset.id);
                     const asignatura = (await getAll('subjects')).find(a => a.id === id);
                     if (asignatura) {
-                        await recargarComponentes(); // Asegurar componentes actualizados
+                        await recargarComponentes();
                         abrirModal(asignatura);
                     }
                 });
@@ -296,7 +300,7 @@
                         modalTitulo.innerText = 'Reparar Asignatura - Seleccione componente';
                         nombreInput.value = asignatura.name;
                         grupoSelect.value = asignatura.groupId;
-                        componenteSelect.value = ''; // Limpiar selección
+                        componenteSelect.value = '';
                         componentePreview.style.display = 'none';
                         modal.style.display = 'block';
                     }
@@ -358,23 +362,18 @@
             const groupId = parseInt(grupoSelect.value);
             const componentId = parseInt(componenteSelect.value) || null;
             
-            console.log('Intentando guardar asignatura:', { name, groupId, componentId });
-            
             if (!name || !groupId) {
                 alert('Nombre y grupo son obligatorios');
                 return;
             }
             
             try {
-                // Verificar que el componente seleccionado realmente existe
                 if (componentId) {
                     const componente = await getById('components', componentId);
                     if (!componente) {
-                        console.error('Componente no encontrado en BD:', componentId);
                         alert('El componente seleccionado no existe. Por favor, recargue la página o seleccione otro componente.');
                         return;
                     }
-                    console.log('Componente válido:', componente.nombre);
                 }
                 
                 const grupo = await getById('groups', groupId);
@@ -391,7 +390,6 @@
                     updatedAt: new Date().toISOString()
                 };
                 
-                console.log('Guardando asignatura:', asignatura);
                 await put('subjects', asignatura);
                 await cargarAsignaturas();
                 modal.style.display = 'none';
@@ -457,7 +455,7 @@
         await openDB();
         await cargarSelects();
         await cargarFiltros();
-        await recargarComponentes(); // Carga inicial de componentes
+        await recargarComponentes();
         await cargarAsignaturas();
         
         filtroGrupo.addEventListener('change', cargarAsignaturas);
