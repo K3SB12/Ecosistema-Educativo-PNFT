@@ -10,6 +10,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/html-docx-js@0.3.1/dist/html-docx.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <style>
         body { background-color: #f8fafc; }
         .sidebar { background: linear-gradient(180deg, #1e5a20 0%, #2E7D32 100%); }
@@ -30,6 +31,8 @@
         .reporte-table td:first-child, .reporte-table td:nth-child(2) { text-align: left; }
         .flex-between { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem; }
         .export-buttons { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+        .chart-container { max-width: 600px; margin: 1rem auto; }
+        canvas { max-height: 400px; }
     </style>
 </head>
 <body class="font-sans antialiased">
@@ -89,6 +92,7 @@
                     <button id="pdfBtn" class="bg-red-600 text-white px-4 py-2 rounded-lg shadow hover:bg-red-700"><i class="fas fa-file-pdf"></i> Descargar PDF</button>
                     <button id="wordBtn" class="bg-blue-600 text-white px-4 py-2 rounded-lg shadow hover:bg-blue-700"><i class="fas fa-file-word"></i> Descargar Word</button>
                     <button id="csvBtn" class="bg-green-600 text-white px-4 py-2 rounded-lg shadow hover:bg-green-700"><i class="fas fa-file-csv"></i> Descargar csv (SEA)</button>
+                    <button id="refreshBtn" class="bg-gray-600 text-white px-4 py-2 rounded-lg shadow hover:bg-gray-700"><i class="fas fa-sync-alt"></i> Refrescar datos</button>
                 </div>
             </div>
 
@@ -98,16 +102,28 @@
         </main>
     </div>
 
-    <script type="module">
-        import { openDB, getAll, getById, calculatePeriodGrade, getSubcomponentAverage } from './js/db.js';
+    <div id="modalAnalisis" class="modal">
+        <div class="modal-content" style="max-width: 800px;">
+            <span class="close" id="closeAnalisis">&times;</span>
+            <h2 class="text-xl font-bold mb-4">Análisis de notas</h2>
+            <div class="chart-container">
+                <canvas id="notasChart"></canvas>
+            </div>
+            <div id="analisisEstadisticas" class="mt-4 text-sm text-gray-700"></div>
+        </div>
+    </div>
 
-        let db;
+    <script type="module">
+        import { openDB, getAll, getById, calculatePeriodGrade, getSubcomponentAverage, getAttendancePercentage } from './js/db.js';
+
         let periodos = [];
         let asignaturas = [];
         let grupos = [];
         let estudiantes = [];
-        let grades = [];
         let components = [];
+        let datosReporte = [];
+        let subMapActual = null;
+        let chartInstance = null;
 
         const periodoSelect = document.getElementById('periodoSelect');
         const asignaturaSelect = document.getElementById('asignaturaSelect');
@@ -118,17 +134,16 @@
         const pdfBtn = document.getElementById('pdfBtn');
         const wordBtn = document.getElementById('wordBtn');
         const csvBtn = document.getElementById('csvBtn');
+        const refreshBtn = document.getElementById('refreshBtn');
         const reporteContainer = document.getElementById('reporteContainer');
-
-        let datosReporte = [];
-        let subMapActual = null; // Para guardar los porcentajes
+        const modalAnalisis = document.getElementById('modalAnalisis');
+        const closeAnalisis = document.getElementById('closeAnalisis');
 
         async function cargarDatos() {
             periodos = await getAll('periods_enhanced');
             asignaturas = await getAll('subjects');
             grupos = await getAll('groups');
             estudiantes = await getAll('students');
-            grades = await getAll('grades');
             components = await getAll('components');
 
             periodoSelect.innerHTML = '<option value="">-- Seleccione período --</option>' +
@@ -156,21 +171,19 @@
             const grupo = grupos.find(g => g.id === asignatura.groupId);
             if (!grupo) return;
 
-            // Obtener componente de evaluación de la asignatura
             const componente = components.find(c => c.id === asignatura.componentId);
             if (!componente || !componente.subcomponentes) {
                 reporteContainer.innerHTML = '<div class="text-center text-red-500 py-8">La asignatura no tiene componente de evaluación válido.</div>';
                 return;
             }
 
-            // Construir mapa de subcomponentes con sus porcentajes
             const subMap = {
-                daily_work: { nombre: 'Trabajo cotidiano', porcentaje: 0, valor: null },
-                task: { nombre: 'Tareas', porcentaje: 0, valor: null },
-                test: { nombre: 'Pruebas', porcentaje: 0, valor: null },
-                attendance: { nombre: 'Asistencia', porcentaje: 0, valor: null },
-                project: { nombre: 'Proyecto', porcentaje: 0, valor: null },
-                portfolio: { nombre: 'Portafolio', porcentaje: 0, valor: null }
+                daily_work: { nombre: 'Trabajo cotidiano', porcentaje: 0 },
+                task: { nombre: 'Tareas', porcentaje: 0 },
+                test: { nombre: 'Pruebas', porcentaje: 0 },
+                attendance: { nombre: 'Asistencia', porcentaje: 0 },
+                project: { nombre: 'Proyecto', porcentaje: 0 },
+                portfolio: { nombre: 'Portafolio', porcentaje: 0 }
             };
             for (let sub of componente.subcomponentes) {
                 const name = sub.nombre.toLowerCase();
@@ -183,7 +196,6 @@
             }
             subMapActual = subMap;
 
-            // Obtener estudiantes del grupo
             const estudiantesGrupo = estudiantes.filter(e => e.groupId === grupo.id);
             if (estudiantesGrupo.length === 0) {
                 reporteContainer.innerHTML = '<div class="text-center text-gray-500 py-8">No hay estudiantes en este grupo.</div>';
@@ -194,14 +206,12 @@
 
             datosReporte = [];
             for (let est of estudiantesGrupo) {
-                // Nota final del período usando calculatePeriodGrade
                 const notaFinal = await calculatePeriodGrade(est.id, periodoId, grupo.id, asignaturaId, decimales);
-
-                // Promedios individuales (para mostrar)
                 const dailyAvg = await getSubcomponentAverage(est.id, periodoId, grupo.id, 'daily_work');
                 const taskAvg = await getSubcomponentAverage(est.id, periodoId, grupo.id, 'task');
                 const testAvg = await getSubcomponentAverage(est.id, periodoId, grupo.id, 'test');
-                const attendanceAvg = await getSubcomponentAverage(est.id, periodoId, grupo.id, 'attendance');
+                // Asistencia real (porcentaje de días presentes)
+                const attendanceReal = await getAttendancePercentage(est.id, periodo, grupo.id);
                 const projectAvg = await getSubcomponentAverage(est.id, periodoId, grupo.id, 'project');
                 const portfolioAvg = await getSubcomponentAverage(est.id, periodoId, grupo.id, 'portfolio');
 
@@ -211,7 +221,7 @@
                     daily: dailyAvg,
                     task: taskAvg,
                     test: testAvg,
-                    attendance: attendanceAvg,
+                    attendance: attendanceReal,
                     project: projectAvg,
                     portfolio: portfolioAvg,
                     notaFinal
@@ -243,10 +253,9 @@
             html += '</thead><tbody>';
 
             for (let d of datosReporte) {
-                html += `\\
+                html += `<tr>
                     <td class="whitespace-nowrap">${escapeHtml(d.id)}</td>
-                    <td class="text-left">${escapeHtml(d.nombre)}</td>
-                `;
+                    <td class="text-left">${escapeHtml(d.nombre)}</td>`;
                 if (hasTC) html += `<td>${d.daily !== null ? d.daily.toFixed(decimales) : '—'}</td>`;
                 if (hasT) html += `<td>${d.task !== null ? d.task.toFixed(decimales) : '—'}</td>`;
                 if (hasP) html += `<td>${d.test !== null ? d.test.toFixed(decimales) : '—'}</td>`;
@@ -262,7 +271,64 @@
             reporteContainer.innerHTML = html;
         }
 
-        // Exportaciones
+        function mostrarAnalisis() {
+            if (datosReporte.length === 0 || !subMapActual) {
+                alert('Primero genere un reporte.');
+                return;
+            }
+            const notas = datosReporte.map(d => d.notaFinal).filter(n => n !== null);
+            if (notas.length === 0) {
+                alert('No hay notas para analizar.');
+                return;
+            }
+
+            // Estadísticas
+            const promedio = (notas.reduce((a,b)=>a+b,0)/notas.length).toFixed(2);
+            const min = Math.min(...notas);
+            const max = Math.max(...notas);
+            // Distribución en rangos
+            const rangos = [0, 60, 70, 80, 90, 100];
+            const labels = ['0-59', '60-69', '70-79', '80-89', '90-100'];
+            const frecuencias = [0,0,0,0,0];
+            notas.forEach(n => {
+                if (n < 60) frecuencias[0]++;
+                else if (n < 70) frecuencias[1]++;
+                else if (n < 80) frecuencias[2]++;
+                else if (n < 90) frecuencias[3]++;
+                else frecuencias[4]++;
+            });
+
+            const ctx = document.getElementById('notasChart').getContext('2d');
+            if (chartInstance) chartInstance.destroy();
+            chartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Cantidad de estudiantes',
+                        data: frecuencias,
+                        backgroundColor: '#2E7D32',
+                        borderColor: '#1e5a20',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: { y: { beginAtZero: true, stepSize: 1, title: { display: true, text: 'Estudiantes' } } },
+                    plugins: { legend: { position: 'top' }, title: { display: true, text: 'Distribución de notas' } }
+                }
+            });
+
+            document.getElementById('analisisEstadisticas').innerHTML = `
+                <p><strong>Promedio:</strong> ${promedio}</p>
+                <p><strong>Nota más baja:</strong> ${min}</p>
+                <p><strong>Nota más alta:</strong> ${max}</p>
+                <p><strong>Total estudiantes con nota:</strong> ${notas.length}</p>
+            `;
+            modalAnalisis.style.display = 'block';
+        }
+
+        // Exportaciones (igual que antes, pero asegurar que usen los datos correctos)
         function exportarCSV() {
             if (datosReporte.length === 0 || !subMapActual) { alert('Primero genere un reporte.'); return; }
             const decimales = parseInt(decimalesSelect.value);
@@ -323,7 +389,7 @@
                 <h1>Coletillas de Notas</h1>
                 <p>Asignatura: ${escapeHtml(asignaturaSelect.options[asignaturaSelect.selectedIndex]?.text || '')}</p>
                 <p>Período: ${escapeHtml(periodoSelect.options[periodoSelect.selectedIndex]?.text || '')}</p>
-                 <table><thead><tr><th>Estudiante</th><th>Nota Final</th></tr></thead><tbody>`;
+                <table><thead><tr><th>Estudiante</th><th>Nota Final</th></tr></thead><tbody>`;
             for (let d of datosReporte) {
                 const nota = d.notaFinal !== null ? d.notaFinal.toFixed(decimales) : '—';
                 coletillaHtml += `<tr><td>${escapeHtml(d.nombre)}</td><td>${nota}</td></tr>`;
@@ -333,21 +399,23 @@
             saveAs(blob, `coletillas_${new Date().toISOString().slice(0,19)}.doc`);
         }
 
-        function analisis() {
-            alert('Funcionalidad en desarrollo. Próximamente gráficos estadísticos.');
-        }
-
         function escapeHtml(str) {
             if (!str) return '';
             return str.replace(/[&<>]/g, m => m === '&' ? '&amp;' : m === '<' ? '&lt;' : '&gt;');
         }
 
         generarBtn.addEventListener('click', generarReporte);
+        analisisBtn.addEventListener('click', mostrarAnalisis);
         csvBtn.addEventListener('click', exportarCSV);
         pdfBtn.addEventListener('click', exportarPDF);
         wordBtn.addEventListener('click', exportarWord);
         coletillasBtn.addEventListener('click', exportarColetillas);
-        analisisBtn.addEventListener('click', analisis);
+        refreshBtn.addEventListener('click', async () => {
+            await cargarDatos();
+            alert('Datos recargados.');
+        });
+        closeAnalisis.addEventListener('click', () => modalAnalisis.style.display = 'none');
+        window.onclick = (e) => { if (e.target === modalAnalisis) modalAnalisis.style.display = 'none'; };
 
         await openDB();
         await cargarDatos();
