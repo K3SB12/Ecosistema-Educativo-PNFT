@@ -49,7 +49,7 @@
                 <a href="planning.html"><li class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10"><i class="fas fa-clipboard-list w-5"></i> Planeamiento</li></a>
                 <a href="progresion.html"><li class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10"><i class="fas fa-road w-5"></i> Progresión</li></a>
                 <a href="evaluation.html"><li class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10"><i class="fas fa-check-circle w-5"></i> Evaluación</li></a>
-                <a href="logbook.html"><li class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10"><i class="fas fa-book-open w-5"></i> Bitácora</li></a>
+                <a href="bitacora.html"><li class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10"><i class="fas fa-book-open w-5"></i> Bitácora</li></a>
                 <a href="students.html"><li class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10"><i class="fas fa-users w-5"></i> Estudiantes</li></a>
                 <a href="groups.html"><li class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10"><i class="fas fa-layer-group w-5"></i> Grupos</li></a>
                 <a href="subjects.html"><li class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10"><i class="fas fa-book w-5"></i> Asignaturas</li></a>
@@ -96,7 +96,7 @@
     </div>
 
     <script type="module">
-        import { openDB, getAll, getById } from './js/db.js';
+        import { openDB, getAll, getById, calculatePeriodGrade, calculateAnnualGrade, getSubcomponentAverage } from './js/db.js';
 
         let db;
         let grupos = [];
@@ -105,7 +105,6 @@
         let periodos = [];
         let grades = [];
         let components = [];
-        let periodosPorcentajes = new Map();
 
         const grupoSelect = document.getElementById('grupoSelect');
         const asignaturaSelect = document.getElementById('asignaturaSelect');
@@ -121,24 +120,6 @@
             grades = await getAll('grades');
             components = await getAll('components');
 
-            // Cargar porcentajes de períodos por grupo
-            for (let grupo of grupos) {
-                if (grupo.periodosPorcentajes) {
-                    periodosPorcentajes.set(grupo.id, grupo.periodosPorcentajes);
-                } else {
-                    const periodosGrupo = periodos.filter(p => p.schoolYearId === grupo.anioId);
-                    if (periodosGrupo.length > 0) {
-                        const porc = 100 / periodosGrupo.length;
-                        const mapa = {};
-                        periodosGrupo.forEach(p => mapa[p.id] = porc);
-                        periodosPorcentajes.set(grupo.id, mapa);
-                    } else {
-                        periodosPorcentajes.set(grupo.id, {});
-                    }
-                }
-            }
-
-            // Llenar selects
             grupoSelect.innerHTML = '<option value="">-- Seleccione grupo --</option>' + 
                 grupos.map(g => `<option value="${g.id}">${g.seccion} (${g.nivel}) - ${g.anio}</option>`).join('');
         }
@@ -156,138 +137,54 @@
 
         grupoSelect.addEventListener('change', actualizarAsignaturas);
 
-        // Obtener nota de un estudiante en un período (misma lógica que reporte por período)
-        async function obtenerNotaPeriodo(estudianteId, asignaturaId, periodoId, grupoId) {
-            const notas = grades.filter(g => 
-                g.studentId === estudianteId && 
-                g.periodId === periodoId && 
-                g.groupId === grupoId
-            );
-            if (notas.length === 0) return null;
-
-            const asignatura = asignaturas.find(a => a.id === asignaturaId);
-            if (!asignatura || !asignatura.componentId) return null;
-            const componente = components.find(c => c.id === asignatura.componentId);
-            if (!componente || !componente.subcomponentes) return null;
-
-            const subMap = {};
-            componente.subcomponentes.forEach(sub => {
-                const nombre = sub.nombre.toLowerCase();
-                if (nombre.includes('trabajo cotidiano')) subMap.daily_work = sub.porcentaje;
-                else if (nombre.includes('tarea')) subMap.task = sub.porcentaje;
-                else if (nombre.includes('prueba')) subMap.test = sub.porcentaje;
-                else if (nombre.includes('asistencia')) subMap.attendance = sub.porcentaje;
-                else if (nombre.includes('proyecto')) subMap.project = sub.porcentaje;
-                else if (nombre.includes('portafolio')) subMap.portfolio = sub.porcentaje;
-            });
-
-            const getAvg = (type) => {
-                const relevant = notas.filter(g => g.subcomponentId === type);
-                if (relevant.length === 0) return 0;
-                const sum = relevant.reduce((acc, g) => acc + (g.value || 0), 0);
-                return sum / relevant.length;
-            };
-
-            let notaFinal = 0;
-            if (subMap.daily_work) notaFinal += (getAvg('daily_work') / 100) * subMap.daily_work;
-            if (subMap.task) notaFinal += (getAvg('task') / 100) * subMap.task;
-            if (subMap.test) notaFinal += (getAvg('test') / 100) * subMap.test;
-            if (subMap.attendance) notaFinal += (getAvg('attendance') / 100) * subMap.attendance;
-            if (subMap.project) notaFinal += (getAvg('project') / 100) * subMap.project;
-            if (subMap.portfolio) notaFinal += (getAvg('portfolio') / 100) * subMap.portfolio;
-
-            return Math.round(notaFinal * 100) / 100;
-        }
-
-        // Calcular nota anual
-        async function calcularNotaAnual(estudianteId, asignaturaId, grupoId) {
-            const grupo = grupos.find(g => g.id === grupoId);
-            if (!grupo) return null;
-            const pesos = periodosPorcentajes.get(grupo.id) || {};
-            const periodosGrupo = periodos.filter(p => p.schoolYearId === grupo.anioId);
-            if (periodosGrupo.length === 0) return null;
-
-            let sumaPonderada = 0;
-            let totalPeso = 0;
-            for (let periodo of periodosGrupo) {
-                const peso = pesos[periodo.id] || 0;
-                if (peso === 0) continue;
-                const nota = await obtenerNotaPeriodo(estudianteId, asignaturaId, periodo.id, grupoId);
-                if (nota !== null) {
-                    sumaPonderada += nota * peso;
-                    totalPeso += peso;
-                }
-            }
-            if (totalPeso === 0) return null;
-            return sumaPonderada / totalPeso;
-        }
-
         // Obtener detalle completo para un estudiante (por período y subcomponentes)
         async function obtenerDetalleEstudiante(estudianteId, asignaturaId, grupoId) {
             const grupo = grupos.find(g => g.id === grupoId);
             if (!grupo) return null;
             const periodosGrupo = periodos.filter(p => p.schoolYearId === grupo.anioId);
-            const pesos = periodosPorcentajes.get(grupo.id) || {};
+            // Obtener porcentajes de períodos desde el grupo (o distribuir equitativamente)
+            let pesos = {};
+            if (grupo.periodosPorcentajes) {
+                pesos = grupo.periodosPorcentajes;
+            } else {
+                const porc = 100 / periodosGrupo.length;
+                periodosGrupo.forEach(p => pesos[p.id] = porc);
+            }
 
             const detalle = [];
             for (let periodo of periodosGrupo) {
                 const peso = pesos[periodo.id] || 0;
-                const notasPeriodo = grades.filter(g => 
-                    g.studentId === estudianteId && 
-                    g.periodId === periodo.id && 
-                    g.groupId === grupoId
-                );
-                
-                // Para este período, obtener notas por subcomponente
-                const asignatura = asignaturas.find(a => a.id === asignaturaId);
-                if (!asignatura || !asignatura.componentId) continue;
-                const componente = components.find(c => c.id === asignatura.componentId);
-                if (!componente || !componente.subcomponentes) continue;
+                const notaFinal = await calculatePeriodGrade(estudianteId, periodo.id, grupoId, asignaturaId, 2);
+                // Obtener promedios de subcomponentes para mostrar en el PDF
+                const dailyAvg = await getSubcomponentAverage(estudianteId, periodo.id, grupoId, 'daily_work');
+                const taskAvg = await getSubcomponentAverage(estudianteId, periodo.id, grupoId, 'task');
+                const testAvg = await getSubcomponentAverage(estudianteId, periodo.id, grupoId, 'test');
+                const attendanceAvg = await getSubcomponentAverage(estudianteId, periodo.id, grupoId, 'attendance');
+                const projectAvg = await getSubcomponentAverage(estudianteId, periodo.id, grupoId, 'project');
+                const portfolioAvg = await getSubcomponentAverage(estudianteId, periodo.id, grupoId, 'portfolio');
 
-                const subMap = {};
-                componente.subcomponentes.forEach(sub => {
-                    const nombre = sub.nombre.toLowerCase();
-                    if (nombre.includes('trabajo cotidiano')) subMap.daily_work = { nombre: sub.nombre, porcentaje: sub.porcentaje };
-                    else if (nombre.includes('tarea')) subMap.task = { nombre: sub.nombre, porcentaje: sub.porcentaje };
-                    else if (nombre.includes('prueba')) subMap.test = { nombre: sub.nombre, porcentaje: sub.porcentaje };
-                    else if (nombre.includes('asistencia')) subMap.attendance = { nombre: sub.nombre, porcentaje: sub.porcentaje };
-                    else if (nombre.includes('proyecto')) subMap.project = { nombre: sub.nombre, porcentaje: sub.porcentaje };
-                    else if (nombre.includes('portafolio')) subMap.portfolio = { nombre: sub.nombre, porcentaje: sub.porcentaje };
-                });
-
-                const getAvg = (type) => {
-                    const relevant = notasPeriodo.filter(g => g.subcomponentId === type);
-                    if (relevant.length === 0) return 0;
-                    const sum = relevant.reduce((acc, g) => acc + (g.value || 0), 0);
-                    return sum / relevant.length;
-                };
-
-                const valores = {
+                detalle.push({
                     periodo: periodo,
                     peso: peso,
-                    tc: getAvg('daily_work'),
-                    t: getAvg('task'),
-                    p: getAvg('test'),
-                    a: getAvg('attendance'),
-                    pr: getAvg('project') || getAvg('portfolio')
-                };
-                // Calcular nota final del período
-                let notaFinal = 0;
-                if (subMap.daily_work) notaFinal += (valores.tc / 100) * subMap.daily_work.porcentaje;
-                if (subMap.task) notaFinal += (valores.t / 100) * subMap.task.porcentaje;
-                if (subMap.test) notaFinal += (valores.p / 100) * subMap.test.porcentaje;
-                if (subMap.attendance) notaFinal += (valores.a / 100) * subMap.attendance.porcentaje;
-                if (subMap.project) notaFinal += (valores.pr / 100) * subMap.project.porcentaje;
-                if (subMap.portfolio) notaFinal += (valores.pr / 100) * subMap.portfolio.porcentaje;
-                valores.notaFinal = Math.round(notaFinal * 100) / 100;
-                detalle.push(valores);
+                    notaFinal: notaFinal !== null ? notaFinal : null,
+                    tc: dailyAvg,
+                    t: taskAvg,
+                    p: testAvg,
+                    a: attendanceAvg,
+                    pr: projectAvg || portfolioAvg
+                });
             }
             return detalle;
         }
 
         // Generar HTML para PDF
         async function generarPDF(estudiante, asignatura, grupo, detalle) {
-            // Construir el HTML del reporte
+            const asignaturaComp = components.find(c => c.id === asignatura.componentId);
+            let subcomponentes = [];
+            if (asignaturaComp && asignaturaComp.subcomponentes) {
+                subcomponentes = asignaturaComp.subcomponentes;
+            }
+
             let html = `
                 <html>
                 <head>
@@ -319,36 +216,30 @@
             // Tabla de notas por período
             html += `<h3>Notas por Período</h3>`;
             html += `<table><thead><tr><th>Período</th>`;
-            // Subcomponentes (según componente)
-            const asignaturaComp = components.find(c => c.id === asignatura.componentId);
-            if (asignaturaComp && asignaturaComp.subcomponentes) {
-                for (let sub of asignaturaComp.subcomponentes) {
-                    html += `<th>${escapeHtml(sub.nombre)} (${sub.porcentaje}%)</th>`;
-                }
+            for (let sub of subcomponentes) {
+                html += `<th>${escapeHtml(sub.nombre)} (${sub.porcentaje}%)</th>`;
             }
             html += `<th>Nota Final</th></tr></thead><tbody>`;
 
             for (let item of detalle) {
                 html += `<tr><td>${escapeHtml(item.periodo.nombre)}</td>`;
-                if (asignaturaComp && asignaturaComp.subcomponentes) {
-                    for (let sub of asignaturaComp.subcomponentes) {
-                        const nombreSub = sub.nombre.toLowerCase();
-                        let valor = 0;
-                        if (nombreSub.includes('trabajo cotidiano')) valor = item.tc;
-                        else if (nombreSub.includes('tarea')) valor = item.t;
-                        else if (nombreSub.includes('prueba')) valor = item.p;
-                        else if (nombreSub.includes('asistencia')) valor = item.a;
-                        else if (nombreSub.includes('proyecto')) valor = item.pr;
-                        else if (nombreSub.includes('portafolio')) valor = item.pr;
-                        html += `<td>${valor.toFixed(2)}</td>`;
-                    }
+                for (let sub of subcomponentes) {
+                    const nombreSub = sub.nombre.toLowerCase();
+                    let valor = 0;
+                    if (nombreSub.includes('trabajo cotidiano')) valor = item.tc !== null ? item.tc : 0;
+                    else if (nombreSub.includes('tarea')) valor = item.t !== null ? item.t : 0;
+                    else if (nombreSub.includes('prueba')) valor = item.p !== null ? item.p : 0;
+                    else if (nombreSub.includes('asistencia')) valor = item.a !== null ? item.a : 0;
+                    else if (nombreSub.includes('proyecto')) valor = item.pr !== null ? item.pr : 0;
+                    else if (nombreSub.includes('portafolio')) valor = item.pr !== null ? item.pr : 0;
+                    html += `<td>${valor.toFixed(2)}</td>`;
                 }
-                html += `<td><strong>${item.notaFinal.toFixed(2)}</strong></td></tr>`;
+                html += `<td><strong>${item.notaFinal !== null ? item.notaFinal.toFixed(2) : '—'}</strong></td></tr>`;
             }
             html += `</tbody></table>`;
 
             // Calcular nota anual
-            const notaAnual = await calcularNotaAnual(estudiante.id, asignatura.id, grupo.id);
+            const notaAnual = await calculateAnnualGrade(estudiante.id, grupo.id, asignatura.id, 2);
             html += `<h3>Nota Anual</h3>`;
             html += `<p><strong>Nota final del año:</strong> ${notaAnual !== null ? notaAnual.toFixed(2) : 'No disponible'}</p>`;
 
@@ -373,7 +264,7 @@
             }
 
             const detalle = await obtenerDetalleEstudiante(estudianteId, asignaturaId, grupo.id);
-            if (!detalle || detalle.length === 0) {
+            if (!detalle || detalle.length === 0 || detalle.every(d => d.notaFinal === null)) {
                 alert('No hay notas registradas para este estudiante en esta asignatura.');
                 return;
             }
@@ -404,7 +295,6 @@
                 return;
             }
 
-            // Aplicar filtro de nombre
             const filtro = filtroNombre.value.toLowerCase();
             let filtered = estudiantesGrupo;
             if (filtro) {
@@ -416,7 +306,6 @@
                 return;
             }
 
-            // Mostrar lista con botones
             estudiantesContainer.innerHTML = filtered.map(e => `
                 <div class="student-card">
                     <div class="student-header">
@@ -426,7 +315,6 @@
                 </div>
             `).join('');
 
-            // Asignar eventos a los botones
             document.querySelectorAll('.btn-pdf').forEach(btn => {
                 btn.addEventListener('click', () => {
                     const estudianteId = parseInt(btn.dataset.id);
@@ -446,7 +334,7 @@
         }
 
         cargarBtn.addEventListener('click', cargarEstudiantes);
-        filtroNombre.addEventListener('input', cargarEstudiantes); // al escribir, recarga lista
+        filtroNombre.addEventListener('input', cargarEstudiantes);
 
         await openDB();
         await cargarDatos();
