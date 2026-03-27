@@ -45,7 +45,7 @@
                 <a href="planning.html"><li class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10"><i class="fas fa-clipboard-list w-5"></i> Planeamiento</li></a>
                 <a href="progresion.html"><li class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10"><i class="fas fa-road w-5"></i> Progresión</li></a>
                 <a href="evaluation.html"><li class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10"><i class="fas fa-check-circle w-5"></i> Evaluación</li></a>
-                <a href="logbook.html"><li class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10"><i class="fas fa-book-open w-5"></i> Bitácora</li></a>
+                <a href="bitacora.html"><li class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10"><i class="fas fa-book-open w-5"></i> Bitácora</li></a>
                 <a href="students.html"><li class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10"><i class="fas fa-users w-5"></i> Estudiantes</li></a>
                 <a href="groups.html"><li class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10"><i class="fas fa-layer-group w-5"></i> Grupos</li></a>
                 <a href="subjects.html"><li class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10"><i class="fas fa-book w-5"></i> Asignaturas</li></a>
@@ -100,7 +100,7 @@
     </div>
 
     <script type="module">
-        import { openDB, getAll, getById } from './js/db.js';
+        import { openDB, getAll, getById, calculatePeriodGrade, getAttendancePercentage } from './js/db.js';
 
         let db;
         let asignaturas = [];
@@ -119,7 +119,7 @@
         const componentesCheckboxes = document.getElementById('componentesCheckboxes');
 
         let datosReporte = [];
-        let ultimoPeriodoNombre = '';
+        let ultimoPeriodo = null;
 
         async function cargarDatos() {
             asignaturas = await getAll('subjects');
@@ -140,52 +140,15 @@
 
         function obtenerUltimoPeriodo(periodosGrupo) {
             if (!periodosGrupo.length) return null;
-            return periodosGrupo.reduce((latest, p) => {
-                if (!latest) return p;
-                const dateLatest = latest.fechaFin ? new Date(latest.fechaFin) : null;
-                const dateCurrent = p.fechaFin ? new Date(p.fechaFin) : null;
-                if (dateLatest && dateCurrent) return dateCurrent > dateLatest ? p : latest;
-                if (dateCurrent) return p;
-                if (dateLatest) return latest;
-                return p.id > latest.id ? p : latest;
-            }, null);
-        }
-
-        function obtenerPromedio(estudianteId, periodoId, grupoId, subcomponentId) {
-            const notas = grades.filter(g => g.studentId === estudianteId && g.periodId === periodoId && g.groupId === grupoId && g.subcomponentId === subcomponentId);
-            if (notas.length === 0) return null;
-            const sum = notas.reduce((acc, n) => acc + (n.value || 0), 0);
-            return sum / notas.length;
-        }
-
-        function obtenerNotaPeriodoCompleta(estudianteId, periodoId, grupoId, asignaturaId) {
-            // Obtener la nota final del período (ponderada según el componente de la asignatura)
-            const notas = grades.filter(g => g.studentId === estudianteId && g.periodId === periodoId && g.groupId === grupoId);
-            if (notas.length === 0) return null;
-            const asignatura = asignaturas.find(a => a.id === asignaturaId);
-            if (!asignatura || !asignatura.componentId) return null;
-            const componente = components.find(c => c.id === asignatura.componentId);
-            if (!componente || !componente.subcomponentes) return null;
-            const subMap = { daily_work: 0, task: 0, test: 0, attendance: 0 };
-            for (let sub of componente.subcomponentes) {
-                const n = sub.nombre.toLowerCase();
-                if (n.includes('trabajo cotidiano')) subMap.daily_work = sub.porcentaje;
-                else if (n.includes('tarea')) subMap.task = sub.porcentaje;
-                else if (n.includes('prueba')) subMap.test = sub.porcentaje;
-                else if (n.includes('asistencia')) subMap.attendance = sub.porcentaje;
-            }
-            const getAvg = (type) => {
-                const relevant = notas.filter(g => g.subcomponentId === type);
-                if (relevant.length === 0) return 0;
-                const sum = relevant.reduce((acc, n) => acc + (n.value || 0), 0);
-                return sum / relevant.length;
-            };
-            let notaFinal = 0;
-            if (subMap.daily_work) notaFinal += (getAvg('daily_work') / 100) * subMap.daily_work;
-            if (subMap.task) notaFinal += (getAvg('task') / 100) * subMap.task;
-            if (subMap.test) notaFinal += (getAvg('test') / 100) * subMap.test;
-            if (subMap.attendance) notaFinal += (getAvg('attendance') / 100) * subMap.attendance;
-            return Math.round(notaFinal * 100) / 100;
+            // Ordenar por fecha de fin descendente (último período)
+            return periodosGrupo.sort((a,b) => {
+                const dateA = a.fechaFin ? new Date(a.fechaFin) : null;
+                const dateB = b.fechaFin ? new Date(b.fechaFin) : null;
+                if (dateA && dateB) return dateB - dateA;
+                if (dateB) return 1;
+                if (dateA) return -1;
+                return b.id - a.id;
+            })[0];
         }
 
         async function generarReporte() {
@@ -196,19 +159,14 @@
             if (!grupo) return;
 
             const periodosGrupo = periodos.filter(p => p.schoolYearId === grupo.anioId);
-            const ultimoPeriodo = obtenerUltimoPeriodo(periodosGrupo);
+            ultimoPeriodo = obtenerUltimoPeriodo(periodosGrupo);
             if (!ultimoPeriodo) { reporteContainer.innerHTML = '<div class="text-center text-gray-500 py-8">No hay períodos.</div>'; return; }
-            ultimoPeriodoNombre = ultimoPeriodo.nombre;
-
-            const componente = components.find(c => c.id === asignatura.componentId);
-            if (!componente || !componente.subcomponentes) { reporteContainer.innerHTML = '<div class="text-center text-red-500 py-8">Componente inválido.</div>'; return; }
 
             const estudiantesGrupo = estudiantes.filter(e => e.groupId === grupo.id);
             if (estudiantesGrupo.length === 0) { reporteContainer.innerHTML = '<div class="text-center text-gray-500 py-8">No hay estudiantes en este grupo.</div>'; return; }
 
-            // Obtener los checkboxes activos
+            // Obtener los checkboxes activos (solo para mostrar, no para la condición)
             const componentesActivos = Array.from(componentesCheckboxes.querySelectorAll('input:checked')).map(cb => cb.value);
-            // Mapeo de tipos a nombres de columna
             const nombresTipos = {
                 daily_work: 'Trabajo Cotidiano',
                 task: 'Tareas',
@@ -218,18 +176,22 @@
 
             datosReporte = [];
             for (let est of estudiantesGrupo) {
-                const notas = {
-                    daily_work: obtenerPromedio(est.id, ultimoPeriodo.id, grupo.id, 'daily_work'),
-                    task: obtenerPromedio(est.id, ultimoPeriodo.id, grupo.id, 'task'),
-                    test: obtenerPromedio(est.id, ultimoPeriodo.id, grupo.id, 'test'),
-                    attendance: obtenerPromedio(est.id, ultimoPeriodo.id, grupo.id, 'attendance')
-                };
-                const notaPeriodo = obtenerNotaPeriodoCompleta(est.id, ultimoPeriodo.id, grupo.id, asignaturaId);
-                let eximido = true;
-                for (let tipo of componentesActivos) {
-                    if (notas[tipo] === null || notas[tipo] < 85) { eximido = false; break; }
-                }
-                datosReporte.push({ estudiante: est, notas, notaPeriodo, eximido });
+                // Calcular nota final del período usando calculatePeriodGrade
+                const notaFinal = await calculatePeriodGrade(est.id, ultimoPeriodo.id, grupo.id, asignaturaId, 2);
+                // Calcular asistencia real usando getAttendancePercentage
+                const asistenciaReal = await getAttendancePercentage(est.id, ultimoPeriodo, grupo.id);
+
+                // Determinar eximición: nota final >= 90 y asistencia >= 90
+                const eximido = (notaFinal !== null && notaFinal >= 90) && (asistenciaReal !== null && asistenciaReal >= 90);
+
+                // Obtener promedios individuales para mostrar (solo si el componente está activo)
+                const promedios = {};
+                if (componentesActivos.includes('daily_work')) promedios.daily_work = await getSubcomponentAverage(est.id, ultimoPeriodo.id, grupo.id, 'daily_work');
+                if (componentesActivos.includes('task')) promedios.task = await getSubcomponentAverage(est.id, ultimoPeriodo.id, grupo.id, 'task');
+                if (componentesActivos.includes('test')) promedios.test = await getSubcomponentAverage(est.id, ultimoPeriodo.id, grupo.id, 'test');
+                if (componentesActivos.includes('attendance')) promedios.attendance = asistenciaReal; // usar la real
+
+                datosReporte.push({ estudiante: est, notaFinal, asistenciaReal, eximido, promedios });
             }
 
             const mostrar = filtroMostrar.value;
@@ -240,7 +202,7 @@
 
             // Construir tabla
             let html = `<div class="mb-4"><h3 class="text-lg font-bold">${escapeHtml(asignatura.name)} - ${escapeHtml(grupo.seccion)} (${grupo.anio})</h3></div>`;
-            html += `<div class="overflow-x-auto"><table class="reporte-table"><thead><tr><th>Nombre</th><th>${escapeHtml(ultimoPeriodoNombre)}</th>`;
+            html += `<div class="overflow-x-auto"><table class="reporte-table"><thead><tr><th>Nombre</th><th>${escapeHtml(ultimoPeriodo.nombre)}</th>`;
             for (let tipo of componentesActivos) {
                 html += `<th>${nombresTipos[tipo]}</th>`;
             }
@@ -249,16 +211,30 @@
             for (let d of filtrados) {
                 const rowClass = d.eximido ? 'eximido' : 'no-eximido';
                 const badge = d.eximido ? '<span class="badge-eximido">Eximido</span>' : '<span class="badge-no-eximido">No eximido</span>';
-                html += `<tr class="${rowClass}"><td>${escapeHtml(d.estudiante.nombre)}</td>`;
-                html += `<td>${d.notaPeriodo !== null ? d.notaPeriodo.toFixed(2) : '—'}</td>`;
+                html += `<tr class="${rowClass}"><td class="text-left">${escapeHtml(d.estudiante.nombre)}</td>`;
+                html += `<td>${d.notaFinal !== null ? d.notaFinal.toFixed(2) : '—'}</td>`;
                 for (let tipo of componentesActivos) {
-                    const val = d.notas[tipo] !== null ? d.notas[tipo].toFixed(2) : '—';
-                    html += `<td>${val}</td>`;
+                    let val = d.promedios[tipo];
+                    if (tipo === 'attendance') val = d.asistenciaReal;
+                    html += `<td>${val !== null ? val.toFixed(2) : '—'}</td>`;
                 }
                 html += `<td>${badge}</td></tr>`;
             }
             html += `</tbody></table></div>`;
             reporteContainer.innerHTML = html;
+        }
+
+        async function getSubcomponentAverage(studentId, periodId, groupId, subcomponentId) {
+            const allGrades = await getAll('grades');
+            const relevant = allGrades.filter(g =>
+                g.studentId === studentId &&
+                g.periodId === periodId &&
+                g.groupId === groupId &&
+                g.subcomponentId === subcomponentId
+            );
+            if (relevant.length === 0) return null;
+            const sum = relevant.reduce((acc, g) => acc + (g.value || 0), 0);
+            return sum / relevant.length;
         }
 
         function exportarExcel() {
