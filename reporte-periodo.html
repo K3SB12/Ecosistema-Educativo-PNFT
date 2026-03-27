@@ -19,16 +19,17 @@
         .btn-accion:hover { background: #1e5a20; transform: translateY(-2px); }
         .btn-secundario { background: #f0f0f0; color: #333; border: 1px solid #ccc; }
         .btn-secundario:hover { background: #e0e0e0; }
-        .flex-between { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem; }
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); overflow: auto; }
+        .modal-content { background-color: white; margin: 5% auto; padding: 2rem; border-radius: 24px; width: 90%; max-width: 800px; box-shadow: 0 20px 40px rgba(0,0,0,0.2); position: relative; }
+        .close { color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer; }
+        .close:hover { color: black; }
         .reporte-table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
         .reporte-table th, .reporte-table td { border: 1px solid #e2e8f0; padding: 0.5rem; text-align: left; }
         .reporte-table th { background: #f1f5f9; font-weight: 600; text-align: center; }
         .reporte-table td { text-align: center; }
         .reporte-table td:first-child, .reporte-table td:nth-child(2) { text-align: left; }
-        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); overflow: auto; }
-        .modal-content { background-color: white; margin: 5% auto; padding: 2rem; border-radius: 24px; width: 90%; max-width: 800px; box-shadow: 0 20px 40px rgba(0,0,0,0.2); position: relative; }
-        .close { color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer; }
-        .close:hover { color: black; }
+        .flex-between { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem; }
+        .export-buttons { display: flex; gap: 0.5rem; flex-wrap: wrap; }
     </style>
 </head>
 <body class="font-sans antialiased">
@@ -69,7 +70,7 @@
                         <select id="periodoSelect" class="w-full border-gray-300 rounded-lg py-2"></select>
                     </div>
                     <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-1">Seleccione el período de la asignatura</label>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1">Seleccione la asignatura</label>
                         <select id="asignaturaSelect" class="w-full border-gray-300 rounded-lg py-2"></select>
                     </div>
                     <div>
@@ -98,7 +99,7 @@
     </div>
 
     <script type="module">
-        import { openDB, getAll, getById } from './js/db.js';
+        import { openDB, getAll, getById, getAttendancePercentage } from './js/db.js';
 
         let db;
         let periodos = [];
@@ -120,7 +121,6 @@
         const reporteContainer = document.getElementById('reporteContainer');
 
         let datosReporte = [];
-        let subMapActual = null; // para guardar los porcentajes de la asignatura
 
         async function cargarDatos() {
             periodos = await getAll('periods_enhanced');
@@ -130,60 +130,27 @@
             grades = await getAll('grades');
             components = await getAll('components');
 
-            periodoSelect.innerHTML = '<option value="">-- Seleccione período --</option>' + periodos.map(p => `<option value="${p.id}">${p.nombre}</option>`).join('');
-            asignaturaSelect.innerHTML = '<option value="">-- Seleccione asignatura --</option>' + asignaturas.map(a => {
-                const grupo = grupos.find(g => g.id === a.groupId);
-                return `<option value="${a.id}">${a.name} / ${grupo ? grupo.seccion : ''} / ${grupo ? grupo.anio : ''}</option>`;
-            }).join('');
+            periodoSelect.innerHTML = '<option value="">-- Seleccione período --</option>' +
+                periodos.map(p => `<option value="${p.id}">${p.nombre}</option>`).join('');
+
+            asignaturaSelect.innerHTML = '<option value="">-- Seleccione asignatura --</option>' +
+                asignaturas.map(a => {
+                    const grupo = grupos.find(g => g.id === a.groupId);
+                    return `<option value="${a.id}">${a.name} / ${grupo ? grupo.seccion : ''} / ${grupo ? grupo.anio : ''}</option>`;
+                }).join('');
         }
 
-        // Obtener promedios de un estudiante en un período para una asignatura
-        function obtenerPromedios(estudianteId, periodoId, grupoId, asignaturaId) {
-            const notas = grades.filter(g =>
-                g.studentId === estudianteId &&
+        // Función para obtener el promedio de un subcomponente (trabajo cotidiano, tareas, pruebas, proyecto, portafolio)
+        function getSubcomponentAverage(studentId, periodoId, groupId, subcomponentId) {
+            const relevant = grades.filter(g =>
+                g.studentId === studentId &&
                 g.periodId === periodoId &&
-                g.groupId === grupoId
+                g.groupId === groupId &&
+                g.subcomponentId === subcomponentId
             );
-            if (notas.length === 0) return null;
-
-            const asignatura = asignaturas.find(a => a.id === asignaturaId);
-            if (!asignatura || !asignatura.componentId) return null;
-            const componente = components.find(c => c.id === asignatura.componentId);
-            if (!componente || !componente.subcomponentes) return null;
-
-            const subMap = {
-                daily_work: { nombre: 'Trabajo cotidiano', porcentaje: 0, valor: 0 },
-                task: { nombre: 'Tareas', porcentaje: 0, valor: 0 },
-                test: { nombre: 'Pruebas', porcentaje: 0, valor: 0 },
-                attendance: { nombre: 'Asistencia', porcentaje: 0, valor: 0 }
-            };
-            for (let sub of componente.subcomponentes) {
-                const n = sub.nombre.toLowerCase();
-                if (n.includes('trabajo cotidiano')) subMap.daily_work.porcentaje = sub.porcentaje;
-                else if (n.includes('tarea')) subMap.task.porcentaje = sub.porcentaje;
-                else if (n.includes('prueba')) subMap.test.porcentaje = sub.porcentaje;
-                else if (n.includes('asistencia')) subMap.attendance.porcentaje = sub.porcentaje;
-            }
-
-            const getAvg = (type) => {
-                const relevant = notas.filter(g => g.subcomponentId === type);
-                if (relevant.length === 0) return 0;
-                const sum = relevant.reduce((acc, n) => acc + (n.value || 0), 0);
-                return sum / relevant.length;
-            };
-
-            subMap.daily_work.valor = getAvg('daily_work');
-            subMap.task.valor = getAvg('task');
-            subMap.test.valor = getAvg('test');
-            subMap.attendance.valor = getAvg('attendance');
-
-            let notaFinal = 0;
-            if (subMap.daily_work.porcentaje) notaFinal += (subMap.daily_work.valor / 100) * subMap.daily_work.porcentaje;
-            if (subMap.task.porcentaje) notaFinal += (subMap.task.valor / 100) * subMap.task.porcentaje;
-            if (subMap.test.porcentaje) notaFinal += (subMap.test.valor / 100) * subMap.test.porcentaje;
-            if (subMap.attendance.porcentaje) notaFinal += (subMap.attendance.valor / 100) * subMap.attendance.porcentaje;
-
-            return { subMap, notaFinal };
+            if (relevant.length === 0) return null;
+            const sum = relevant.reduce((acc, g) => acc + (g.value || 0), 0);
+            return sum / relevant.length;
         }
 
         async function generarReporte() {
@@ -201,132 +168,154 @@
             const grupo = grupos.find(g => g.id === asignatura.groupId);
             if (!grupo) return;
 
-            // Obtener subcomponentes de la asignatura
+            // Obtener componente de evaluación de la asignatura
             const componente = components.find(c => c.id === asignatura.componentId);
             if (!componente || !componente.subcomponentes) {
                 reporteContainer.innerHTML = '<div class="text-center text-red-500 py-8">La asignatura no tiene componente de evaluación válido.</div>';
                 return;
             }
-            // Construir subMap para toda la tabla
-            subMapActual = {
-                daily_work: { nombre: 'Trabajo cotidiano', porcentaje: 0 },
-                task: { nombre: 'Tareas', porcentaje: 0 },
-                test: { nombre: 'Pruebas', porcentaje: 0 },
-                attendance: { nombre: 'Asistencia', porcentaje: 0 }
+
+            // Construir mapa de subcomponentes con sus porcentajes
+            const subMap = {
+                daily_work: { nombre: 'Trabajo cotidiano', porcentaje: 0, valor: null },
+                task: { nombre: 'Tareas', porcentaje: 0, valor: null },
+                test: { nombre: 'Pruebas', porcentaje: 0, valor: null },
+                attendance: { nombre: 'Asistencia', porcentaje: 0, valor: null },
+                project: { nombre: 'Proyecto', porcentaje: 0, valor: null },
+                portfolio: { nombre: 'Portafolio', porcentaje: 0, valor: null }
             };
             for (let sub of componente.subcomponentes) {
-                const n = sub.nombre.toLowerCase();
-                if (n.includes('trabajo cotidiano')) subMapActual.daily_work.porcentaje = sub.porcentaje;
-                else if (n.includes('tarea')) subMapActual.task.porcentaje = sub.porcentaje;
-                else if (n.includes('prueba')) subMapActual.test.porcentaje = sub.porcentaje;
-                else if (n.includes('asistencia')) subMapActual.attendance.porcentaje = sub.porcentaje;
+                const name = sub.nombre.toLowerCase();
+                if (name.includes('trabajo cotidiano')) subMap.daily_work.porcentaje = sub.porcentaje;
+                else if (name.includes('tarea')) subMap.task.porcentaje = sub.porcentaje;
+                else if (name.includes('prueba')) subMap.test.porcentaje = sub.porcentaje;
+                else if (name.includes('asistencia')) subMap.attendance.porcentaje = sub.porcentaje;
+                else if (name.includes('proyecto')) subMap.project.porcentaje = sub.porcentaje;
+                else if (name.includes('portafolio')) subMap.portfolio.porcentaje = sub.porcentaje;
             }
 
+            // Obtener estudiantes del grupo
             const estudiantesGrupo = estudiantes.filter(e => e.groupId === grupo.id);
             if (estudiantesGrupo.length === 0) {
                 reporteContainer.innerHTML = '<div class="text-center text-gray-500 py-8">No hay estudiantes en este grupo.</div>';
                 return;
             }
 
+            // Calcular notas para cada estudiante
             datosReporte = [];
             for (let est of estudiantesGrupo) {
-                const promedios = obtenerPromedios(est.id, periodoId, grupo.id, asignaturaId);
-                if (promedios) {
-                    datosReporte.push({
-                        id: est.id_number || '',
-                        nombre: est.nombre,
-                        tc: promedios.subMap.daily_work.valor,
-                        t: promedios.subMap.task.valor,
-                        p: promedios.subMap.test.valor,
-                        a: promedios.subMap.attendance.valor,
-                        notaFinal: promedios.notaFinal,
-                        subMap: promedios.subMap
-                    });
-                } else {
-                    datosReporte.push({
-                        id: est.id_number || '',
-                        nombre: est.nombre,
-                        tc: null,
-                        t: null,
-                        p: null,
-                        a: null,
-                        notaFinal: null,
-                        subMap: null
-                    });
-                }
+                // Obtener promedios de cada subcomponente
+                const dailyAvg = getSubcomponentAverage(est.id, periodoId, grupo.id, 'daily_work');
+                const taskAvg = getSubcomponentAverage(est.id, periodoId, grupo.id, 'task');
+                const testAvg = getSubcomponentAverage(est.id, periodoId, grupo.id, 'test');
+                const projectAvg = getSubcomponentAverage(est.id, periodoId, grupo.id, 'project');
+                const portfolioAvg = getSubcomponentAverage(est.id, periodoId, grupo.id, 'portfolio');
+                // Asistencia: usando función centralizada que filtra por fechas del período
+                const attendanceAvg = await getAttendancePercentage(est.id, periodo, grupo.id);
+
+                // Calcular nota final ponderada
+                let notaFinal = 0;
+                if (subMap.daily_work.porcentaje > 0 && dailyAvg !== null) notaFinal += (dailyAvg / 100) * subMap.daily_work.porcentaje;
+                if (subMap.task.porcentaje > 0 && taskAvg !== null) notaFinal += (taskAvg / 100) * subMap.task.porcentaje;
+                if (subMap.test.porcentaje > 0 && testAvg !== null) notaFinal += (testAvg / 100) * subMap.test.porcentaje;
+                if (subMap.attendance.porcentaje > 0 && attendanceAvg !== null) notaFinal += (attendanceAvg / 100) * subMap.attendance.porcentaje;
+                if (subMap.project.porcentaje > 0 && projectAvg !== null) notaFinal += (projectAvg / 100) * subMap.project.porcentaje;
+                if (subMap.portfolio.porcentaje > 0 && portfolioAvg !== null) notaFinal += (portfolioAvg / 100) * subMap.portfolio.porcentaje;
+
+                datosReporte.push({
+                    id: est.id_number || '',
+                    nombre: est.nombre,
+                    daily: dailyAvg,
+                    task: taskAvg,
+                    test: testAvg,
+                    attendance: attendanceAvg,
+                    project: projectAvg,
+                    portfolio: portfolioAvg,
+                    notaFinal
+                });
             }
 
-            renderizarTabla();
+            renderizarTabla(subMap);
         }
 
-        function renderizarTabla() {
+        function renderizarTabla(subMap) {
             const decimales = parseInt(decimalesSelect.value);
-            let html = `
-                <div class="mb-4">
-                    <h3 class="text-lg font-bold">${escapeHtml(asignaturaSelect.options[asignaturaSelect.selectedIndex]?.text || '')}</h3>
-                </div>
-                <div class="overflow-x-auto">
-                    <table class="reporte-table">
-                        <thead>
-                            <tr>
-                                <th>Id</th>
-                                <th>Nombre</th>
-            `;
-            if (subMapActual.daily_work.porcentaje > 0) html += `<th>Trabajo cotidiano (${subMapActual.daily_work.porcentaje}%)</th>`;
-            if (subMapActual.task.porcentaje > 0) html += `<th>Tareas (${subMapActual.task.porcentaje}%)</th>`;
-            if (subMapActual.test.porcentaje > 0) html += `<th>Pruebas (${subMapActual.test.porcentaje}%)</th>`;
-            if (subMapActual.attendance.porcentaje > 0) html += `<th>Asistencia (${subMapActual.attendance.porcentaje}%)</th>`;
+            const hasTC = subMap.daily_work.porcentaje > 0;
+            const hasT = subMap.task.porcentaje > 0;
+            const hasP = subMap.test.porcentaje > 0;
+            const hasA = subMap.attendance.porcentaje > 0;
+            const hasPr = subMap.project.porcentaje > 0 || subMap.portfolio.porcentaje > 0;
+
+            // Construir encabezados de la tabla (como en Registra Profe)
+            let html = '<div class="overflow-x-auto"><table class="reporte-table"><thead>';
+            html += '<th>Id</th><th>Nombre</th>';
+            if (hasTC) html += `<th>Trabajo cotidiano (${subMap.daily_work.porcentaje}%)</th>`;
+            if (hasT) html += `<th>Tareas (${subMap.task.porcentaje}%)</th>`;
+            if (hasP) html += `<th>Pruebas (${subMap.test.porcentaje}%)</th>`;
+            if (hasA) html += `<th>Asistencia (${subMap.attendance.porcentaje}%)</th>`;
+            if (hasPr) {
+                // Si hay proyecto o portafolio, se muestra la suma (podría separarse, pero simplificamos)
+                const prNombre = subMap.project.porcentaje > 0 ? 'Proyecto' : 'Portafolio';
+                const prPorc = subMap.project.porcentaje > 0 ? subMap.project.porcentaje : subMap.portfolio.porcentaje;
+                html += `<th>${prNombre} (${prPorc}%)</th>`;
+            }
             html += `<th>Nota Final</th>`;
-            html += `</tr></thead><tbody>`;
+            html += '</thead><tbody>';
 
             for (let d of datosReporte) {
-                html += `<tr>`;
-                html += `<td>${escapeHtml(d.id)}</td>`;
-                html += `<td>${escapeHtml(d.nombre)}</td>`;
-                if (subMapActual.daily_work.porcentaje > 0) {
-                    const val = d.tc !== null ? d.tc.toFixed(decimales) : '—';
-                    html += `<td>${val}</td>`;
+                html += `\\
+                    <td>${escapeHtml(d.id)}</td>
+                    <td class="text-left">${escapeHtml(d.nombre)}</td>
+                `;
+                if (hasTC) html += `<td>${d.daily !== null ? d.daily.toFixed(decimales) : '—'}</td>`;
+                if (hasT) html += `<td>${d.task !== null ? d.task.toFixed(decimales) : '—'}</td>`;
+                if (hasP) html += `<td>${d.test !== null ? d.test.toFixed(decimales) : '—'}</td>`;
+                if (hasA) html += `<td>${d.attendance !== null ? d.attendance.toFixed(decimales) : '—'}</td>`;
+                if (hasPr) {
+                    const prVal = d.project !== null ? d.project : d.portfolio;
+                    html += `<td>${prVal !== null ? prVal.toFixed(decimales) : '—'}</td>`;
                 }
-                if (subMapActual.task.porcentaje > 0) {
-                    const val = d.t !== null ? d.t.toFixed(decimales) : '—';
-                    html += `<td>${val}</td>`;
-                }
-                if (subMapActual.test.porcentaje > 0) {
-                    const val = d.p !== null ? d.p.toFixed(decimales) : '—';
-                    html += `<td>${val}</td>`;
-                }
-                if (subMapActual.attendance.porcentaje > 0) {
-                    const val = d.a !== null ? d.a.toFixed(decimales) : '—';
-                    html += `<td>${val}</td>`;
-                }
-                const nota = d.notaFinal !== null ? d.notaFinal.toFixed(decimales) : '—';
-                html += `<td><strong>${nota}</strong></td>`;
+                html += `<td><strong>${d.notaFinal.toFixed(decimales)}</strong></td>`;
                 html += `</tr>`;
             }
-            html += `</tbody></table></div>`;
+            html += '</tbody></table></div>';
             reporteContainer.innerHTML = html;
         }
 
-        // Exportadores (igual que antes, funcionan)
+        // Exportaciones
         function exportarCSV() {
+            if (datosReporte.length === 0) { alert('Primero genere un reporte.'); return; }
             const decimales = parseInt(decimalesSelect.value);
+            const subMap = obtenerSubMapActual(); // Necesitamos saber los subcomponentes actuales
+            if (!subMap) return;
+
             let headers = ['Id', 'Nombre'];
-            if (subMapActual.daily_work.porcentaje > 0) headers.push(`Trabajo cotidiano (${subMapActual.daily_work.porcentaje}%)`);
-            if (subMapActual.task.porcentaje > 0) headers.push(`Tareas (${subMapActual.task.porcentaje}%)`);
-            if (subMapActual.test.porcentaje > 0) headers.push(`Pruebas (${subMapActual.test.porcentaje}%)`);
-            if (subMapActual.attendance.porcentaje > 0) headers.push(`Asistencia (${subMapActual.attendance.porcentaje}%)`);
+            if (subMap.daily_work.porcentaje > 0) headers.push(`Trabajo cotidiano (${subMap.daily_work.porcentaje}%)`);
+            if (subMap.task.porcentaje > 0) headers.push(`Tareas (${subMap.task.porcentaje}%)`);
+            if (subMap.test.porcentaje > 0) headers.push(`Pruebas (${subMap.test.porcentaje}%)`);
+            if (subMap.attendance.porcentaje > 0) headers.push(`Asistencia (${subMap.attendance.porcentaje}%)`);
+            if (subMap.project.porcentaje > 0 || subMap.portfolio.porcentaje > 0) {
+                const prNombre = subMap.project.porcentaje > 0 ? 'Proyecto' : 'Portafolio';
+                const prPorc = subMap.project.porcentaje > 0 ? subMap.project.porcentaje : subMap.portfolio.porcentaje;
+                headers.push(`${prNombre} (${prPorc}%)`);
+            }
             headers.push('Nota Final');
 
             let rows = [headers];
             for (let d of datosReporte) {
                 let row = [d.id, d.nombre];
-                if (subMapActual.daily_work.porcentaje > 0) row.push(d.tc !== null ? d.tc.toFixed(decimales) : '');
-                if (subMapActual.task.porcentaje > 0) row.push(d.t !== null ? d.t.toFixed(decimales) : '');
-                if (subMapActual.test.porcentaje > 0) row.push(d.p !== null ? d.p.toFixed(decimales) : '');
-                if (subMapActual.attendance.porcentaje > 0) row.push(d.a !== null ? d.a.toFixed(decimales) : '');
-                row.push(d.notaFinal !== null ? d.notaFinal.toFixed(decimales) : '');
+                if (subMap.daily_work.porcentaje > 0) row.push(d.daily !== null ? d.daily.toFixed(decimales) : '');
+                if (subMap.task.porcentaje > 0) row.push(d.task !== null ? d.task.toFixed(decimales) : '');
+                if (subMap.test.porcentaje > 0) row.push(d.test !== null ? d.test.toFixed(decimales) : '');
+                if (subMap.attendance.porcentaje > 0) row.push(d.attendance !== null ? d.attendance.toFixed(decimales) : '');
+                if (subMap.project.porcentaje > 0 || subMap.portfolio.porcentaje > 0) {
+                    const prVal = d.project !== null ? d.project : d.portfolio;
+                    row.push(prVal !== null ? prVal.toFixed(decimales) : '');
+                }
+                row.push(d.notaFinal.toFixed(decimales));
                 rows.push(row);
             }
+
             const csv = rows.map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(',')).join('\n');
             const blob = new Blob(["\uFEFF" + csv], { type: 'text/csv;charset=utf-8;' });
             saveAs(blob, `reporte_periodo_${new Date().toISOString().slice(0,19)}.csv`);
@@ -357,7 +346,7 @@
                 <p>Período: ${escapeHtml(periodoSelect.options[periodoSelect.selectedIndex]?.text || '')}</p>
                 <table><thead><tr><th>Estudiante</th><th>Nota Final</th></tr></thead><tbody>`;
             for (let d of datosReporte) {
-                const nota = d.notaFinal !== null ? d.notaFinal.toFixed(decimales) : '—';
+                const nota = d.notaFinal.toFixed(decimales);
                 coletillaHtml += `<tr><td>${escapeHtml(d.nombre)}</td><td>${nota}</td></tr>`;
             }
             coletillaHtml += `</tbody></table></body></html>`;
@@ -365,9 +354,28 @@
             saveAs(blob, `coletillas_${new Date().toISOString().slice(0,19)}.doc`);
         }
 
-        function analisis() { alert('Funcionalidad en desarrollo. Próximamente gráficos estadísticos.'); }
+        function obtenerSubMapActual() {
+            // Esta función debería devolver el subMap del último cálculo. Para simplificar, lo guardamos en una variable global.
+            return window.lastSubMap || null;
+        }
 
-        function escapeHtml(str) { if (!str) return ''; return str.replace(/[&<>]/g, m => m === '&' ? '&amp;' : m === '<' ? '&lt;' : '&gt;'); }
+        function analisis() {
+            alert('Funcionalidad en desarrollo. Próximamente gráficos estadísticos.');
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/[&<>]/g, m => m === '&' ? '&amp;' : m === '<' ? '&lt;' : '&gt;');
+        }
+
+        // Guardar subMap globalmente para usar en exportaciones
+        let lastSubMap = null;
+        const originalRenderizar = renderizarTabla;
+        renderizarTabla = function(subMap) {
+            lastSubMap = subMap;
+            originalRenderizar(subMap);
+        };
+        window.lastSubMap = lastSubMap;
 
         generarBtn.addEventListener('click', generarReporte);
         csvBtn.addEventListener('click', exportarCSV);
