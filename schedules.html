@@ -249,42 +249,41 @@
             modal.style.display = 'block';
         }
 
-        form.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const day = diaSelect.value;
-            const startTime = horaInicio.value;
-            const endTime = horaFin.value;
-            const subjectId = parseInt(asignaturaSelect.value);
-            if (!day || !startTime || !endTime || !subjectId) {
-                alert('Todos los campos son obligatorios');
-                return;
-            }
-            // Validar que la hora fin sea mayor que la hora inicio
-            if (startTime >= endTime) {
-                alert('La hora fin debe ser mayor que la hora inicio');
-                return;
-            }
-            // Validar que no haya solapamiento con otro horario del mismo día (opcional)
-            const exists = horarios.some(h => h.id !== currentScheduleId && h.day === day && h.startTime === startTime);
-            if (exists) {
-                alert('Ya existe un horario con este día y hora de inicio.');
-                return;
-            }
-            const schedule = {
-                id: currentScheduleId || Date.now(),
-                groupId: currentGroupId,
-                day,
-                startTime,
-                endTime,
-                subjectId,
-                updatedAt: new Date().toISOString()
-            };
-            if (!currentScheduleId) schedule.createdAt = new Date().toISOString();
-            await put('schedules', schedule);
-            await cargarHorarios();
-            modal.style.display = 'none';
-            alert('Horario guardado');
-        });
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const day = diaSelect.value;
+                const startTime = horaInicio.value;
+                const endTime = horaFin.value;
+                const subjectId = parseInt(asignaturaSelect.value);
+                if (!day || !startTime || !endTime || !subjectId) {
+                    alert('Todos los campos son obligatorios');
+                    return;
+                }
+                if (startTime >= endTime) {
+                    alert('La hora fin debe ser mayor que la hora inicio');
+                    return;
+                }
+                // Validar que no haya otro horario con el mismo día y hora de inicio, excluyendo el actual si se está editando
+                const exists = horarios.some(h => h.id !== currentScheduleId && h.day === day && h.startTime === startTime);
+                if (exists) {
+                    alert('Ya existe un horario con este día y hora de inicio.');
+                    return;
+                }
+                const schedule = {
+                    id: currentScheduleId || Date.now(),
+                    groupId: currentGroupId,
+                    day,
+                    startTime,
+                    endTime,
+                    subjectId,
+                    updatedAt: new Date().toISOString()
+                };
+                if (!currentScheduleId) schedule.createdAt = new Date().toISOString();
+                await put('schedules', schedule);
+                await cargarHorarios();
+                modal.style.display = 'none';
+                alert('Horario guardado');
+            });
 
         function closeModalHandler() {
             modal.style.display = 'none';
