@@ -47,7 +47,7 @@
                 <a href="planning.html"><li class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10"><i class="fas fa-clipboard-list w-5"></i> Planeamiento</li></a>
                 <a href="progresion.html"><li class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10"><i class="fas fa-road w-5"></i> Progresión</li></a>
                 <a href="evaluation.html"><li class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10"><i class="fas fa-check-circle w-5"></i> Evaluación</li></a>
-                <a href="logbook.html"><li class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10"><i class="fas fa-book-open w-5"></i> Bitácora</li></a>
+                <a href="bitacora.html"><li class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10"><i class="fas fa-book-open w-5"></i> Bitácora</li></a>
                 <a href="students.html"><li class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10"><i class="fas fa-users w-5"></i> Estudiantes</li></a>
                 <a href="groups.html"><li class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10"><i class="fas fa-layer-group w-5"></i> Grupos</li></a>
                 <a href="subjects.html"><li class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10"><i class="fas fa-book w-5"></i> Asignaturas</li></a>
@@ -104,7 +104,7 @@
     </div>
 
     <script type="module">
-        import { openDB, getAll, getById } from './js/db.js';
+        import { openDB, getAll, getById, calculatePeriodGrade, calculateAnnualGrade } from './js/db.js';
 
         let db;
         let asignaturas = [];
@@ -163,67 +163,19 @@
             }
         }
 
-        async function obtenerNotaPeriodo(estudianteId, asignaturaId, periodoId, grupoId) {
-            const notas = grades.filter(g => g.studentId === estudianteId && g.periodId === periodoId && g.groupId === grupoId);
-            if (notas.length === 0) return null;
-            const asignatura = asignaturas.find(a => a.id === asignaturaId);
-            if (!asignatura || !asignatura.componentId) return null;
-            const componente = components.find(c => c.id === asignatura.componentId);
-            if (!componente || !componente.subcomponentes) return null;
-            const subMap = { daily_work: 0, task: 0, test: 0, attendance: 0 };
-            for (let sub of componente.subcomponentes) {
-                const n = sub.nombre.toLowerCase();
-                if (n.includes('trabajo cotidiano')) subMap.daily_work = sub.porcentaje;
-                else if (n.includes('tarea')) subMap.task = sub.porcentaje;
-                else if (n.includes('prueba')) subMap.test = sub.porcentaje;
-                else if (n.includes('asistencia')) subMap.attendance = sub.porcentaje;
-            }
-            const getAvg = (type) => {
-                const relevant = notas.filter(g => g.subcomponentId === type);
-                if (relevant.length === 0) return 0;
-                const sum = relevant.reduce((acc, n) => acc + (n.value || 0), 0);
-                return sum / relevant.length;
-            };
-            let notaFinal = 0;
-            if (subMap.daily_work) notaFinal += (getAvg('daily_work') / 100) * subMap.daily_work;
-            if (subMap.task) notaFinal += (getAvg('task') / 100) * subMap.task;
-            if (subMap.test) notaFinal += (getAvg('test') / 100) * subMap.test;
-            if (subMap.attendance) notaFinal += (getAvg('attendance') / 100) * subMap.attendance;
-            return Math.round(notaFinal * 100) / 100;
-        }
-
-        async function calcularNotaAnual(estudianteId, asignaturaId, grupoId) {
-            const grupo = grupos.find(g => g.id === grupoId);
-            if (!grupo) return null;
-            const pesos = periodosPorcentajes.get(grupo.id) || {};
-            const periodosGrupo = periodos.filter(p => p.schoolYearId === grupo.anioId);
-            if (periodosGrupo.length === 0) return null;
-            let suma = 0, totalPeso = 0;
-            for (let p of periodosGrupo) {
-                const peso = pesos[p.id] || 0;
-                if (peso === 0) continue;
-                const nota = await obtenerNotaPeriodo(estudianteId, asignaturaId, p.id, grupoId);
-                if (nota !== null) {
-                    suma += nota * peso;
-                    totalPeso += peso;
-                }
-            }
-            if (totalPeso === 0) return null;
-            return suma / totalPeso;
-        }
-
         async function generarReporte() {
             const asignaturaId = parseInt(asignaturaSelect.value);
             if (!asignaturaId) { alert('Seleccione asignatura.'); return; }
             const asignatura = asignaturas.find(a => a.id === asignaturaId);
             const grupo = grupos.find(g => g.id === asignatura.groupId);
             if (!grupo) return;
+
             const estudiantesGrupo = estudiantes.filter(e => e.groupId === grupo.id);
             if (estudiantesGrupo.length === 0) { reporteContainer.innerHTML = '<div class="text-center text-gray-500 py-8">No hay estudiantes en este grupo.</div>'; return; }
 
             datosReporte = [];
             for (let est of estudiantesGrupo) {
-                const nota = await calcularNotaAnual(est.id, asignaturaId, grupo.id);
+                const nota = await calculateAnnualGrade(est.id, grupo.id, asignaturaId, 2);
                 datosReporte.push({ estudiante: est, nota: nota !== null ? nota : 0, sinNotas: nota === null });
             }
 
@@ -232,11 +184,11 @@
             else datosReporte.sort((a,b) => b.nota - a.nota);
 
             let html = `<div class="mb-4"><h3 class="text-lg font-bold">${escapeHtml(asignatura.name)} - ${escapeHtml(grupo.seccion)} (${grupo.anio})</h3></div>
-                        <div class="overflow-x-auto"><table class="reporte-table"><thead><tr><th>Nombre del Estudiante</th><th>Nota Anual</th><th>Acción</th></tr></thead><tbody>`;
+                        <div class="overflow-x-auto"><table class="reporte-table"><thead> <tr><th>Nombre del Estudiante</th><th>Nota Anual</th><th>Acción</th></tr> </thead><tbody>`;
             for (let d of datosReporte) {
                 const notaDisplay = d.sinNotas ? '—' : d.nota.toFixed(2);
                 html += `<tr><td>${escapeHtml(d.estudiante.nombre)}</td><td>${notaDisplay}</td>
-                          <td><button class="detalle-btn" data-id="${d.estudiante.id}" data-nombre="${escapeHtml(d.estudiante.nombre)}">Mostrar detalles</button></td></tr>`;
+                           <td><button class="detalle-btn" data-id="${d.estudiante.id}" data-nombre="${escapeHtml(d.estudiante.nombre)}">Mostrar detalles</button></td></tr>`;
             }
             html += `</tbody></table></div>`;
             reporteContainer.innerHTML = html;
@@ -251,7 +203,7 @@
                     let sumaP = 0, totalP = 0;
                     for (let p of periodosGrupo) {
                         const peso = pesos[p.id] || 0;
-                        const nota = await obtenerNotaPeriodo(estId, asignaturaId, p.id, grupo.id);
+                        const nota = await calculatePeriodGrade(estId, p.id, grupo.id, asignaturaId, 2);
                         const notaDisplay = nota !== null ? nota.toFixed(2) : '—';
                         const aporte = (nota !== null && peso > 0) ? (nota * peso).toFixed(2) : '—';
                         detalleHtml += `<tr><td>${escapeHtml(p.nombre)}</td><td>${notaDisplay}</td><td>${peso}%</td><td>${aporte}</td></tr>`;
