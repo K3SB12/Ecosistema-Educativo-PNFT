@@ -1,6 +1,6 @@
-// js/db.js - Versión 9 (estable y corregida)
+// js/db.js - Versión 10 (estable y unificada)
 const DB_NAME = 'PNFT_DB';
-const DB_VERSION = 9;
+const DB_VERSION = 10; // Incrementado para asegurar actualización
 
 let db = null;
 
@@ -28,7 +28,6 @@ export async function openDB() {
             for (let storeName of stores) {
                 if (!db.objectStoreNames.contains(storeName)) {
                     console.log(`Creando store: ${storeName}`);
-
                     if (storeName === 'evaluation_indicators') {
                         const store = db.createObjectStore(storeName, { keyPath: 'id' });
                         store.createIndex('groupId', 'groupId', { unique: false });
@@ -83,7 +82,7 @@ export async function openDB() {
                 }
             }
 
-            // Añadir índices adicionales para stores que ya existían (migración)
+            // Añadir índices adicionales si es necesario (migración)
             if (db.objectStoreNames.contains('attendance')) {
                 const attendanceStore = event.target.transaction.objectStore('attendance');
                 if (!attendanceStore.indexNames.contains('subjectId')) {
@@ -91,19 +90,6 @@ export async function openDB() {
                 }
                 if (!attendanceStore.indexNames.contains('lesson')) {
                     attendanceStore.createIndex('lesson', 'lesson', { unique: false });
-                }
-            }
-
-            if (db.objectStoreNames.contains('students')) {
-                const studentStore = event.target.transaction.objectStore('students');
-                if (!studentStore.indexNames.contains('id_number')) {
-                    studentStore.createIndex('id_number', 'id_number', { unique: false });
-                }
-                if (!studentStore.indexNames.contains('mep_email')) {
-                    studentStore.createIndex('mep_email', 'mep_email', { unique: false });
-                }
-                if (!studentStore.indexNames.contains('accommodation_type_id')) {
-                    studentStore.createIndex('accommodation_type_id', 'accommodation_type_id', { unique: false });
                 }
             }
         };
@@ -233,14 +219,18 @@ export async function getSubjectComponent(subjectId) {
     return await getById('components', subject.componentId);
 }
 
-export async function getAttendancePercentage(studentId, periodId, groupId) {
-    // Obtener todos los registros de asistencia del estudiante en ese período
+export async function getAttendancePercentage(studentId, period, groupId) {
     const allAttendance = await getAll('attendance');
+    // Normalizar fechas
+    const start = new Date(period.fechaInicio);
+    start.setHours(0,0,0,0);
+    const end = new Date(period.fechaFin);
+    end.setHours(23,59,59,999);
     const relevant = allAttendance.filter(a =>
         a.estudianteId === studentId &&
         a.groupId === groupId &&
-        new Date(a.fecha) >= new Date(periodId.fechaInicio) &&
-        new Date(a.fecha) <= new Date(periodId.fechaFin)
+        new Date(a.fecha) >= start &&
+        new Date(a.fecha) <= end
     );
     if (relevant.length === 0) return null;
     const presentCount = relevant.filter(a => a.estado === 'presente').length;
@@ -266,7 +256,7 @@ export async function calculatePeriodGrade(studentId, periodId, groupId, subject
     const dailyAvg = await getSubcomponentAverage(studentId, periodId, groupId, 'daily_work');
     const taskAvg = await getSubcomponentAverage(studentId, periodId, groupId, 'task');
     const testAvg = await getSubcomponentAverage(studentId, periodId, groupId, 'test');
-    const attendanceAvg = await getAttendancePercentage(studentId, periodId, groupId);
+    const attendanceAvg = await getAttendancePercentage(studentId, { id: periodId, fechaInicio: (await getById('periods_enhanced', periodId)).fechaInicio, fechaFin: (await getById('periods_enhanced', periodId)).fechaFin }, groupId);
     const projectAvg = await getSubcomponentAverage(studentId, periodId, groupId, 'project');
     const portfolioAvg = await getSubcomponentAverage(studentId, periodId, groupId, 'portfolio');
 
@@ -355,7 +345,7 @@ export async function getPeriodGradeDetails(studentId, periodId, groupId, subjec
     const dailyAvg = await getSubcomponentAverage(studentId, periodId, groupId, 'daily_work');
     const taskAvg = await getSubcomponentAverage(studentId, periodId, groupId, 'task');
     const testAvg = await getSubcomponentAverage(studentId, periodId, groupId, 'test');
-    const attendanceAvg = await getSubcomponentAverage(studentId, periodId, groupId, 'attendance');
+    const attendanceAvg = await getAttendancePercentage(studentId, { id: periodId, fechaInicio: (await getById('periods_enhanced', periodId)).fechaInicio, fechaFin: (await getById('periods_enhanced', periodId)).fechaFin }, groupId);
     const projectAvg = await getSubcomponentAverage(studentId, periodId, groupId, 'project');
     const portfolioAvg = await getSubcomponentAverage(studentId, periodId, groupId, 'portfolio');
 
