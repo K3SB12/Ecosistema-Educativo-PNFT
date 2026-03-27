@@ -12,6 +12,7 @@
     <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/html-docx-js@0.3.1/dist/html-docx.js"></script>
     <style>
+        /* (estilos iguales a la versión anterior, no modifico) */
         body { background-color: #f8fafc; }
         .sidebar { background: linear-gradient(180deg, #1e5a20 0%, #2E7D32 100%); }
         .nav-item.active { background: white; color: #2E7D32; box-shadow: 0 10px 20px -5px rgba(0,0,0,0.2); }
@@ -125,9 +126,9 @@
                 <div><label class="block text-sm font-medium text-gray-700 mb-1">Nivel</label><select id="nivelCurr" class="w-full border rounded-lg p-2"><option value="">-- Seleccione ciclo primero --</option></select></div>
                 <div><label class="block text-sm font-medium text-gray-700 mb-1">Módulo</label><select id="moduloCurr" class="w-full border rounded-lg p-2"><option value="1">Módulo 1</option><option value="2">Módulo 2</option><option value="ambos">Ambos módulos</option></select></div>
             </div>
-            <div><button id="cargarSaberesCurrBtn" class="bg-blue-600 text-white px-4 py-2 rounded-lg shadow hover:bg-blue-700 mb-4"><i class="fas fa-search"></i> Cargar saberes</button></div>
+            <div><button id="cargarSaberesCurrBtn" class="bg-blue-600 text-white px-4 py-2 rounded-lg shadow hover:bg-blue-700 mb-4"><i class="fas fa-search"></i> Cargar indicadores</button></div>
             <div id="saberesCurrContainer" class="checkbox-group" style="max-height: 300px;">
-                <p class="text-gray-500">Seleccione ciclo, nivel y módulo, luego haga clic en "Cargar saberes".</p>
+                <p class="text-gray-500">Seleccione ciclo, nivel y módulo, luego haga clic en "Cargar indicadores".</p>
             </div>
             <div class="flex justify-end gap-3 mt-4">
                 <button id="importarSeleccionadosBtn" class="bg-green-800 text-white px-5 py-2 rounded-lg hover:bg-green-900">Importar seleccionados</button>
@@ -177,7 +178,7 @@
         const saberesCurrContainer = document.getElementById('saberesCurrContainer');
         const importarSeleccionadosBtn = document.getElementById('importarSeleccionadosBtn');
         const cancelarImportarCurrBtn = document.getElementById('cancelarImportarCurrBtn');
-        let saberesCargados = [];
+        let saberesCargados = []; // almacena { concepto, indicadorLogro }
 
         // Función para cargar grupos y períodos
         async function cargarGrupos() {
@@ -422,24 +423,25 @@
                 if (moduloData) {
                     moduloData.areas.forEach(area => {
                         area.saberesConceptuales.forEach(s => {
+                            // Guardamos tanto concepto como indicadorLogro
                             saberes.push({
                                 concepto: s.concepto,
-                                indicador: s.indicadorLogro
+                                indicadorLogro: s.indicadorLogro
                             });
                         });
                     });
                 }
             });
             if (saberes.length === 0) {
-                saberesCurrContainer.innerHTML = '<p>No se encontraron saberes para esta combinación.</p>';
+                saberesCurrContainer.innerHTML = '<p>No se encontraron indicadores para esta combinación.</p>';
                 return;
             }
             saberesCargados = saberes;
             let html = '';
             saberes.forEach((s, idx) => {
                 html += `<label>
-                    <input type="checkbox" data-idx="${idx}" data-concepto="${escapeHtml(s.concepto)}" data-indicador="${escapeHtml(s.indicador)}">
-                    <strong>${escapeHtml(s.concepto)}</strong>: ${escapeHtml(s.indicador)}
+                    <input type="checkbox" data-idx="${idx}" data-concepto="${escapeHtml(s.concepto)}" data-indicador="${escapeHtml(s.indicadorLogro)}">
+                    <strong>${escapeHtml(s.concepto)}</strong>: ${escapeHtml(s.indicadorLogro)}
                 </label>`;
             });
             saberesCurrContainer.innerHTML = html;
@@ -453,7 +455,7 @@
             }
             const checkboxes = saberesCurrContainer.querySelectorAll('input[type="checkbox"]:checked');
             if (checkboxes.length === 0) {
-                alert('Seleccione al menos un saber para importar.');
+                alert('Seleccione al menos un indicador para importar.');
                 return;
             }
             const nuevosIndicadores = [];
@@ -461,12 +463,13 @@
                 const idx = parseInt(cb.dataset.idx);
                 const saber = saberesCargados[idx];
                 if (saber) {
+                    // Usar el indicador de logro completo como nombre del indicador
                     nuevosIndicadores.push({
                         id: Date.now() + idx,
                         groupId: currentGroupId,
                         periodId: currentPeriodId,
-                        name: saber.concepto,
-                        percentage: 100 // Puedes ajustar el porcentaje por defecto o pedir al usuario
+                        name: saber.indicadorLogro,
+                        percentage: 100 // Por defecto, el docente puede editar después
                     });
                 }
             }
