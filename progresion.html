@@ -243,7 +243,7 @@
                 <a href="planning.html"><li class="nav-item"><i class="fas fa-clipboard-list"></i> Planeamiento</li></a>
                 <a href="progresion.html"><li class="nav-item active"><i class="fas fa-road"></i> Progresión</li></a>
                 <a href="evaluation.html"><li class="nav-item"><i class="fas fa-check-circle"></i> Evaluación</li></a>
-                <a href="logbook.html"><li class="nav-item"><i class="fas fa-book-open"></i> Bitácora</li></a>
+                <a href="bitacora.html"><li class="nav-item"><i class="fas fa-book-open"></i> Bitácora</li></a>
                 <a href="students.html"><li class="nav-item"><i class="fas fa-users"></i> Estudiantes</li></a>
                 <a href="groups.html"><li class="nav-item"><i class="fas fa-layer-group"></i> Grupos</li></a>
                 <a href="settings.html"><li class="nav-item"><i class="fas fa-cog"></i> Configuración</li></a>
@@ -302,7 +302,7 @@
                 <button id="btnIA" class="btn-ia"><i class="fas fa-robot"></i> Generar prompt con IA</button>
             </div>
 
-            <!-- Tabla de progresión (con 7 columnas) -->
+            <!-- Tabla de progresión -->
             <div class="table-container">
                 <table id="tablaProgresion">
                     <thead>
@@ -403,17 +403,15 @@
                 actualizarNiveles(this.value);
             });
 
-            // Función para determinar metodología según ciclo
-            function obtenerMetodologia(cicloTexto) {
-                if (cicloTexto.includes('Preescolar') || cicloTexto.includes('I Ciclo')) {
-                    return { nombre: 'ABJ', clase: 'metodologia-abj' };
-                } else if (cicloTexto.includes('II Ciclo')) {
-                    return { nombre: 'ABR', clase: 'metodologia-abr' };
-                } else if (cicloTexto.includes('III Ciclo') || cicloTexto.includes('Secundaria')) {
-                    return { nombre: 'Design Thinking', clase: 'metodologia-dt' };
-                } else {
-                    return { nombre: '—', clase: '' };
-                }
+            // Función para determinar metodología según nivel (no según ciclo)
+            function obtenerMetodologiaPorNivel(nivel) {
+                const primeros = ['Primero', 'Segundo', 'Tercero'];
+                const segundos = ['Cuarto', 'Quinto', 'Sexto'];
+                const terceros = ['Sétimo', 'Octavo', 'Noveno'];
+                if (primeros.includes(nivel)) return { nombre: 'ABJ', clase: 'metodologia-abj' };
+                if (segundos.includes(nivel)) return { nombre: 'ABR', clase: 'metodologia-abr' };
+                if (terceros.includes(nivel)) return { nombre: 'Design Thinking', clase: 'metodologia-dt' };
+                return { nombre: '—', clase: '' };
             }
 
             // Renderizar tabla
@@ -432,7 +430,7 @@
                             if (filtroNivel !== 'todos' && modulo.nivel !== filtroNivel) return;
                             modulo.areas.forEach(area => {
                                 const areaNombre = window.AREAS_CONOCIMIENTO?.find(a => a.id === area.areaId)?.nombre || area.areaId;
-                                const metodologia = obtenerMetodologia(cicloTexto);
+                                const metodologia = obtenerMetodologiaPorNivel(modulo.nivel);
                                 area.saberesConceptuales.forEach(saber => {
                                     totalSaberes++;
                                     const saberId = `${cicloTexto}-${modulo.nivel}-${modulo.modulo}-${area.areaId}-${saber.concepto}`.replace(/\s/g, '_');
@@ -467,7 +465,7 @@
                                 if (filtroNivel !== 'todos' && modulo.nivel !== filtroNivel) return;
                                 modulo.areas.forEach(area => {
                                     const areaNombre = window.AREAS_CONOCIMIENTO?.find(a => a.id === area.areaId)?.nombre || area.areaId;
-                                    const metodologia = obtenerMetodologia(cicloTexto);
+                                    const metodologia = obtenerMetodologiaPorNivel(modulo.nivel);
                                     area.saberesConceptuales.forEach(saber => {
                                         totalSaberes++;
                                         const saberId = `${cicloTexto}-${modulo.nivel}-${modulo.modulo}-${area.areaId}-${saber.concepto}`.replace(/\s/g, '_');
@@ -527,7 +525,6 @@
                             delete saberesDominados[saberId];
                         }
                         guardarDominados();
-                        // Actualizar contadores
                         dominadosSpan.textContent = Object.keys(saberesDominados).length;
                         prioritariosSpan.textContent = totalSaberes - Object.keys(saberesDominados).length;
                     });
@@ -565,14 +562,14 @@
                 });
             });
 
-            // Generar prompt con la estructura solicitada
+            // Generar prompt con la estructura solicitada (sin cambios, ya está bien)
             function generarPrompt() {
                 const saberesSeleccionados = [];
                 document.querySelectorAll('.diagnostico-checkbox:checked').forEach(cb => {
                     const tr = cb.closest('tr');
                     if (!tr) return;
                     const celdas = tr.querySelectorAll('td');
-                    if (celdas.length < 6) return; // Ahora tenemos 6 celdas de datos + check
+                    if (celdas.length < 6) return;
                     saberesSeleccionados.push({
                         ciclo: celdas[0].textContent.trim(),
                         nivel: celdas[1].textContent.trim(),
@@ -590,7 +587,6 @@
                     return null;
                 }
 
-                // Construir prompt detallado
                 let prompt = `**INSTRUCCIONES PARA LA IA**:\n\n`;
                 prompt += `Actúa como especialista en diseño curricular del Programa Nacional de Formación Tecnológica (PNFT) del MEP Costa Rica.\n\n`;
                 prompt += `Con base en los saberes seleccionados por el docente, genera un análisis de progresión curricular que evidencie cómo la metodología (ABJ, ABR o Design Thinking) funciona como eje articulador del aprendizaje y de la construcción de la matriz de saberes.\n\n`;
