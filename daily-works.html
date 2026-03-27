@@ -6,6 +6,7 @@
     <title>Trabajo Cotidiano - PNFT Articulador</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="js/curriculum.js"></script>
     <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
@@ -31,6 +32,9 @@
         .periodo-item { background: #f9fafb; border-radius: 12px; padding: 1rem; margin-bottom: 1rem; border: 1px solid #e5e7eb; }
         .flex-between { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem; }
         .export-buttons { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+        .checkbox-group { max-height: 400px; overflow-y: auto; margin: 1rem 0; padding: 1rem; border: 1px solid #e2e8f0; border-radius: 12px; background: #f8fafc; }
+        .checkbox-group label { display: block; margin: 0.6rem 0; font-size: 0.9rem; line-height: 1.4; }
+        .checkbox-group input { margin-right: 0.6rem; }
     </style>
 </head>
 <body class="font-sans antialiased">
@@ -46,7 +50,7 @@
                 <a href="planning.html"><li class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10"><i class="fas fa-clipboard-list w-5"></i> Planeamiento</li></a>
                 <a href="progresion.html"><li class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10"><i class="fas fa-road w-5"></i> Progresión</li></a>
                 <a href="evaluation.html"><li class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10"><i class="fas fa-check-circle w-5"></i> Evaluación</li></a>
-                <a href="logbook.html"><li class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10"><i class="fas fa-book-open w-5"></i> Bitácora</li></a>
+                <a href="bitacora.html"><li class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10"><i class="fas fa-book-open w-5"></i> Bitácora</li></a>
                 <a href="students.html"><li class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10"><i class="fas fa-users w-5"></i> Estudiantes</li></a>
                 <a href="groups.html"><li class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10"><i class="fas fa-layer-group w-5"></i> Grupos</li></a>
                 <a href="subjects.html"><li class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10"><i class="fas fa-book w-5"></i> Asignaturas</li></a>
@@ -76,7 +80,8 @@
                 <div class="flex-between">
                     <h2 class="text-xl font-semibold text-gray-800">Indicadores de Trabajo Cotidiano</h2>
                     <div class="flex gap-2">
-                        <button id="agregarIndicadorBtn" class="bg-green-800 text-white px-4 py-2 rounded-lg shadow hover:bg-green-900"><i class="fas fa-plus"></i> Agregar indicador</button>
+                        <button id="agregarIndicadorManualBtn" class="bg-green-800 text-white px-4 py-2 rounded-lg shadow hover:bg-green-900"><i class="fas fa-plus"></i> Agregar manual</button>
+                        <button id="importarIndicadoresCurrBtn" class="bg-blue-600 text-white px-4 py-2 rounded-lg shadow hover:bg-blue-700"><i class="fas fa-download"></i> Importar desde currículo</button>
                         <div class="export-buttons">
                             <button id="exportExcelBtn" class="bg-green-600 text-white px-3 py-2 rounded-lg shadow hover:bg-green-700"><i class="fas fa-file-excel"></i> Excel</button>
                             <button id="exportPdfBtn" class="bg-red-600 text-white px-3 py-2 rounded-lg shadow hover:bg-red-700"><i class="fas fa-file-pdf"></i> PDF</button>
@@ -97,16 +102,37 @@
         </main>
     </div>
 
-    <!-- Modal para agregar/editar indicador -->
-    <div id="modalIndicador" class="modal">
+    <!-- Modal para agregar indicador manual -->
+    <div id="modalIndicadorManual" class="modal">
         <div class="modal-content">
-            <span class="close" id="closeModalInd">&times;</span>
-            <h2 id="modalIndTitulo" class="text-xl font-bold mb-4">Agregar indicador</h2>
-            <form id="formIndicador">
-                <div class="mb-4"><label class="block text-sm font-medium text-gray-700 mb-1">Nombre del indicador *</label><input type="text" id="indNombre" required class="w-full border rounded-lg p-2"></div>
-                <div class="mb-4"><label class="block text-sm font-medium text-gray-700 mb-1">Porcentaje (%)</label><input type="number" id="indPorcentaje" value="100" step="1" min="0" max="100" class="w-full border rounded-lg p-2"></div>
-                <div class="flex justify-end gap-3"><button type="submit" class="bg-green-800 text-white px-5 py-2 rounded-lg hover:bg-green-900">Guardar</button><button type="button" id="cancelarIndBtn" class="bg-gray-200 text-gray-800 px-5 py-2 rounded-lg hover:bg-gray-300">Cancelar</button></div>
+            <span class="close" id="closeModalManual">&times;</span>
+            <h2 class="text-xl font-bold mb-4">Agregar indicador manual</h2>
+            <form id="formIndicadorManual">
+                <div class="mb-4"><label class="block text-sm font-medium text-gray-700 mb-1">Nombre del indicador *</label><input type="text" id="indNombreManual" required class="w-full border rounded-lg p-2"></div>
+                <div class="mb-4"><label class="block text-sm font-medium text-gray-700 mb-1">Porcentaje (%)</label><input type="number" id="indPorcentajeManual" value="100" step="1" min="0" max="100" class="w-full border rounded-lg p-2"></div>
+                <div class="flex justify-end gap-3"><button type="submit" class="bg-green-800 text-white px-5 py-2 rounded-lg hover:bg-green-900">Guardar</button><button type="button" id="cancelarManualBtn" class="bg-gray-200 text-gray-800 px-5 py-2 rounded-lg hover:bg-gray-300">Cancelar</button></div>
             </form>
+        </div>
+    </div>
+
+    <!-- Modal para importar desde currículo -->
+    <div id="modalImportarCurriculo" class="modal">
+        <div class="modal-content">
+            <span class="close" id="closeModalCurr">&times;</span>
+            <h2 class="text-xl font-bold mb-4">Importar indicadores desde el currículo</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                <div><label class="block text-sm font-medium text-gray-700 mb-1">Ciclo</label><select id="cicloCurr" class="w-full border rounded-lg p-2"><option value="">-- Seleccione --</option><option value="preescolar">Preescolar</option><option value="primaria">Primaria</option><option value="secundaria">Secundaria</option></select></div>
+                <div><label class="block text-sm font-medium text-gray-700 mb-1">Nivel</label><select id="nivelCurr" class="w-full border rounded-lg p-2"><option value="">-- Seleccione ciclo primero --</option></select></div>
+                <div><label class="block text-sm font-medium text-gray-700 mb-1">Módulo</label><select id="moduloCurr" class="w-full border rounded-lg p-2"><option value="1">Módulo 1</option><option value="2">Módulo 2</option><option value="ambos">Ambos módulos</option></select></div>
+            </div>
+            <div><button id="cargarSaberesCurrBtn" class="bg-blue-600 text-white px-4 py-2 rounded-lg shadow hover:bg-blue-700 mb-4"><i class="fas fa-search"></i> Cargar saberes</button></div>
+            <div id="saberesCurrContainer" class="checkbox-group" style="max-height: 300px;">
+                <p class="text-gray-500">Seleccione ciclo, nivel y módulo, luego haga clic en "Cargar saberes".</p>
+            </div>
+            <div class="flex justify-end gap-3 mt-4">
+                <button id="importarSeleccionadosBtn" class="bg-green-800 text-white px-5 py-2 rounded-lg hover:bg-green-900">Importar seleccionados</button>
+                <button id="cancelarImportarCurrBtn" class="bg-gray-200 text-gray-800 px-5 py-2 rounded-lg hover:bg-gray-300">Cancelar</button>
+            </div>
         </div>
     </div>
 
@@ -123,21 +149,37 @@
         const grupoSelect = document.getElementById('grupoSelect');
         const periodoSelect = document.getElementById('periodoSelect');
         const cargarBtn = document.getElementById('cargarBtn');
-        const agregarIndicadorBtn = document.getElementById('agregarIndicadorBtn');
+        const agregarManualBtn = document.getElementById('agregarIndicadorManualBtn');
+        const importarCurrBtn = document.getElementById('importarIndicadoresCurrBtn');
         const indicadoresLista = document.getElementById('indicadoresLista');
         const tablaNotas = document.getElementById('tablaNotas');
         const guardarNotasBtn = document.getElementById('guardarNotasBtn');
         const exportExcelBtn = document.getElementById('exportExcelBtn');
         const exportPdfBtn = document.getElementById('exportPdfBtn');
         const exportWordBtn = document.getElementById('exportWordBtn');
-        const modalInd = document.getElementById('modalIndicador');
-        const closeModalInd = document.getElementById('closeModalInd');
-        const cancelarIndBtn = document.getElementById('cancelarIndBtn');
-        const formIndicador = document.getElementById('formIndicador');
-        const indNombre = document.getElementById('indNombre');
-        const indPorcentaje = document.getElementById('indPorcentaje');
+        
+        // Modal manual
+        const modalManual = document.getElementById('modalIndicadorManual');
+        const closeModalManual = document.getElementById('closeModalManual');
+        const cancelarManualBtn = document.getElementById('cancelarManualBtn');
+        const formManual = document.getElementById('formIndicadorManual');
+        const indNombreManual = document.getElementById('indNombreManual');
+        const indPorcentajeManual = document.getElementById('indPorcentajeManual');
         let currentIndicadorId = null;
 
+        // Modal currículo
+        const modalCurr = document.getElementById('modalImportarCurriculo');
+        const closeModalCurr = document.getElementById('closeModalCurr');
+        const cicloCurr = document.getElementById('cicloCurr');
+        const nivelCurr = document.getElementById('nivelCurr');
+        const moduloCurr = document.getElementById('moduloCurr');
+        const cargarSaberesCurrBtn = document.getElementById('cargarSaberesCurrBtn');
+        const saberesCurrContainer = document.getElementById('saberesCurrContainer');
+        const importarSeleccionadosBtn = document.getElementById('importarSeleccionadosBtn');
+        const cancelarImportarCurrBtn = document.getElementById('cancelarImportarCurrBtn');
+        let saberesCargados = [];
+
+        // Función para cargar grupos y períodos
         async function cargarGrupos() {
             const grupos = await getAll('groups');
             grupoSelect.innerHTML = '<option value="">-- Seleccione grupo --</option>' + grupos.map(g => `<option value="${g.id}">${g.seccion} (${g.nivel}) - ${g.anio}</option>`).join('');
@@ -157,7 +199,7 @@
 
         function renderIndicadores() {
             if (currentIndicadores.length === 0) {
-                indicadoresLista.innerHTML = '<p class="text-gray-500">No hay indicadores. Agregue uno.</p>';
+                indicadoresLista.innerHTML = '<p class="text-gray-500">No hay indicadores. Agregue uno manualmente o impórtelos desde el currículo.</p>';
                 return;
             }
             let html = '';
@@ -181,7 +223,7 @@
                 btn.addEventListener('click', () => {
                     const id = parseInt(btn.dataset.id);
                     const ind = currentIndicadores.find(i => i.id === id);
-                    if (ind) abrirModalIndicador(ind);
+                    if (ind) abrirModalManual(ind);
                 });
             });
             document.querySelectorAll('.delete-indicador').forEach(btn => {
@@ -229,7 +271,7 @@
             html += '</tr></thead><tbody>';
 
             currentStudents.forEach(student => {
-                html += `<tr><td>${escapeHtml(student.nombre)} ${escapeHtml(student.apellido1)}</td>`;
+                html += `<tr><td>${escapeHtml(student.nombre)} ${escapeHtml(student.apellido1 || '')}</td>`;
                 currentIndicadores.forEach(ind => {
                     const grade = currentGrades.find(g => g.studentId === student.id && g.metadata?.indicatorId === ind.id);
                     const value = grade ? grade.value : '';
@@ -307,18 +349,19 @@
             saveAs(blob, `trabajo_cotidiano_${new Date().toISOString().slice(0,19)}.docx`);
         }
 
-        function abrirModalIndicador(indicador = null) {
+        // Modal manual
+        function abrirModalManual(indicador = null) {
             currentIndicadorId = indicador ? indicador.id : null;
-            document.getElementById('modalIndTitulo').innerText = indicador ? 'Editar indicador' : 'Agregar indicador';
-            indNombre.value = indicador ? indicador.name : '';
-            indPorcentaje.value = indicador ? indicador.percentage : 100;
-            modalInd.style.display = 'block';
+            document.querySelector('#modalIndicadorManual h2').innerText = indicador ? 'Editar indicador' : 'Agregar indicador manual';
+            indNombreManual.value = indicador ? indicador.name : '';
+            indPorcentajeManual.value = indicador ? indicador.percentage : 100;
+            modalManual.style.display = 'block';
         }
 
-        formIndicador.addEventListener('submit', async (e) => {
+        formManual.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const name = indNombre.value.trim();
-            const percentage = parseInt(indPorcentaje.value) || 0;
+            const name = indNombreManual.value.trim();
+            const percentage = parseInt(indPorcentajeManual.value) || 0;
             if (!name) { alert('El nombre es obligatorio'); return; }
             const indicador = {
                 id: currentIndicadorId || Date.now(),
@@ -330,14 +373,114 @@
             await put('daily_work_indicators', indicador);
             await cargarIndicadores();
             await cargarNotas();
-            modalInd.style.display = 'none';
+            modalManual.style.display = 'none';
             alert('Indicador guardado');
         });
 
-        function closeModalIndicador() { modalInd.style.display = 'none'; currentIndicadorId = null; formIndicador.reset(); }
-        closeModalInd.onclick = closeModalIndicador;
-        cancelarIndBtn.onclick = closeModalIndicador;
+        function closeModalManualHandler() { modalManual.style.display = 'none'; currentIndicadorId = null; formManual.reset(); }
+        closeModalManual.onclick = closeModalManualHandler;
+        cancelarManualBtn.onclick = closeModalManualHandler;
 
+        // Modal currículo
+        function actualizarNivelesCurr() {
+            const ciclo = cicloCurr.value;
+            nivelCurr.innerHTML = '<option value="">-- Seleccione --</option>';
+            const niveles = {
+                preescolar: ['Educación Preescolar'],
+                primaria: ['Primero','Segundo','Tercero','Cuarto','Quinto','Sexto'],
+                secundaria: ['Sétimo','Octavo','Noveno']
+            }[ciclo] || [];
+            niveles.forEach(n => {
+                const option = document.createElement('option');
+                option.value = n;
+                option.textContent = n;
+                nivelCurr.appendChild(option);
+            });
+        }
+        cicloCurr.addEventListener('change', actualizarNivelesCurr);
+
+        cargarSaberesCurrBtn.addEventListener('click', () => {
+            const ciclo = cicloCurr.value, nivel = nivelCurr.value, moduloVal = moduloCurr.value;
+            if (!ciclo || !nivel) {
+                alert('Seleccione ciclo y nivel');
+                return;
+            }
+            let modulos = moduloVal === 'ambos' ? [1,2] : [parseInt(moduloVal)];
+            let saberes = [];
+            modulos.forEach(mod => {
+                let moduloData = null;
+                if (ciclo === 'preescolar') {
+                    moduloData = window.CURRICULO.preescolar?.find(m => m.nivel === nivel && m.modulo === mod);
+                } else if (ciclo === 'primaria') {
+                    const nivelKey = nivel.toLowerCase();
+                    moduloData = window.CURRICULO.primaria?.[nivelKey]?.find(m => m.modulo === mod);
+                } else if (ciclo === 'secundaria') {
+                    const nivelMap = { 'Sétimo':'setimo','Octavo':'octavo','Noveno':'noveno' };
+                    const nivelKey = nivelMap[nivel];
+                    moduloData = window.CURRICULO.secundaria?.[nivelKey]?.find(m => m.modulo === mod);
+                }
+                if (moduloData) {
+                    moduloData.areas.forEach(area => {
+                        area.saberesConceptuales.forEach(s => {
+                            saberes.push({
+                                concepto: s.concepto,
+                                indicador: s.indicadorLogro
+                            });
+                        });
+                    });
+                }
+            });
+            if (saberes.length === 0) {
+                saberesCurrContainer.innerHTML = '<p>No se encontraron saberes para esta combinación.</p>';
+                return;
+            }
+            saberesCargados = saberes;
+            let html = '';
+            saberes.forEach((s, idx) => {
+                html += `<label>
+                    <input type="checkbox" data-idx="${idx}" data-concepto="${escapeHtml(s.concepto)}" data-indicador="${escapeHtml(s.indicador)}">
+                    <strong>${escapeHtml(s.concepto)}</strong>: ${escapeHtml(s.indicador)}
+                </label>`;
+            });
+            saberesCurrContainer.innerHTML = html;
+        });
+
+        importarSeleccionadosBtn.addEventListener('click', async () => {
+            if (!currentGroupId || !currentPeriodId) {
+                alert('Primero debe seleccionar un grupo y período en la página principal.');
+                modalCurr.style.display = 'none';
+                return;
+            }
+            const checkboxes = saberesCurrContainer.querySelectorAll('input[type="checkbox"]:checked');
+            if (checkboxes.length === 0) {
+                alert('Seleccione al menos un saber para importar.');
+                return;
+            }
+            const nuevosIndicadores = [];
+            for (let cb of checkboxes) {
+                const idx = parseInt(cb.dataset.idx);
+                const saber = saberesCargados[idx];
+                if (saber) {
+                    nuevosIndicadores.push({
+                        id: Date.now() + idx,
+                        groupId: currentGroupId,
+                        periodId: currentPeriodId,
+                        name: saber.concepto,
+                        percentage: 100 // Puedes ajustar el porcentaje por defecto o pedir al usuario
+                    });
+                }
+            }
+            for (let ind of nuevosIndicadores) await put('daily_work_indicators', ind);
+            await cargarIndicadores();
+            await cargarNotas();
+            modalCurr.style.display = 'none';
+            alert(`✅ Se importaron ${nuevosIndicadores.length} indicadores.`);
+        });
+
+        cancelarImportarCurrBtn.onclick = () => modalCurr.style.display = 'none';
+        closeModalCurr.onclick = () => modalCurr.style.display = 'none';
+
+        // Eventos principales
         async function cargarTodo() {
             const groupId = parseInt(grupoSelect.value);
             const periodId = parseInt(periodoSelect.value);
@@ -352,12 +495,20 @@
             await cargarNotas();
         }
 
-        agregarIndicadorBtn.addEventListener('click', () => {
+        agregarManualBtn.addEventListener('click', () => {
             if (!currentGroupId || !currentPeriodId) {
                 alert('Primero seleccione grupo y período y presione "Cargar"');
                 return;
             }
-            abrirModalIndicador();
+            abrirModalManual();
+        });
+
+        importarCurrBtn.addEventListener('click', () => {
+            if (!currentGroupId || !currentPeriodId) {
+                alert('Primero seleccione grupo y período y presione "Cargar"');
+                return;
+            }
+            modalCurr.style.display = 'block';
         });
 
         cargarBtn.addEventListener('click', cargarTodo);
@@ -380,7 +531,10 @@
         await cargarGrupos();
         await cargarPeriodos();
 
-        window.onclick = (e) => { if (e.target === modalInd) closeModalIndicador(); };
+        window.onclick = (e) => {
+            if (e.target === modalManual) closeModalManualHandler();
+            if (e.target === modalCurr) modalCurr.style.display = 'none';
+        };
     </script>
 </body>
 </html>
