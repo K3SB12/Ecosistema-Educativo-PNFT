@@ -405,9 +405,11 @@
 
             // Función para determinar metodología según nivel (no según ciclo)
             function obtenerMetodologiaPorNivel(nivel) {
+                const preescolar = ['Educación Preescolar'];
                 const primeros = ['Primero', 'Segundo', 'Tercero'];
                 const segundos = ['Cuarto', 'Quinto', 'Sexto'];
                 const terceros = ['Sétimo', 'Octavo', 'Noveno'];
+                if (preescolar.includes (nivel)) return { nombre: 'ABJ', clase: 'metodologia-abj' };
                 if (primeros.includes(nivel)) return { nombre: 'ABJ', clase: 'metodologia-abj' };
                 if (segundos.includes(nivel)) return { nombre: 'ABR', clase: 'metodologia-abr' };
                 if (terceros.includes(nivel)) return { nombre: 'Design Thinking', clase: 'metodologia-dt' };
